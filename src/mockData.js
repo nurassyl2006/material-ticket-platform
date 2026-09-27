@@ -6,7 +6,7 @@ export const mockInventory = [
     quantity: 45,
     unit: "box",
     minLevel: 10,
-    location: "Cabinet 102 - Shelf A"
+    location: "Storage Cabinet 102 - Shelf A"
   },
   {
     id: "inv-2",
@@ -15,49 +15,163 @@ export const mockInventory = [
     quantity: 18,
     unit: "pack",
     minLevel: 25,
-    location: "Cabinet 102 - Shelf B"
+    location: "Storage Cabinet 102 - Shelf B"
   },
   {
     id: "inv-3",
-    name: "HDMI to VGA Adapter Cable",
+    name: "HDMI to VGA & DisplayPort Adapter Kit",
     category: "electronics",
     quantity: 8,
     unit: "pcs",
     minLevel: 5,
-    location: "IT Store Room 204"
+    location: "IT Server Room 204"
   },
   {
     id: "inv-4",
-    name: "Chemistry Test Tubes Set",
+    name: "Ergonomic Student Chairs (Blue)",
+    category: "furniture",
+    quantity: 24,
+    unit: "pcs",
+    minLevel: 10,
+    location: "Facilities Warehouse Block B"
+  },
+  {
+    id: "inv-5",
+    name: "Adjustable Student Desks (Wood/Steel)",
+    category: "furniture",
+    quantity: 15,
+    unit: "pcs",
+    minLevel: 8,
+    location: "Facilities Warehouse Block B"
+  },
+  {
+    id: "inv-6",
+    name: "Heavy-Duty Furniture Dolly & Moving Straps",
+    category: "furniture",
+    quantity: 3,
+    unit: "set",
+    minLevel: 2,
+    location: "Facilities Workshop 105"
+  },
+  {
+    id: "inv-7",
+    name: "Disinfectant Surface Sanitizing Wipes",
+    category: "cleaning",
+    quantity: 4,
+    unit: "pack",
+    minLevel: 10,
+    location: "Cleaning Depot Basement"
+  },
+  {
+    id: "inv-8",
+    name: "Chemistry Lab Test Tubes Set",
     category: "lab",
     quantity: 12,
     unit: "set",
     minLevel: 5,
-    location: "Lab Storage Room 301"
-  },
-  {
-    id: "inv-5",
-    name: "Ergonomic Student Chairs",
-    category: "furniture",
-    quantity: 0,
-    unit: "pcs",
-    minLevel: 4,
-    location: "Main Warehouse B"
-  },
-  {
-    id: "inv-6",
-    name: "Disinfectant Surface Wipes",
-    category: "cleaning",
-    quantity: 3,
-    unit: "pack",
-    minLevel: 10,
-    location: "Maintenance Depot"
+    location: "Science Lab Storage 301"
   }
 ];
 
 export const mockTickets = [
   {
     id: "TCK-1001",
+    department: "it",
+    itemTitle: "Classroom Wi-Fi Disconnecting Constantly",
+    category: "electronics",
+    urgency: "high",
+    roomNumber: "Room 204 - Computer Lab",
+    description: "Wi-Fi access point AP-204 drops every 10 minutes during student coding session. Students unable to sync projects.",
+    teacherName: "Aigul Nurlan",
+    teacherPhone: "+7 (777) 234-5678",
+    status: "in_progress",
+    assignedWorker: "Dias Saparov (IT Support)",
+    assignedRole: "it_support",
+    handledAction: "in_progress",
+    notes: "Rebooted local switch. Inspecting DHCP lease pool and signal attenuation.",
+    createdAt: "2026-09-26T08:30:00Z",
+    updatedAt: "2026-09-26T09:15:00Z"
+  },
+  {
+    id: "TCK-1002",
+    department: "it",
+    itemTitle: "Teacher Laptop Display Screen Black",
+    category: "electronics",
+    urgency: "critical",
+    roomNumber: "Room 108 - Physics Lab",
+    description: "School-issued HP ProBook turns on (power LED is blue) but display stays completely dark. Need for Physics demonstration.",
+    teacherName: "Sergey Ivanov",
+    teacherPhone: "+7 (701) 987-6543",
+    status: "completed",
+    assignedWorker: "Dias Saparov (IT Support)",
+    assignedRole: "it_support",
+    handledAction: "completed",
+    notes: "Diagnosed & fixed: Replaced damaged internal display flex cable and updated BIOS. Laptop verified working.",
+    createdAt: "2026-09-25T10:15:00Z",
+    updatedAt: "2026-09-25T11:45:00Z"
+  },
+  {
+    id: "TCK-1003",
+    department: "facilities",
+    itemTitle: "Move 15 Desks & 30 Chairs for Inter-School Debate",
+    category: "furniture",
+    urgency: "high",
+    roomNumber: "Main Assembly Hall",
+    moveDetails: {
+      fromRoom: "Room 102 - Storage",
+      toRoom: "Main Assembly Hall",
+      items: "15 student desks, 30 blue chairs, 1 presentation podium"
+    },
+    description: "Need furniture arranged in conference/debate layout before 14:00 today. Stage podium also needed.",
+    teacherName: "Elena Petrova",
+    teacherPhone: "+7 (705) 555-1234",
+    status: "in_progress",
+    assignedWorker: "Nurassyl (Facilities Manager)",
+    assignedRole: "facilities_manager",
+    handledAction: "in_progress",
+    notes: "Dispatched moving crew with heavy dollies. 10 desks already placed in Assembly Hall.",
+    createdAt: "2026-09-27T08:15:00Z",
+    updatedAt: "2026-09-27T09:30:00Z"
+  },
+  {
+    id: "TCK-1004",
+    department: "cleaning",
+    itemTitle: "Urgent Liquid Paint Spill on Corridor Floor",
+    category: "cleaning",
+    urgency: "critical",
+    roomNumber: "2nd Floor Corridor (Near Art Studio 114)",
+    description: "Water container and acrylic paint knocked over. Corridor floor is extremely slippery for passing students.",
+    teacherName: "Elena Petrova",
+    teacherPhone: "+7 (705) 555-1234",
+    status: "completed",
+    assignedWorker: "Gulnara Akhmetova (Cleaning)",
+    assignedRole: "cleaning",
+    handledAction: "completed",
+    notes: "Spill immediately contained, floor washed with degreaser and dried. Warning cone removed.",
+    createdAt: "2026-09-26T11:00:00Z",
+    updatedAt: "2026-09-26T11:35:00Z"
+  },
+  {
+    id: "TCK-1005",
+    department: "cleaning",
+    itemTitle: "Classroom Deep Clean & Waste Removal",
+    category: "cleaning",
+    urgency: "medium",
+    roomNumber: "Room 305 - Biology",
+    description: "Biology lab tables need disinfection after dissection session, and classroom waste bins need replacement.",
+    teacherName: "Aigul Nurlan",
+    teacherPhone: "+7 (777) 234-5678",
+    status: "in_progress",
+    assignedWorker: "Gulnara Akhmetova (Cleaning)",
+    assignedRole: "cleaning",
+    handledAction: "in_progress",
+    notes: "Currently sanitizing biology lab desks and replacing biohazard waste liners.",
+    createdAt: "2026-09-27T09:00:00Z",
+    updatedAt: "2026-09-27T10:00:00Z"
+  },
+  {
+    id: "TCK-1006",
+    department: "storage",
     itemTitle: "A4 Printing Paper (80gsm)",
     category: "stationary",
     quantity: 3,
@@ -67,48 +181,85 @@ export const mockTickets = [
     description: "Required for printing mid-term test worksheets for 9th grade students.",
     teacherName: "Aigul Nurlan",
     teacherPhone: "+7 (777) 234-5678",
-    status: "issued", // issued (given by Worker A from stock)
-    assignedWorker: "Worker A (Kairat)",
+    status: "issued",
+    assignedWorker: "Kairat Smagulov (Storage Manager)",
+    assignedRole: "storage_manager",
     handledAction: "issued",
-    notes: "Provided 3 packs directly from Cabinet 102.",
-    createdAt: "2026-08-19T09:30:00Z",
-    updatedAt: "2026-08-19T10:15:00Z"
+    notes: "Provided 3 packs directly from Storage Cabinet 102.",
+    createdAt: "2026-09-26T09:30:00Z",
+    updatedAt: "2026-09-26T10:15:00Z"
   },
   {
-    id: "TCK-1002",
+    id: "TCK-1007",
+    department: "storage",
     itemTitle: "Interactive Smartboard Stylus Pen",
     category: "electronics",
     quantity: 2,
     unit: "pcs",
     urgency: "high",
     roomNumber: "Room 108 - Physics Lab",
-    description: "The existing interactive whiteboard pens are missing tip sensitivity.",
+    description: "The interactive whiteboard pens are missing tip sensitivity.",
     teacherName: "Sergey Ivanov",
     teacherPhone: "+7 (701) 987-6543",
-    status: "purchasing", // purchasing (Worker A buying it)
-    assignedWorker: "Worker A (Kairat)",
+    status: "purchasing",
+    assignedWorker: "Kairat Smagulov (Storage Manager)",
+    assignedRole: "storage_manager",
     handledAction: "purchased",
     purchaseCost: 18500,
     supplier: "Sulpak Electronics / Technodom",
     notes: "Item not in current school stock. Ordered from official supplier, ETA 24h.",
-    createdAt: "2026-08-20T08:10:00Z",
-    updatedAt: "2026-08-20T11:00:00Z"
+    createdAt: "2026-09-26T14:10:00Z",
+    updatedAt: "2026-09-26T16:00:00Z"
   },
   {
-    id: "TCK-1003",
-    itemTitle: "Whiteboard Markers Set (Red/Blue/Black)",
-    category: "stationary",
-    quantity: 2,
-    unit: "box",
-    urgency: "low",
+    id: "TCK-1008",
+    department: "facilities",
+    itemTitle: "Fix Loose Classroom Door Handle & Latch",
+    category: "furniture",
+    urgency: "medium",
     roomNumber: "Room 215 - History",
-    description: "Markers in room 215 are running dry.",
-    teacherName: "Elena Petrova",
-    teacherPhone: "+7 (705) 555-1234",
+    description: "Door handle is wobbling and latch jams when students close the door.",
+    teacherName: "Sergey Ivanov",
+    teacherPhone: "+7 (701) 987-6543",
     status: "pending",
     assignedWorker: null,
-    createdAt: "2026-08-20T12:00:00Z",
-    updatedAt: "2026-08-20T12:00:00Z"
+    assignedRole: null,
+    createdAt: "2026-09-27T10:45:00Z",
+    updatedAt: "2026-09-27T10:45:00Z"
+  },
+  {
+    id: "TCK-1009",
+    department: "security",
+    itemTitle: "Teacher RFID Badge Not Opening STEM Robotics Lab",
+    category: "other",
+    urgency: "medium",
+    roomNumber: "Room 110 - Robotics Lab",
+    description: "Door reader flashes red when scanning teacher badge usr-t1. Keycard access required for after-school robotics club.",
+    teacherName: "Aigul Nurlan",
+    teacherPhone: "+7 (777) 234-5678",
+    status: "completed",
+    assignedWorker: "Security Desk Officer",
+    assignedRole: "security",
+    handledAction: "completed",
+    notes: "Re-synced teacher RFID profile on the central security server. Verified access.",
+    createdAt: "2026-09-25T14:00:00Z",
+    updatedAt: "2026-09-25T15:20:00Z"
+  },
+  {
+    id: "TCK-1010",
+    department: "it",
+    itemTitle: "Projector Bulb Flickering & Overheating",
+    category: "electronics",
+    urgency: "medium",
+    roomNumber: "Room 102 - Chemistry Lab",
+    description: "Ceiling projector turns off automatically after 15 minutes of lecture with an amber lamp warning light.",
+    teacherName: "Aigul Nurlan",
+    teacherPhone: "+7 (777) 234-5678",
+    status: "pending",
+    assignedWorker: null,
+    assignedRole: null,
+    createdAt: "2026-09-27T11:20:00Z",
+    updatedAt: "2026-09-27T11:20:00Z"
   }
 ];
 
@@ -122,23 +273,68 @@ export const mockUsers = {
     phone: "+7 (777) 234-5678",
     avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80"
   },
+  it_support: {
+    id: "usr-it1",
+    name: "Dias Saparov",
+    role: "it_support",
+    department: "Information Technology Support",
+    email: "dias.it@school.edu",
+    phone: "+7 (707) 333-2211",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+  },
+  cleaning: {
+    id: "usr-cl1",
+    name: "Gulnara Akhmetova",
+    role: "cleaning",
+    department: "Campus Hygiene & Sanitization",
+    email: "gulnara.cleaning@school.edu",
+    phone: "+7 (701) 555-4321",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80"
+  },
+  storage_manager: {
+    id: "usr-w1",
+    name: "Kairat Smagulov",
+    role: "storage_manager",
+    department: "Warehouse & Supplies Management",
+    email: "kairat.storage@school.edu",
+    phone: "+7 (702) 444-8899",
+    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80"
+  },
+  facilities_manager: {
+    id: "usr-fm1",
+    name: "Nurassyl (Facilities Manager)",
+    role: "facilities_manager",
+    department: "Facilities, Logistics & Asset Operations",
+    email: "nurassyl.facilities@school.edu",
+    phone: "+7 (775) 888-9900",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80"
+  },
+  director: {
+    id: "usr-dir1",
+    name: "Erlan Kozhakhmetov",
+    role: "director",
+    department: "School Operations & Directorate",
+    email: "director.erlan@school.edu",
+    phone: "+7 (700) 111-0000",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"
+  },
+  // Legacy aliases
   workerA: {
     id: "usr-w1",
     name: "Kairat Smagulov",
-    role: "workerA",
-    department: "Logistics & Procurement",
-    email: "kairat.workerA@school.edu",
+    role: "storage_manager",
+    department: "Warehouse & Supplies Management",
+    email: "kairat.storage@school.edu",
     phone: "+7 (702) 444-8899",
     avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80"
   },
   admin: {
-    id: "usr-adm",
-    name: "School Operations Director",
-    role: "admin",
-    department: "Administration",
-    email: "admin@school.edu",
+    id: "usr-dir1",
+    name: "Erlan Kozhakhmetov",
+    role: "director",
+    department: "School Operations & Directorate",
+    email: "director.erlan@school.edu",
     phone: "+7 (700) 111-0000",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"
   }
 };
-

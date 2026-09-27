@@ -5,20 +5,32 @@ import { mockInventory, mockTickets, mockUsers } from './mockData';
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // Saved state or defaults
+  // Language state
   const [lang, setLang] = useState(() => localStorage.getItem('app_lang') || 'en');
-  const [role, setRole] = useState(() => localStorage.getItem('app_role') || 'teacher');
+
+  // Role state with legacy mapping
+  const [role, setRole] = useState(() => {
+    const saved = localStorage.getItem('app_role');
+    if (saved === 'workerA') return 'storage_manager';
+    if (saved === 'admin') return 'director';
+    return saved || 'teacher';
+  });
+
+  // Inventory state
   const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem('app_inventory');
+    const saved = localStorage.getItem('app_inventory_v2');
     return saved ? JSON.parse(saved) : mockInventory;
   });
+
+  // Tickets state
   const [tickets, setTickets] = useState(() => {
-    const saved = localStorage.getItem('app_tickets');
+    const saved = localStorage.getItem('app_tickets_v2');
     return saved ? JSON.parse(saved) : mockTickets;
   });
 
+  // Users state
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('app_users');
+    const saved = localStorage.getItem('app_users_v2');
     return saved ? JSON.parse(saved) : mockUsers;
   });
 
@@ -31,39 +43,62 @@ export const AppProvider = ({ children }) => {
   }, [role]);
 
   useEffect(() => {
-    localStorage.setItem('app_inventory', JSON.stringify(inventory));
+    localStorage.setItem('app_inventory_v2', JSON.stringify(inventory));
   }, [inventory]);
 
   useEffect(() => {
-    localStorage.setItem('app_tickets', JSON.stringify(tickets));
+    localStorage.setItem('app_tickets_v2', JSON.stringify(tickets));
   }, [tickets]);
 
   useEffect(() => {
-    localStorage.setItem('app_users', JSON.stringify(users));
+    localStorage.setItem('app_users_v2', JSON.stringify(users));
   }, [users]);
 
   const t = translations[lang] || translations.en;
-  const currentUser = users[role] || users.teacher;
+  
+  // Resolve current active user profile
+  const currentUser = users[role] || (role === 'workerA' ? users.storage_manager : (role === 'admin' ? users.director : users.teacher));
 
   const updateUserProfile = (updatedProfileData) => {
     setUsers(prev => ({
       ...prev,
       [role]: {
-        ...prev[role],
+        ...(prev[role] || {}),
         ...updatedProfileData
       }
     }));
+  };
+
+  // Reset to default mock data (useful if user wants clean multi-department demo data)
+  const resetDemoData = () => {
+    setInventory(mockInventory);
+    setTickets(mockTickets);
+    setUsers(mockUsers);
+    localStorage.removeItem('app_inventory_v2');
+    localStorage.removeItem('app_tickets_v2');
+    localStorage.removeItem('app_users_v2');
   };
 
   // Ticket Management
   const addTicket = (ticketData) => {
     const newTicket = {
       id: `TCK-${Math.floor(1000 + Math.random() * 9000)}`,
-      ...ticketData,
+      department: ticketData.department || 'storage',
+      itemTitle: ticketData.itemTitle,
+      category: ticketData.category || 'other',
+      quantity: Number(ticketData.quantity) || 1,
+      unit: ticketData.unit || 'pcs',
+      urgency: ticketData.urgency || 'medium',
+      roomNumber: ticketData.roomNumber,
+      moveDetails: ticketData.moveDetails || null,
+      description: ticketData.description || '',
       teacherName: currentUser.name,
       teacherPhone: currentUser.phone || '',
       status: 'pending',
       assignedWorker: null,
+      assignedRole: null,
+      handledAction: null,
+      notes: '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -71,7 +106,39 @@ export const AppProvider = ({ children }) => {
     return newTicket;
   };
 
-  // Action by Worker A: Issue item directly from stock
+  // Generic status updater
+  const updateTicket = (ticketId, updates) => {
+    setTickets(prev => prev.map(ticket => {
+      if (ticket.id === ticketId) {
+        return {
+          ...ticket,
+          ...updates,
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return ticket;
+    }));
+  };
+
+  // Start working on ticket (used by IT, Cleaning, Facilities)
+  const startTicketWork = (ticketId, notes = '') => {
+    setTickets(prev => prev.map(ticket => {
+      if (ticket.id === ticketId) {
+        return {
+          ...ticket,
+          status: 'in_progress',
+          handledAction: 'in_progress',
+          assignedWorker: currentUser.name,
+          assignedRole: role,
+          notes: notes || ticket.notes || 'Staff member started working on this request.',
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return ticket;
+    }));
+  };
+
+  // Storage Manager: Issue item directly from stock
   const issueTicketFromStock = (ticketId, notes = '') => {
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
@@ -80,7 +147,8 @@ export const AppProvider = ({ children }) => {
           status: 'issued',
           handledAction: 'issued',
           assignedWorker: currentUser.name,
-          notes: notes || 'Issued directly from school inventory stock.',
+          assignedRole: 'storage_manager',
+          notes: notes || 'Issued directly from warehouse inventory stock.',
           updatedAt: new Date().toISOString()
         };
       }
@@ -92,7 +160,7 @@ export const AppProvider = ({ children }) => {
     if (targetTicket) {
       setInventory(prev => prev.map(item => {
         if (item.name.toLowerCase() === targetTicket.itemTitle.toLowerCase()) {
-          const newQty = Math.max(0, item.quantity - targetTicket.quantity);
+          const newQty = Math.max(0, item.quantity - (targetTicket.quantity || 1));
           return { ...item, quantity: newQty };
         }
         return item;
@@ -100,7 +168,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Action by Worker A: Mark item to be purchased
+  // Storage Manager: Mark item to be purchased
   const markTicketToPurchase = (ticketId, purchaseCost, supplier, notes) => {
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
@@ -109,9 +177,10 @@ export const AppProvider = ({ children }) => {
           status: 'purchasing',
           handledAction: 'purchased',
           assignedWorker: currentUser.name,
+          assignedRole: 'storage_manager',
           purchaseCost: Number(purchaseCost) || 0,
-          supplier: supplier || 'Local Vendor',
-          notes: notes || 'Item not in stock. Worker A initiating purchasing.',
+          supplier: supplier || 'Official Supplier / Vendor',
+          notes: notes || 'Item not in stock. Storage manager initiated procurement order.',
           updatedAt: new Date().toISOString()
         };
       }
@@ -119,13 +188,39 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  // Mark ticket as complete / delivered
-  const completeTicketDelivery = (ticketId) => {
+  // Complete ticket / Deliver / Resolve
+  const completeTicketDelivery = (ticketId, notes = '') => {
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         return {
           ...ticket,
-          status: 'delivered',
+          status: 'completed',
+          handledAction: 'completed',
+          assignedWorker: ticket.assignedWorker || currentUser.name,
+          assignedRole: ticket.assignedRole || role,
+          notes: notes || ticket.notes || 'Job confirmed as completed and resolved.',
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return ticket;
+    }));
+  };
+
+  // Facilities Manager: Update moving details / dispatch
+  const updateFacilitiesMove = (ticketId, moveDetails, notes = '') => {
+    setTickets(prev => prev.map(ticket => {
+      if (ticket.id === ticketId) {
+        return {
+          ...ticket,
+          status: 'in_progress',
+          handledAction: 'in_progress',
+          assignedWorker: currentUser.name,
+          assignedRole: 'facilities_manager',
+          moveDetails: {
+            ...(ticket.moveDetails || {}),
+            ...moveDetails
+          },
+          notes: notes || 'Facilities moving crew active.',
           updatedAt: new Date().toISOString()
         };
       }
@@ -161,11 +256,15 @@ export const AppProvider = ({ children }) => {
       inventory,
       tickets,
       addTicket,
+      updateTicket,
+      startTicketWork,
       issueTicketFromStock,
       markTicketToPurchase,
       completeTicketDelivery,
+      updateFacilitiesMove,
       addInventoryItem,
-      updateInventoryQty
+      updateInventoryQty,
+      resetDemoData
     }}>
       {children}
     </AppContext.Provider>
@@ -173,4 +272,3 @@ export const AppProvider = ({ children }) => {
 };
 
 export const useApp = () => useContext(AppContext);
-

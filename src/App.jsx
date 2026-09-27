@@ -14,16 +14,26 @@ function MainApp() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: '70px' }}>
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
-        onOpenProfile={() => setIsProfileOpen(true)} 
+        onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenNewTicket={() => setIsNewTicketOpen(true)}
       />
       
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
-        {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
-        {activeTab === 'tickets' && <TicketList onOpenNewTicket={() => setIsNewTicketOpen(true)} />}
+      <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px' }}>
+        {activeTab === 'dashboard' && (
+          <Dashboard 
+            setActiveTab={setActiveTab} 
+            onOpenNewTicket={() => setIsNewTicketOpen(true)}
+          />
+        )}
+        {activeTab === 'tickets' && (
+          <TicketList 
+            onOpenNewTicket={() => setIsNewTicketOpen(true)} 
+          />
+        )}
         {activeTab === 'inventory' && <InventoryManager />}
       </main>
 

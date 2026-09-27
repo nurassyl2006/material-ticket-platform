@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { Package, AlertCircle, Plus, MapPin, Layers, CheckCircle } from 'lucide-react';
+import { Plus, MapPin } from 'lucide-react';
 
 export const InventoryManager = () => {
   const { t, inventory, addInventoryItem, updateInventoryQty, role } = useApp();
@@ -14,6 +14,12 @@ export const InventoryManager = () => {
     minLevel: 5,
     location: 'Cabinet 101'
   });
+
+  const canManageStock = role === 'storage_manager' || 
+                         role === 'facilities_manager' || 
+                         role === 'director' || 
+                         role === 'workerA' || 
+                         role === 'admin';
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
@@ -58,13 +64,13 @@ export const InventoryManager = () => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '800' }}>{t.inventory.title}</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Warehouse & storage catalog monitored by Worker A
+          <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0 }}>{t.inventory.title}</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+            {t.inventory.subtitle || 'Warehouse supplies, materials & furniture assets managed by Storage & Facilities'}
           </p>
         </div>
 
-        {(role === 'workerA' || role === 'admin') && (
+        {canManageStock && (
           <button
             onClick={() => setShowAddModal(true)}
             style={{
@@ -77,7 +83,9 @@ export const InventoryManager = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: 'var(--shadow-glow)'
+              boxShadow: 'var(--shadow-glow)',
+              border: 'none',
+              cursor: 'pointer'
             }}
           >
             <Plus size={16} /> {t.inventory.addItem}
@@ -95,7 +103,7 @@ export const InventoryManager = () => {
               <th style={{ padding: '16px 20px' }}>{t.inventory.inStock}</th>
               <th style={{ padding: '16px 20px' }}>Status</th>
               <th style={{ padding: '16px 20px' }}>{t.inventory.location}</th>
-              {(role === 'workerA' || role === 'admin') && <th style={{ padding: '16px 20px', textAlign: 'right' }}>Adjust Quantity</th>}
+              {canManageStock && <th style={{ padding: '16px 20px', textAlign: 'right' }}>Adjust Quantity</th>}
             </tr>
           </thead>
           <tbody>
@@ -125,19 +133,19 @@ export const InventoryManager = () => {
                   {item.location}
                 </td>
 
-                {(role === 'workerA' || role === 'admin') && (
+                {canManageStock && (
                   <td style={{ padding: '16px 20px', textAlign: 'right' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.6)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                       <button
                         onClick={() => updateInventoryQty(item.id, item.quantity - 1)}
-                        style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold' }}
+                        style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
                       >
                         -
                       </button>
                       <span style={{ width: '28px', textAlign: 'center', fontWeight: 'bold' }}>{item.quantity}</span>
                       <button
                         onClick={() => updateInventoryQty(item.id, item.quantity + 1)}
-                        style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold' }}
+                        style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
                       >
                         +
                       </button>
@@ -195,6 +203,7 @@ export const InventoryManager = () => {
                     <option value="furniture">{t.inventory.categories.furniture}</option>
                     <option value="lab">{t.inventory.categories.lab}</option>
                     <option value="cleaning">{t.inventory.categories.cleaning}</option>
+                    <option value="other">{t.inventory.categories.other}</option>
                   </select>
                 </div>
                 <div>
@@ -219,10 +228,10 @@ export const InventoryManager = () => {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
-                <button type="button" onClick={() => setShowAddModal(false)} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '10px 16px', borderRadius: '10px' }}>
+                <button type="button" onClick={() => setShowAddModal(false)} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '10px', cursor: 'pointer' }}>
                   {t.common.cancel}
                 </button>
-                <button type="submit" style={{ background: 'var(--primary)', color: '#fff', padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold' }}>
+                <button type="submit" style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
                   {t.common.save}
                 </button>
               </div>
