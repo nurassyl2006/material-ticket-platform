@@ -41,6 +41,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
   const storageTickets = tickets.filter(t => (t.department || 'storage') === 'storage');
   const facilitiesTickets = tickets.filter(t => (t.department || 'storage') === 'facilities');
   const securityTickets = tickets.filter(t => (t.department || 'storage') === 'security');
+  const engineeringTickets = tickets.filter(t => t.department === 'engineering');
 
   // Critical alerts
   const criticalTickets = tickets.filter(t => t.urgency === 'critical' && t.status !== 'completed' && t.status !== 'delivered');
@@ -82,6 +83,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
               {role === 'it_support' && t.dashboard.itSummary}
               {role === 'cleaning' && t.dashboard.cleaningSummary}
               {role === 'storage_manager' && t.dashboard.storageSummary}
+              {role === 'engineer' && t.dashboard.engineerSummary}
               {role === 'teacher' && t.dashboard.teacherSummary}
             </p>
           </div>
@@ -317,6 +319,24 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
                 </div>
               </div>
 
+              {/* Engineering Service Card */}
+              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#f97316' }}>
+                    🔧 {t.departments.engineering}
+                  </span>
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{getDeptProgress(engineeringTickets)}%</span>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                  <div style={{ width: `${getDeptProgress(engineeringTickets)}%`, height: '100%', background: '#f97316', borderRadius: '3px' }} />
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Total: {engineeringTickets.length}</span>
+                  <span>In Repair: {engineeringTickets.filter(t => t.status === 'in_progress').length}</span>
+                  <span style={{ color: '#34d399' }}>Fixed: {engineeringTickets.filter(t => t.status === 'completed').length}</span>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -489,6 +509,59 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
       )}
 
       {/* ============================================================== */}
+      {/* 4a. ENGINEER VIEW (Lights, AC, Electrical, Ventilation) */}
+      {/* ============================================================== */}
+      {role === 'engineer' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px' }}>
+          <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', borderLeft: '3px solid #f97316' }}>
+            <div style={{ background: 'rgba(249, 115, 22, 0.2)', padding: '12px', borderRadius: '12px' }}>
+              <span style={{ fontSize: '22px' }}>🔧</span>
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Engineering Jobs</div>
+              <div style={{ fontSize: '24px', fontWeight: '800', color: '#fff' }}>{engineeringTickets.length}</div>
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', borderLeft: '3px solid #fbbf24' }}>
+            <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '12px', borderRadius: '12px' }}>
+              <Clock size={22} color="#fbbf24" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Pending Repair</div>
+              <div style={{ fontSize: '24px', fontWeight: '800', color: '#fbbf24' }}>
+                {engineeringTickets.filter(t => t.status === 'pending').length}
+              </div>
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', borderLeft: '3px solid #38bdf8' }}>
+            <div style={{ background: 'rgba(56, 189, 248, 0.2)', padding: '12px', borderRadius: '12px' }}>
+              <Clock size={22} color="#38bdf8" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>In Repair</div>
+              <div style={{ fontSize: '24px', fontWeight: '800', color: '#38bdf8' }}>
+                {engineeringTickets.filter(t => t.status === 'in_progress').length}
+              </div>
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '14px', borderLeft: '3px solid #34d399' }}>
+            <div style={{ background: 'rgba(52, 211, 153, 0.2)', padding: '12px', borderRadius: '12px' }}>
+              <CheckCircle2 size={22} color="#34d399" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Fixed & Resolved</div>
+              <div style={{ fontSize: '24px', fontWeight: '800', color: '#34d399' }}>
+                {engineeringTickets.filter(t => t.status === 'completed').length}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
       {/* 5. STORAGE MANAGER VIEW */}
       {/* "Storage manager, what we have now." */}
       {/* ============================================================== */}
@@ -647,6 +720,29 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
                 </p>
               </button>
 
+              {/* Send to Engineering */}
+              <button
+                onClick={() => openNewRequestForDept('engineering')}
+                style={{
+                  background: 'rgba(249, 115, 22, 0.12)',
+                  border: '1px solid rgba(249, 115, 22, 0.3)',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fb923c', fontWeight: '700', fontSize: '14px' }}>
+                  🔧 Engineering (Lights & AC)
+                </div>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                  Flickering lights, broken AC, burnt socket, ventilation noise
+                </p>
+              </button>
+
               {/* Send to Security */}
               <button
                 onClick={() => openNewRequestForDept('security')}
@@ -677,7 +773,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
       )}
 
       {/* Low Stock Warning Card (for Storage, Facilities & Director) */}
-      {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && lowStockItems.length > 0 && (
+      {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin' || role === 'engineer') && lowStockItems.length > 0 && (
         <div className="glass-panel" style={{ padding: '16px 20px', borderLeft: '4px solid var(--warning)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <AlertTriangle size={20} color="var(--warning)" />
