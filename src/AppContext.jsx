@@ -19,19 +19,57 @@ export const AppProvider = ({ children }) => {
   // Inventory state
   const [inventory, setInventory] = useState(() => {
     const saved = localStorage.getItem('app_inventory_v2');
-    return saved ? JSON.parse(saved) : mockInventory;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const hasEng = parsed.some(i => i.category === 'electrical' || i.category === 'hvac');
+        if (!hasEng) {
+          const engItems = mockInventory.filter(i => i.category === 'electrical' || i.category === 'hvac');
+          return [...parsed, ...engItems];
+        }
+        return parsed;
+      } catch (e) {
+        return mockInventory;
+      }
+    }
+    return mockInventory;
   });
 
   // Tickets state
   const [tickets, setTickets] = useState(() => {
     const saved = localStorage.getItem('app_tickets_v2');
-    return saved ? JSON.parse(saved) : mockTickets;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const hasEng = parsed.some(t => t.department === 'engineering');
+        if (!hasEng) {
+          const engTickets = mockTickets.filter(t => t.department === 'engineering');
+          return [...engTickets, ...parsed];
+        }
+        return parsed;
+      } catch (e) {
+        return mockTickets;
+      }
+    }
+    return mockTickets;
   });
 
   // Users state
   const [users, setUsers] = useState(() => {
     const saved = localStorage.getItem('app_users_v2');
-    return saved ? JSON.parse(saved) : mockUsers;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          ...mockUsers,
+          ...parsed,
+          engineer: parsed.engineer || mockUsers.engineer
+        };
+      } catch (e) {
+        return mockUsers;
+      }
+    }
+    return mockUsers;
   });
 
   useEffect(() => {
@@ -57,7 +95,7 @@ export const AppProvider = ({ children }) => {
   const t = translations[lang] || translations.en;
   
   // Resolve current active user profile
-  const currentUser = users[role] || (role === 'workerA' ? users.storage_manager : (role === 'admin' ? users.director : users.teacher));
+  const currentUser = users[role] || (role === 'workerA' ? users.storage_manager : (role === 'admin' ? users.director : (users[role] || users.teacher)));
 
   const updateUserProfile = (updatedProfileData) => {
     setUsers(prev => ({

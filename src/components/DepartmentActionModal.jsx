@@ -11,7 +11,8 @@ import {
   Truck, 
   X, 
   PhoneCall, 
-  MessageSquare
+  MessageSquare,
+  Wrench
 } from 'lucide-react';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
@@ -111,6 +112,16 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     onClose();
   };
 
+  const handleEngineeringSubmit = (e, markResolved = false) => {
+    e.preventDefault();
+    if (markResolved) {
+      completeTicketDelivery(ticket.id, notes || 'Engineering maintenance completed and verified.');
+    } else {
+      startTicketWork(ticket.id, notes || 'Engineer inspecting and diagnosing technical issue.');
+    }
+    onClose();
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -140,6 +151,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 {targetDept === 'facilities' && t.tickets.actionFacilities}
                 {targetDept === 'it' && t.tickets.actionIT}
                 {targetDept === 'cleaning' && t.tickets.actionCleaning}
+                {targetDept === 'engineering' && t.tickets.actionEngineering}
                 {targetDept === 'security' && 'Security Service Action'}
               </h2>
               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Ticket #{ticket.id} • Assigned Handler: <strong style={{ color: '#fff' }}>{currentUser.name}</strong></span>
@@ -501,6 +513,45 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               </button>
               <button type="button" onClick={() => { completeTicketDelivery(ticket.id, notes || 'Security check completed.'); onClose(); }} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Resolve Security Request
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* 6. ENGINEERING & TECHNICAL UTILITIES WORKFLOW */}
+        {targetDept === 'engineering' && (
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(249, 115, 22, 0.1)', border: '1px solid rgba(249, 115, 22, 0.3)', padding: '12px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#fb923c', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Wrench size={14} /> {t.tickets.actionEngineering}
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                Diagnose and repair lighting fixtures, air conditioners (AC), power sockets, ventilation, and heating.
+              </p>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+                {t.tickets.engineeringCompletedNotes}
+              </label>
+              <textarea
+                rows="3"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="e.g. Replaced 36W LED driver ballast, unclogged AC drain hose, or replaced tripped 16A breaker..."
+                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                {t.common.cancel}
+              </button>
+              <button type="button" onClick={(e) => handleEngineeringSubmit(e, false)} style={{ background: 'rgba(249, 115, 22, 0.2)', border: '1px solid #f97316', color: '#fb923c', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                🔧 In Diagnostics / Repair
+              </button>
+              <button type="button" onClick={(e) => handleEngineeringSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                ✓ Mark Fixed & Operational
               </button>
             </div>
           </form>

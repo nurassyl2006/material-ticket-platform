@@ -70,6 +70,33 @@ export const mockInventory = [
     unit: "set",
     minLevel: 5,
     location: "Science Lab Storage 301"
+  },
+  {
+    id: "inv-9",
+    name: "LED Ceiling Panel 36W (600x600)",
+    category: "electrical",
+    quantity: 14,
+    unit: "pcs",
+    minLevel: 4,
+    location: "Engineering Workshop 106 - Shelf A"
+  },
+  {
+    id: "inv-10",
+    name: "Split AC Washable Air Filters & Drain Hose Kit",
+    category: "hvac",
+    quantity: 6,
+    unit: "set",
+    minLevel: 2,
+    location: "Engineering Workshop 106 - Shelf B"
+  },
+  {
+    id: "inv-11",
+    name: "Heavy Duty Grounded Wall Sockets (16A 250V)",
+    category: "electrical",
+    quantity: 20,
+    unit: "pcs",
+    minLevel: 5,
+    location: "Engineering Workshop 106 - Shelf C"
   }
 ];
 
@@ -260,6 +287,74 @@ export const mockTickets = [
     assignedRole: null,
     createdAt: "2026-09-27T11:20:00Z",
     updatedAt: "2026-09-27T11:20:00Z"
+  },
+  {
+    id: "TCK-1011",
+    department: "engineering",
+    itemTitle: "Ceiling Fluorescent / LED Lights Flickering",
+    category: "electrical",
+    urgency: "high",
+    roomNumber: "Room 302 - English Language",
+    description: "Three central LED light panels in the ceiling are flickering loudly and buzzing, causing severe eye strain for students during classes.",
+    teacherName: "Elena Petrova",
+    teacherPhone: "+7 (705) 555-1234",
+    status: "in_progress",
+    assignedWorker: "Bauyrzhan Akhmetov (Engineer)",
+    assignedRole: "engineer",
+    handledAction: "in_progress",
+    notes: "Replaced faulty 36W LED electronic ballast driver. Testing light circuit voltage stability.",
+    createdAt: "2026-09-27T08:00:00Z",
+    updatedAt: "2026-09-27T09:10:00Z"
+  },
+  {
+    id: "TCK-1012",
+    department: "engineering",
+    itemTitle: "Air Conditioner (AC) Leaking Water & Blowing Warm Air",
+    category: "hvac",
+    urgency: "critical",
+    roomNumber: "Room 204 - Computer Server Lab",
+    description: "Wall split AC unit is dripping condensation water onto the floor near equipment racks and failing to blow cold air. Room temperature rising to 28°C.",
+    teacherName: "Aigul Nurlan",
+    teacherPhone: "+7 (777) 234-5678",
+    status: "completed",
+    assignedWorker: "Bauyrzhan Akhmetov (Engineer)",
+    assignedRole: "engineer",
+    handledAction: "completed",
+    notes: "Cleared clogged condensate drainage pipe, washed dust filter, and topped up R410A refrigerant. AC unit cooling properly at 21°C.",
+    createdAt: "2026-09-26T12:30:00Z",
+    updatedAt: "2026-09-26T14:15:00Z"
+  },
+  {
+    id: "TCK-1013",
+    department: "engineering",
+    itemTitle: "Burnt Wall Power Socket & Sparking Breaker",
+    category: "electrical",
+    urgency: "critical",
+    roomNumber: "Room 102 - Chemistry Lab",
+    description: "Double wall socket near the teacher demonstration table shorted out with a spark when plugging in the electric hotplate. Breaker tripped.",
+    teacherName: "Sergey Ivanov",
+    teacherPhone: "+7 (701) 987-6543",
+    status: "pending",
+    assignedWorker: null,
+    assignedRole: null,
+    createdAt: "2026-09-27T11:40:00Z",
+    updatedAt: "2026-09-27T11:40:00Z"
+  },
+  {
+    id: "TCK-1014",
+    department: "engineering",
+    itemTitle: "Ventilation / Exhaust Fan Rattle & Noise",
+    category: "hvac",
+    urgency: "medium",
+    roomNumber: "Chemistry Preparation Room 103",
+    description: "Fume hood exhaust ventilation unit produces a rhythmic rattling noise when switched to maximum suction mode.",
+    teacherName: "Sergey Ivanov",
+    teacherPhone: "+7 (701) 987-6543",
+    status: "pending",
+    assignedWorker: null,
+    assignedRole: null,
+    createdAt: "2026-09-27T12:05:00Z",
+    updatedAt: "2026-09-27T12:05:00Z"
   }
 ];
 
@@ -317,6 +412,15 @@ export const mockUsers = {
     email: "director.erlan@school.edu",
     phone: "+7 (700) 111-0000",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80"
+  },
+  engineer: {
+    id: "usr-eng1",
+    name: "Bauyrzhan Akhmetov",
+    role: "engineer",
+    department: "Engineering, Electrical & HVAC Utilities",
+    email: "engineer.bauyrzhan@school.edu",
+    phone: "+7 (705) 888-4422",
+    avatar: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=150&auto=format&fit=crop&q=80"
   },
   // Legacy aliases
   workerA: {

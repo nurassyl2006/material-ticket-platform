@@ -18,6 +18,7 @@ export const InventoryManager = () => {
   const canManageStock = role === 'storage_manager' || 
                          role === 'facilities_manager' || 
                          role === 'director' || 
+                         role === 'engineer' || 
                          role === 'workerA' || 
                          role === 'admin';
 
@@ -200,6 +201,8 @@ export const InventoryManager = () => {
                   >
                     <option value="stationary">{t.inventory.categories.stationary}</option>
                     <option value="electronics">{t.inventory.categories.electronics}</option>
+                    <option value="electrical">{t.inventory.categories.electrical}</option>
+                    <option value="hvac">{t.inventory.categories.hvac}</option>
                     <option value="furniture">{t.inventory.categories.furniture}</option>
                     <option value="lab">{t.inventory.categories.lab}</option>
                     <option value="cleaning">{t.inventory.categories.cleaning}</option>

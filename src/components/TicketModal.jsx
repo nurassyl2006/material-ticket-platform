@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { PlusCircle, X, Package, Laptop, Sparkles, Truck, Shield, ArrowRight } from 'lucide-react';
+import { PlusCircle, X, Package, Laptop, Sparkles, Truck, Shield, ArrowRight, Wrench } from 'lucide-react';
 
 export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) => {
   const { t, addTicket, inventory, currentUser } = useApp();
@@ -27,6 +27,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
     { id: 'cleaning', name: t.departments.cleaning, icon: Sparkles, color: '#34d399', desc: 'Spills, classroom sanitation, waste' },
     { id: 'storage', name: t.departments.storage, icon: Package, color: '#fbbf24', desc: 'Paper, markers, consumable materials' },
     { id: 'facilities', name: t.departments.facilities, icon: Truck, color: '#a78bfa', desc: 'Move furniture (desks/chairs), repairs' },
+    { id: 'engineering', name: t.departments.engineering, icon: Wrench, color: '#f97316', desc: 'Lights, AC, sockets, heating, ventilation' },
     { id: 'security', name: t.departments.security, icon: Shield, color: '#f87171', desc: 'Keycards, door locks, access' }
   ];
 
@@ -72,6 +73,13 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
       { title: 'Teacher RFID Keycard Not Unlocking Door', cat: 'other', urg: 'high' },
       { title: 'Door Lock Jammed / Key Stuck', cat: 'other', urg: 'high' },
       { title: 'Lost & Found Student Item Report', cat: 'other', urg: 'low' }
+    ],
+    engineering: [
+      { title: 'Ceiling Fluorescent / LED Lights Flickering', cat: 'electrical', urg: 'high' },
+      { title: 'Air Conditioner (AC) Leaking Water / Warm Air', cat: 'hvac', urg: 'critical' },
+      { title: 'Burnt Wall Power Socket & Sparking Breaker', cat: 'electrical', urg: 'critical' },
+      { title: 'Ventilation / Exhaust Fan Rattle & Noise', cat: 'hvac', urg: 'medium' },
+      { title: 'Heating Radiator Valve Stuck / Room Overheating', cat: 'hvac', urg: 'medium' }
     ]
   };
 
@@ -186,6 +194,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
                     if (dept.id === 'it') setFormData(prev => ({ ...prev, category: 'electronics' }));
                     if (dept.id === 'cleaning') setFormData(prev => ({ ...prev, category: 'cleaning' }));
                     if (dept.id === 'facilities') setFormData(prev => ({ ...prev, category: 'furniture' }));
+                    if (dept.id === 'engineering') setFormData(prev => ({ ...prev, category: 'electrical' }));
                     if (dept.id === 'security') setFormData(prev => ({ ...prev, category: 'other' }));
                   }}
                   style={{

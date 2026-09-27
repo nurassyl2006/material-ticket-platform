@@ -18,7 +18,8 @@ import {
   Shield,
   Package,
   CheckCircle,
-  Layers
+  Layers,
+  Wrench
 } from 'lucide-react';
 import { DepartmentActionModal } from './DepartmentActionModal';
 
@@ -36,6 +37,7 @@ export const TicketList = ({ onOpenNewTicket }) => {
     { id: 'cleaning', label: t.departments.cleaning, icon: Sparkles, color: '#34d399' },
     { id: 'storage', label: t.departments.storage, icon: Package, color: '#fbbf24' },
     { id: 'facilities', label: t.departments.facilities, icon: Truck, color: '#a78bfa' },
+    { id: 'engineering', label: t.departments.engineering, icon: Wrench, color: '#f97316' },
     { id: 'security', label: t.departments.security, icon: Shield, color: '#f87171' }
   ];
 
@@ -87,6 +89,7 @@ export const TicketList = ({ onOpenNewTicket }) => {
       cleaning: { label: t.departments.cleaning, icon: Sparkles, color: '#34d399', bg: 'rgba(52, 211, 153, 0.15)' },
       storage: { label: t.departments.storage, icon: Package, color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)' },
       facilities: { label: t.departments.facilities, icon: Truck, color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.15)' },
+      engineering: { label: t.departments.engineering, icon: Wrench, color: '#f97316', bg: 'rgba(249, 115, 22, 0.15)' },
       security: { label: t.departments.security, icon: Shield, color: '#f87171', bg: 'rgba(248, 113, 113, 0.15)' }
     };
     const c = config[dept] || config.storage;
@@ -139,6 +142,7 @@ export const TicketList = ({ onOpenNewTicket }) => {
     if (role === 'facilities_manager') return dept === 'facilities' || dept === 'storage';
     if (role === 'it_support') return dept === 'it';
     if (role === 'cleaning') return dept === 'cleaning';
+    if (role === 'engineer') return dept === 'engineering';
     return false;
   };
 
@@ -147,6 +151,7 @@ export const TicketList = ({ onOpenNewTicket }) => {
     if (dept === 'it') return '⚡ Troubleshoot (IT)';
     if (dept === 'cleaning') return '🧹 Accept & Clean';
     if (dept === 'facilities') return '🚚 Move Furniture / Repair';
+    if (dept === 'engineering') return '🔧 Repair (Engineer)';
     if (dept === 'storage') return '📦 Issue / Buy Stock';
     return '⚡ Process Request';
   };

@@ -14,6 +14,7 @@ export const translations = {
       storage_manager: "Storage Manager",
       facilities_manager: "Facilities Manager (Me)",
       director: "Director",
+      engineer: "Maintenance Engineer (Lights & AC)",
       // Legacy aliases
       workerA: "Storage Manager",
       admin: "Director"
@@ -24,14 +25,16 @@ export const translations = {
       cleaning: "Cleaning",
       storage: "Storage Manager",
       facilities: "Facilities & Moving",
-      security: "Security"
+      security: "Security",
+      engineering: "Engineering & Utilities"
     },
     departmentDescriptions: {
       it: "Wi-Fi, teacher laptops, smartboards, projectors & tech troubleshooting",
       cleaning: "Spills, classroom sanitation, waste removal & deep cleaning",
       storage: "Stationery, paper, pens, lab supplies from warehouse or purchasing",
       facilities: "Furniture moving (desks, chairs, podiums), repairs & room setups",
-      security: "RFID keycards, door locks, lost & found, campus safety"
+      security: "RFID keycards, door locks, lost & found, campus safety",
+      engineering: "Lighting, air conditioning (AC), electrical sockets, heating & ventilation"
     },
     nav: {
       dashboard: "Dashboard",
@@ -68,7 +71,8 @@ export const translations = {
       cleaningDesc: "Clean places that need cleaning, respond to spills and maintain hygiene",
       storageDesc: "Issue materials from warehouse stock or initiate purchase procurement",
       facilitiesDesc: "Organize furniture relocations (desks, chairs), maintenance and repairs",
-      directorDesc: "Full school oversight: monitor jobs in process and jobs completed"
+      directorDesc: "Full school oversight: monitor jobs in process and jobs completed",
+      engineerDesc: "Fix lights, air conditioning, electrical sockets, heating, and ventilation"
     },
     tickets: {
       title: "Facility & Material Requests",
@@ -131,6 +135,10 @@ export const translations = {
       actionCleaning: "Cleaning Service Action",
       startCleaning: "Accept & Start Cleaning",
       cleaningCompletedNotes: "Sanitation & Cleaning Notes",
+      // Engineering specific
+      actionEngineering: "Engineering & Maintenance Action",
+      startEngineering: "Start Technical Diagnostics / Repair",
+      engineeringCompletedNotes: "Technical Repair & Parts Replacement Notes",
       // Actions
       processTicket: "Process Request",
       markComplete: "Confirm & Mark Completed",
@@ -157,6 +165,8 @@ export const translations = {
         furniture: "Furniture & Desks",
         lab: "Science & Lab Equipment",
         cleaning: "Cleaning Chemicals & Tools",
+        electrical: "Electrical & Lighting",
+        hvac: "AC & Climate Control",
         other: "General Assets"
       }
     },
@@ -168,6 +178,7 @@ export const translations = {
       storageSummary: "Manage inventory stock, issue classroom materials, and handle purchasing.",
       facilitiesSummary: "Organize furniture moves, room setups, maintenance, and asset logistics.",
       directorSummary: "Executive School Oversight: Track all jobs in process and jobs completed across all facilities.",
+      engineerSummary: "Fix lights, air conditioners, electrical sockets, and school utility maintenance.",
       totalJobs: "Total School Requests",
       inProcessJobs: "Jobs in Process",
       completedJobs: "Jobs Completed",
@@ -207,6 +218,7 @@ export const translations = {
       storage_manager: "Заведующий складом",
       facilities_manager: "Начальник АХО (Завхоз - Я)",
       director: "Директор школы",
+      engineer: "Инженер по эксплуатации (Электрик/Климат)",
       // Legacy aliases
       workerA: "Заведующий складом",
       admin: "Директор школы"
@@ -217,14 +229,16 @@ export const translations = {
       cleaning: "Клининг",
       storage: "Склад материалов",
       facilities: "АХО и Перемещение мебели",
-      security: "Безопасность"
+      security: "Безопасность",
+      engineering: "Инженерная служба (Электрика/Климат)"
     },
     departmentDescriptions: {
       it: "Проблемы с Wi-Fi, ноутбуками учителей, смарт-досками, проекторами и софтом",
       cleaning: "Уборка помещений, пролитые жидкости, мусор и дезинфекция",
       storage: "Канцтовары, бумага А4, маркеры, материалы со склада или закупка",
       facilities: "Перемещение мебели (парты, стулья, трибуны), ремонт и обустройство",
-      security: "RFID-карты доступа, дверные замки, потерянные вещи, охрана"
+      security: "RFID-карты доступа, дверные замки, потерянные вещи, охрана",
+      engineering: "Освещение, кондиционеры (AC), розетки, отопление и вентиляция"
     },
     nav: {
       dashboard: "Главная",
@@ -261,7 +275,8 @@ export const translations = {
       cleaningDesc: "Убирайте помещения, реагируйте на разливы жидкостей и поддерживайте чистоту",
       storageDesc: "Выдавайте материалы со склада или оформляйте закупку недостающего",
       facilitiesDesc: "Помогайте переставлять мебель (парты, стулья), организуйте ремонт",
-      directorDesc: "Видит всё: какие работы выполнены, а какие находятся в процессе"
+      directorDesc: "Видит всё: какие работы выполнены, а какие находятся в процессе",
+      engineerDesc: "Ремонтируйте освещение, кондиционеры, розетки, системы отопления и вентиляции"
     },
     tickets: {
       title: "Заявки школьных служб",
@@ -324,6 +339,10 @@ export const translations = {
       actionCleaning: "Выполнение клининга",
       startCleaning: "Принять в работу (Начать уборку)",
       cleaningCompletedNotes: "Отметка о проведенной уборке",
+      // Engineering
+      actionEngineering: "Выполнение инженерного ремонта",
+      startEngineering: "Взять в работу (Ремонт/Диагностика)",
+      engineeringCompletedNotes: "Отметка о ремонте и замененных деталях",
       // Actions
       processTicket: "Обработать заявку",
       markComplete: "Подтвердить выполнение",
@@ -350,6 +369,8 @@ export const translations = {
         furniture: "Мебель, парты и стулья",
         lab: "Лабораторные реактивы и посуда",
         cleaning: "Хозтовары и чистящие средства",
+        electrical: "Электрика и освещение",
+        hvac: "Кондиционеры и климат",
         other: "Общий инвентарь"
       }
     },
@@ -361,6 +382,7 @@ export const translations = {
       storageSummary: "Управляйте остатками на складе, выдавайте материалы и оформляйте закупки.",
       facilitiesSummary: "Организуйте перемещение мебели (парты, стулья), ремонт и оснащение.",
       directorSummary: "Контроль директора: обзор всех задач — что выполнено, а что находится в процессе.",
+      engineerSummary: "Ремонт освещения, кондиционеров, электропроводки, вентиляции и теплосетей.",
       totalJobs: "Всего заявок по школе",
       inProcessJobs: "Работ в процессе",
       completedJobs: "Выполненных работ",
@@ -400,6 +422,7 @@ export const translations = {
       storage_manager: "Қойма меңгерушісі",
       facilities_manager: "Шаруашылық меңгерушісі (Завхоз - Мен)",
       director: "Мектеп директоры",
+      engineer: "Бас инженер / Техник (Жарық/Климат)",
       // Legacy aliases
       workerA: "Қойма меңгерушісі",
       admin: "Мектеп директоры"
@@ -410,14 +433,16 @@ export const translations = {
       cleaning: "Тазалық қызметі",
       storage: "Материалдар қоймасы",
       facilities: "Шаруашылық және жиһаз тасу",
-      security: "Қауіпсіздік"
+      security: "Қауіпсіздік",
+      engineering: "Инженерлік қызмет (Жарық/Климат)"
     },
     departmentDescriptions: {
       it: "Wi-Fi, мұғалімдердің ноутбуктары, интерактивті тақталар, проекторлар мен бағдарламалар",
       cleaning: "Бөлмелерді тазалау, төгілген сұйықтықтар, қоқыс шығару және дезинфекция",
       storage: "Кеңсе тауарлары, А4 қағазы, маркерлер, қоймадан алу немесе сатып алу",
       facilities: "Жиһаз тасу (парталар, орындықтар, мінбер), жөндеу және жабдықтау",
-      security: "RFID рұқсат карталары, есік құлыптары, жоғалған заттар, қауіпсіздік"
+      security: "RFID рұқсат карталары, есік құлыптары, жоғалған заттар, қауіпсіздік",
+      engineering: "Жарықтандыру шамдары, кондиционерлер, розеткалар, желдету және жылыту"
     },
     nav: {
       dashboard: "Басты бет",
@@ -454,7 +479,8 @@ export const translations = {
       cleaningDesc: "Тазалықты сақтау, төгілген жерлерді жинау және санитария",
       storageDesc: "Қоймадағы материалдарды беру немесе жоқ заттарды сатып алу",
       facilitiesDesc: "Жиһаздарды (парталар, орындықтар) тасу, жөндеу жұмыстарын ұйымдастыру",
-      directorDesc: "Барлығын көреді: қандай жұмыстар орындалды және қандай жұмыстар процесте"
+      directorDesc: "Барлығын көреді: қандай жұмыстар орындалды және қандай жұмыстар процесте",
+      engineerDesc: "Жарықтандыруды, кондиционерлерді, розеткалар мен жылу-желдеткіш жүйелерін жөндеу"
     },
     tickets: {
       title: "Мектеп қызметтерінің өтінімдері",
@@ -517,6 +543,10 @@ export const translations = {
       actionCleaning: "Тазалық жұмысын атқару",
       startCleaning: "Жұмысқа алу (Тазалауды бастау)",
       cleaningCompletedNotes: "Жүргізілген тазалық туралы белгі",
+      // Engineering
+      actionEngineering: "Инженерлік жөндеу жұмысын атқару",
+      startEngineering: "Жұмысқа алу (Жөндеу/Диагностика)",
+      engineeringCompletedNotes: "Жөндеу және ауыстырылған бөлшектер туралы белгі",
       // Actions
       processTicket: "Өтінімді өңдеу",
       markComplete: "Орындалғанын растау",
@@ -543,6 +573,8 @@ export const translations = {
         furniture: "Жиһаз, парталар және орындықтар",
         lab: "Зертханалық құралдар мен ыдыстар",
         cleaning: "Шаруашылық тауарлары мен жуғыш құралдар",
+        electrical: "Электрика және жарық",
+        hvac: "Кондиционерлер және климат",
         other: "Жалпы инвентарь"
       }
     },
@@ -554,6 +586,7 @@ export const translations = {
       storageSummary: "Қойма қалдығын басқарыңыз, материалдарды беріңіз және сатып алуды ұйымдастырыңыз.",
       facilitiesSummary: "Жиһаздарды тасуды (парталар, орындықтар), жөндеу және жабдықтауды ұйымдастырыңыз.",
       directorSummary: "Директор бақылауы: мектеп бойынша барлық тапсырмалар — қайсысы орындалды, қайсысы процесте.",
+      engineerSummary: "Жарық, кондиционер, электр желілері, желдеткіш және жылытуды жөндеу.",
       totalJobs: "Мектеп бойынша барлық өтінім",
       inProcessJobs: "Процестегі жұмыстар",
       completedJobs: "Орындалған жұмыстар",

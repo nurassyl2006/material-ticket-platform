@@ -76,7 +76,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
               {t.nav.tickets}
             </button>
 
-            {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && (
+            {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'engineer' || role === 'workerA' || role === 'admin') && (
               <button
                 onClick={() => setActiveTab('inventory')}
                 style={{
@@ -168,6 +168,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
                 <option value="cleaning" style={{ background: '#1e293b', color: '#fff' }}>🧹 {t.roles.cleaning}</option>
                 <option value="storage_manager" style={{ background: '#1e293b', color: '#fff' }}>📦 {t.roles.storage_manager}</option>
                 <option value="facilities_manager" style={{ background: '#1e293b', color: '#fff' }}>🚚 {t.roles.facilities_manager}</option>
+                <option value="engineer" style={{ background: '#1e293b', color: '#fff' }}>🔧 {t.roles.engineer}</option>
                 <option value="director" style={{ background: '#1e293b', color: '#fff' }}>👔 {t.roles.director}</option>
               </select>
             </div>
@@ -258,7 +259,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
           <span>{t.nav.tickets}</span>
         </button>
 
-        {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director') && (
+        {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'engineer') && (
           <button
             onClick={() => setActiveTab('inventory')}
             className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
