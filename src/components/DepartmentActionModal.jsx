@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../AppContext';
 import { 
   CheckCircle2, 
@@ -12,7 +12,9 @@ import {
   X, 
   PhoneCall, 
   MessageSquare,
-  Wrench
+  Wrench,
+  Camera,
+  ImagePlus
 } from 'lucide-react';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
@@ -24,6 +26,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     startTicketWork, 
     completeTicketDelivery, 
     updateFacilitiesMove, 
+    addPhotosToTicket,
     inventory 
   } = useApp();
 
@@ -40,6 +43,24 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
   // General notes
   const [notes, setNotes] = useState('');
+
+  // Completion photos
+  const [completionPhotos, setCompletionPhotos] = useState([]);
+  const completionFileRef = useRef(null);
+  const completionCamRef = useRef(null);
+
+  const processCompletionFiles = (files) => {
+    const remaining = 5 - completionPhotos.length;
+    if (remaining <= 0) return;
+    Array.from(files).slice(0, remaining).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => setCompletionPhotos(prev => prev.length < 5 ? [...prev, e.target.result] : prev);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeCompletionPhoto = (idx) => setCompletionPhotos(prev => prev.filter((_, i) => i !== idx));
 
   useEffect(() => {
     if (ticket) {
@@ -88,6 +109,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
     if (markCompleted) {
       completeTicketDelivery(ticket.id, notes || 'Furniture relocation and setup completed.');
+      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
     }
     onClose();
   };
@@ -96,6 +118,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     e.preventDefault();
     if (markResolved) {
       completeTicketDelivery(ticket.id, notes || 'IT issue resolved and verified.');
+      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
     } else {
       startTicketWork(ticket.id, notes || 'IT technician diagnosing issue.');
     }
@@ -106,6 +129,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     e.preventDefault();
     if (markDone) {
       completeTicketDelivery(ticket.id, notes || 'Area thoroughly cleaned and sanitized.');
+      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
     } else {
       startTicketWork(ticket.id, notes || 'Cleaning staff in progress.');
     }
@@ -116,6 +140,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     e.preventDefault();
     if (markResolved) {
       completeTicketDelivery(ticket.id, notes || 'Engineering maintenance completed and verified.');
+      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
     } else {
       startTicketWork(ticket.id, notes || 'Engineer inspecting and diagnosing technical issue.');
     }
@@ -123,21 +148,11 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(15, 23, 42, 0.82)',
-      backdropFilter: 'blur(8px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '16px'
-    }}>
-      <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '580px', padding: '24px', maxHeight: '92vh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.82)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000, padding: '0' }}>
+      <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '580px', padding: '24px', maxHeight: '94vh', overflowY: 'auto', borderRadius: '24px 24px 0 0', margin: '0 auto' }}>
+
+        {/* Drag handle */}
+        <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', margin: '0 auto 16px' }} />
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -201,7 +216,67 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               "{ticket.description}"
             </p>
           )}
+
+          {/* Show existing ticket photos (submitted by requester) */}
+          {ticket.photos && ticket.photos.length > 0 && (
+            <div style={{ marginTop: '10px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: '600' }}>📸 Submitted Photos:</div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {ticket.photos.map((src, i) => (
+                  <img key={i} src={src} alt={`ticket-photo-${i}`} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => window.open(src, '_blank')} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Show existing completion photos if already uploaded */}
+          {ticket.completionPhotos && ticket.completionPhotos.length > 0 && (
+            <div style={{ marginTop: '10px' }}>
+              <div style={{ fontSize: '11px', color: '#34d399', marginBottom: '6px', fontWeight: '600' }}>✅ Completion Photos:</div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {ticket.completionPhotos.map((src, i) => (
+                  <img key={i} src={src} alt={`completion-photo-${i}`} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #34d399', cursor: 'pointer' }} onClick={() => window.open(src, '_blank')} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Completion Photo Upload (shown for in-progress or pending tickets) */}
+        {ticket.status !== 'completed' && ticket.status !== 'issued' && (
+          <div style={{ marginBottom: '16px', background: 'rgba(52, 211, 153, 0.06)', border: '1px dashed rgba(52, 211, 153, 0.3)', padding: '12px', borderRadius: '12px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: '#34d399', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Camera size={14} /> Completion Photos <span style={{ fontSize: '11px', fontWeight: '400', color: 'var(--text-muted)' }}>(optional, attach after-work photos)</span>
+            </div>
+
+            {completionPhotos.length > 0 && (
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                {completionPhotos.map((src, idx) => (
+                  <div key={idx} style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', border: '2px solid #34d399' }}>
+                    <img src={src} alt={`cp-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button type="button" onClick={() => removeCompletionPhoto(idx)} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>
+                      <X size={10} color="#f87171" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {completionPhotos.length < 5 && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" onClick={() => completionCamRef.current?.click()} style={{ flex: 1, background: 'rgba(52, 211, 153, 0.1)', border: '1px dashed rgba(52,211,153,0.4)', borderRadius: '10px', padding: '10px', color: '#34d399', fontWeight: '600', fontSize: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <Camera size={18} /> Take Photo
+                </button>
+                <button type="button" onClick={() => completionFileRef.current?.click()} style={{ flex: 1, background: 'rgba(52, 211, 153, 0.1)', border: '1px dashed rgba(52,211,153,0.4)', borderRadius: '10px', padding: '10px', color: '#34d399', fontWeight: '600', fontSize: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                  <ImagePlus size={18} /> Gallery
+                </button>
+              </div>
+            )}
+
+            <input ref={completionCamRef} type="file" accept="image/*" capture="environment" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
+            <input ref={completionFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
+          </div>
+        )}
 
         {/* 1. STORAGE MANAGER WORKFLOW */}
         {targetDept === 'storage' && (

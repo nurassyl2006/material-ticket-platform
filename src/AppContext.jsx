@@ -130,6 +130,8 @@ export const AppProvider = ({ children }) => {
       roomNumber: ticketData.roomNumber,
       moveDetails: ticketData.moveDetails || null,
       description: ticketData.description || '',
+      photos: ticketData.photos || [],
+      completionPhotos: [],
       teacherName: currentUser.name,
       teacherPhone: currentUser.phone || '',
       status: 'pending',
@@ -244,6 +246,25 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
+  // Add photos to an existing ticket (before or after completion)
+  const addPhotosToTicket = (ticketId, photosArray, isCompletion = false) => {
+    setTickets(prev => prev.map(ticket => {
+      if (ticket.id !== ticketId) return ticket;
+      if (isCompletion) {
+        return {
+          ...ticket,
+          completionPhotos: [...(ticket.completionPhotos || []), ...photosArray],
+          updatedAt: new Date().toISOString()
+        };
+      }
+      return {
+        ...ticket,
+        photos: [...(ticket.photos || []), ...photosArray],
+        updatedAt: new Date().toISOString()
+      };
+    }));
+  };
+
   // Facilities Manager: Update moving details / dispatch
   const updateFacilitiesMove = (ticketId, moveDetails, notes = '') => {
     setTickets(prev => prev.map(ticket => {
@@ -302,6 +323,7 @@ export const AppProvider = ({ children }) => {
       updateFacilitiesMove,
       addInventoryItem,
       updateInventoryQty,
+      addPhotosToTicket,
       resetDemoData
     }}>
       {children}
