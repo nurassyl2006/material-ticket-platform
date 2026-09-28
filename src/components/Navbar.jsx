@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut } from 'lucide-react';
+import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut, Bell } from 'lucide-react';
+import { NotificationDropdown } from './NotificationDropdown';
 
-export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket }) => {
-  const { lang, setLang, role, setRole, t, currentUser, resetDemoData, logout } = useApp();
+export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket, onSelectTicket }) => {
+  const { lang, setLang, role, setRole, t, currentUser, resetDemoData, logout, unreadCount } = useApp();
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
     <>
@@ -76,7 +78,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
               {t.nav.tickets}
             </button>
 
-            {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'engineer' || role === 'workerA' || role === 'admin') && (
+            {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && (
               <button
                 onClick={() => setActiveTab('inventory')}
                 style={{
@@ -145,6 +147,56 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
                 <option value="ru">Рус (RU)</option>
                 <option value="en">Eng (EN)</option>
               </select>
+            </div>
+
+            {/* Notification Bell with Badge */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setIsNotificationOpen(prev => !prev)}
+                title={t.notifications?.title || 'Notifications'}
+                style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: isNotificationOpen ? 'rgba(99, 102, 241, 0.25)' : 'rgba(30, 41, 59, 0.8)',
+                  border: isNotificationOpen ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                  padding: '7px 10px',
+                  borderRadius: '10px',
+                  color: isNotificationOpen ? 'var(--primary)' : 'var(--text-main)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <Bell size={16} />
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    background: 'var(--danger)',
+                    color: '#fff',
+                    fontSize: '10px',
+                    fontWeight: '800',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 6px rgba(239, 68, 68, 0.5)',
+                    border: '2px solid #0f172a'
+                  }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <NotificationDropdown
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                onSelectTicket={onSelectTicket}
+              />
             </div>
 
             {/* Active User Badge & Logout */}
@@ -269,7 +321,7 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
           <span>{t.nav.tickets}</span>
         </button>
 
-        {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'engineer') && (
+        {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && (
           <button
             onClick={() => setActiveTab('inventory')}
             className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}

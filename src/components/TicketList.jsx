@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { DepartmentActionModal } from './DepartmentActionModal';
 
-export const TicketList = ({ onOpenNewTicket }) => {
+export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   const { t, tickets, role, currentUser, completeTicketDelivery } = useApp();
   
   // Available departments based on role authorization
@@ -63,7 +63,7 @@ export const TicketList = ({ onOpenNewTicket }) => {
     return allDepartments;
   }, [role, t]);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [statusFilter, setStatusFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState(() => {
     if (role === 'it_support') return 'it';
@@ -74,6 +74,14 @@ export const TicketList = ({ onOpenNewTicket }) => {
     return 'all';
   });
   const [selectedTicket, setSelectedTicket] = useState(null);
+
+  React.useEffect(() => {
+    if (initialSearchTerm) {
+      setSearchTerm(initialSearchTerm);
+      setStatusFilter('all');
+      setDeptFilter('all');
+    }
+  }, [initialSearchTerm]);
 
   // Synchronize dept filter if role changes
   React.useEffect(() => {

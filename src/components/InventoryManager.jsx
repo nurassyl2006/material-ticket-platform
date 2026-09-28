@@ -18,7 +18,6 @@ export const InventoryManager = () => {
   const canManageStock = role === 'storage_manager' || 
                          role === 'facilities_manager' || 
                          role === 'director' || 
-                         role === 'engineer' || 
                          role === 'workerA' || 
                          role === 'admin';
 
@@ -58,6 +57,20 @@ export const InventoryManager = () => {
       </span>
     );
   };
+
+  if (!canManageStock) {
+    return (
+      <div className="glass-panel" style={{ padding: '48px 24px', textAlign: 'center', maxWidth: '600px', margin: '40px auto' }}>
+        <div style={{ fontSize: '36px', marginBottom: '12px' }}>🔒</div>
+        <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>
+          Access Restricted / Доступ ограничен
+        </h3>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+          Warehouse stock and campus assets can only be viewed and managed by designated Storage and Facilities staff.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

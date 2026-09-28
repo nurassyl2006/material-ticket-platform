@@ -14,10 +14,16 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [targetTicketId, setTargetTicketId] = useState(null);
 
   if (!isAuthenticated) {
     return <AuthScreen />;
   }
+
+  const handleSelectTicketFromNotification = (ticketId) => {
+    setActiveTab('tickets');
+    setTargetTicketId(ticketId);
+  };
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: '70px' }}>
@@ -26,6 +32,7 @@ function MainApp() {
         setActiveTab={setActiveTab} 
         onOpenProfile={() => setIsProfileOpen(true)}
         onOpenNewTicket={() => setIsNewTicketOpen(true)}
+        onSelectTicket={handleSelectTicketFromNotification}
       />
       
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px' }}>
@@ -37,7 +44,8 @@ function MainApp() {
         )}
         {activeTab === 'tickets' && (
           <TicketList 
-            onOpenNewTicket={() => setIsNewTicketOpen(true)} 
+            onOpenNewTicket={() => setIsNewTicketOpen(true)}
+            initialSearchTerm={targetTicketId || ''}
           />
         )}
         {activeTab === 'inventory' && <InventoryManager />}

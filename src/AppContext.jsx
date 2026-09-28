@@ -77,6 +77,72 @@ export const AppProvider = ({ children }) => {
     return mockUsers;
   });
 
+  // Notifications state
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('app_notifications_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return [];
+      }
+    }
+    // Default initial notifications for demonstration
+    return [
+      {
+        id: 'notif-1',
+        recipientName: 'Aigul Nurlan',
+        ticketId: 'TCK-1006',
+        title: 'Item Issued from Stock',
+        message: 'Your request for "A4 Printing Paper (80gsm)" was issued from Storage Cabinet 102.',
+        status: 'issued',
+        read: false,
+        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString()
+      },
+      {
+        id: 'notif-2',
+        recipientName: 'Aigul Nurlan',
+        ticketId: 'TCK-1005',
+        title: 'Cleaning In Progress',
+        message: 'Gulnara Akhmetova started sanitizing Room 305 - Biology.',
+        status: 'in_progress',
+        read: false,
+        createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString()
+      }
+    ];
+  });
+
+  const addNotification = (recipientName, ticketId, title, message, status) => {
+    if (!recipientName) return;
+    const newNotif = {
+      id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      recipientName,
+      ticketId,
+      title,
+      message,
+      status: status || 'info',
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+  };
+
+  const markNotificationAsRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+  };
+
+  useEffect(() => {
+    localStorage.setItem('app_notifications_v1', JSON.stringify(notifications));
+  }, [notifications]);
+
   useEffect(() => {
     localStorage.setItem('app_lang', lang);
   }, [lang]);
@@ -180,8 +246,10 @@ export const AppProvider = ({ children }) => {
 
   // Start working on ticket (used by IT, Cleaning, Facilities)
   const startTicketWork = (ticketId, notes = '') => {
+    let target = null;
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
+        target = ticket;
         return {
           ...ticket,
           status: 'in_progress',
@@ -194,12 +262,23 @@ export const AppProvider = ({ children }) => {
       }
       return ticket;
     }));
+    if (target && target.teacherName) {
+      addNotification(
+        target.teacherName,
+        target.id,
+        t.notifications.ticketAssigned,
+        `${currentUser.name} (${t.roles[role] || role}) started working on: "${target.itemTitle}".`,
+        'in_progress'
+      );
+    }
   };
 
   // Storage Manager: Issue item directly from stock
   const issueTicketFromStock = (ticketId, notes = '') => {
+    let target = null;
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
+        target = ticket;
         return {
           ...ticket,
           status: 'issued',
@@ -213,8 +292,18 @@ export const AppProvider = ({ children }) => {
       return ticket;
     }));
 
+    if (target && target.teacherName) {
+      addNotification(
+        target.teacherName,
+        target.id,
+        t.notifications.ticketIssued,
+        `Item "${target.itemTitle}" has been prepared and issued from stock.`,
+        'issued'
+      );
+    }
+
     // Deduct stock quantity if matching inventory item exists
-    const targetTicket = tickets.find(t => t.id === ticketId);
+    const targetTicket = target || tickets.find(t => t.id === ticketId);
     if (targetTicket) {
       setInventory(prev => prev.map(item => {
         if (item.name.toLowerCase() === targetTicket.itemTitle.toLowerCase()) {
@@ -228,8 +317,10 @@ export const AppProvider = ({ children }) => {
 
   // Storage Manager: Mark item to be purchased
   const markTicketToPurchase = (ticketId, purchaseCost, supplier, notes) => {
+    let target = null;
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
+        target = ticket;
         return {
           ...ticket,
           status: 'purchasing',
@@ -244,12 +335,24 @@ export const AppProvider = ({ children }) => {
       }
       return ticket;
     }));
+
+    if (target && target.teacherName) {
+      addNotification(
+        target.teacherName,
+        target.id,
+        t.notifications.ticketPurchasing,
+        `Item "${target.itemTitle}" is not in stock. Order procurement placed with ${supplier || 'supplier'}.`,
+        'purchasing'
+      );
+    }
   };
 
   // Complete ticket / Deliver / Resolve
   const completeTicketDelivery = (ticketId, notes = '') => {
+    let target = null;
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
+        target = ticket;
         return {
           ...ticket,
           status: 'completed',
@@ -262,6 +365,16 @@ export const AppProvider = ({ children }) => {
       }
       return ticket;
     }));
+
+    if (target && target.teacherName) {
+      addNotification(
+        target.teacherName,
+        target.id,
+        t.notifications.ticketResolved,
+        `Request "${target.itemTitle}" has been resolved & completed by ${currentUser.name}.`,
+        'completed'
+      );
+    }
   };
 
   // Add photos to an existing ticket (before or after completion)
@@ -320,6 +433,23 @@ export const AppProvider = ({ children }) => {
     setInventory(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(0, newQty) } : item));
   };
 
+  // Notifications visible to the current logged in user
+  const userNotifications = React.useMemo(() => {
+    if (!currentUser?.name) return [];
+    // Director sees all notifications
+    if (role === 'director' || role === 'admin') return notifications;
+    // Users see notifications addressed specifically to them (by teacherName / recipientName)
+    const myName = currentUser.name.toLowerCase();
+    return notifications.filter(n => 
+      n.recipientName && (
+        n.recipientName.toLowerCase().includes(myName) ||
+        myName.includes(n.recipientName.toLowerCase())
+      )
+    );
+  }, [notifications, currentUser, role]);
+
+  const unreadCount = userNotifications.filter(n => !n.read).length;
+
   return (
     <AppContext.Provider value={{
       lang,
@@ -335,6 +465,13 @@ export const AppProvider = ({ children }) => {
       updateUserProfile,
       inventory,
       tickets,
+      notifications: userNotifications,
+      allNotifications: notifications,
+      unreadCount,
+      addNotification,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
+      clearNotifications,
       addTicket,
       updateTicket,
       startTicketWork,

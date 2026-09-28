@@ -60,6 +60,17 @@ export const translations = {
       contactTeacher: "Contact Teacher",
       contactHandler: "Contact Staff"
     },
+    notifications: {
+      title: "Notifications",
+      empty: "No new notifications",
+      markAllRead: "Mark all as read",
+      newNotification: "New Update",
+      ticketStatusUpdated: "Ticket Status Updated",
+      ticketAssigned: "Ticket In Progress",
+      ticketResolved: "Ticket Resolved",
+      ticketPurchasing: "Item Procurement",
+      ticketIssued: "Item Issued from Stock"
+    },
     auth: {
       loginTitle: "School Staff Authorization",
       selectRole: "Select Role to Enter Portal",
@@ -273,6 +284,17 @@ export const translations = {
       contactTeacher: "Связаться с учителем",
       contactHandler: "Связаться с исполнителем"
     },
+    notifications: {
+      title: "Уведомления",
+      empty: "Нет новых уведомлений",
+      markAllRead: "Прочитать все",
+      newNotification: "Новое обновление",
+      ticketStatusUpdated: "Статус заявки изменен",
+      ticketAssigned: "Заявка принята в работу",
+      ticketResolved: "Заявка выполнена",
+      ticketPurchasing: "Закупка товара",
+      ticketIssued: "Материал выдан со склада"
+    },
     auth: {
       loginTitle: "Авторизация сотрудников школы",
       selectRole: "Выберите роль для входа в портал",
@@ -485,6 +507,17 @@ export const translations = {
       profileUpdated: "Профиль сәтті жаңартылды!",
       contactTeacher: "Мұғалімге хабарласу",
       contactHandler: "Орындаушыға хабарласу"
+    },
+    notifications: {
+      title: "Хабарламалар",
+      empty: "Жаңа хабарламалар жоқ",
+      markAllRead: "Барлығын оқылды деп белгілеу",
+      newNotification: "Жаңа жаңарту",
+      ticketStatusUpdated: "Өтінім күйі өзгертілді",
+      ticketAssigned: "Өтінім жұмысқа қабылданды",
+      ticketResolved: "Өтінім орындалды",
+      ticketPurchasing: "Тауарды сатып алу",
+      ticketIssued: "Материал қоймадан берілді"
     },
     auth: {
       loginTitle: "Мектеп қызметкерлерін авторизациялау",
