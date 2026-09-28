@@ -24,14 +24,10 @@ import {
 import { DepartmentActionModal } from './DepartmentActionModal';
 
 export const TicketList = ({ onOpenNewTicket }) => {
-  const { t, tickets, role, completeTicketDelivery } = useApp();
+  const { t, tickets, role, currentUser, completeTicketDelivery } = useApp();
   
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [deptFilter, setDeptFilter] = useState('all');
-  const [selectedTicket, setSelectedTicket] = useState(null);
-
-  const departments = [
+  // Available departments based on role authorization
+  const allDepartments = [
     { id: 'all', label: t.departments.all, icon: Layers, color: '#94a3b8' },
     { id: 'it', label: t.departments.it, icon: Laptop, color: '#38bdf8' },
     { id: 'cleaning', label: t.departments.cleaning, icon: Sparkles, color: '#34d399' },
@@ -40,6 +36,85 @@ export const TicketList = ({ onOpenNewTicket }) => {
     { id: 'engineering', label: t.departments.engineering, icon: Wrench, color: '#f97316' },
     { id: 'security', label: t.departments.security, icon: Shield, color: '#f87171' }
   ];
+
+  // Determine authorized department filter options and default filter
+  const departments = React.useMemo(() => {
+    if (role === 'director' || role === 'admin') {
+      return allDepartments;
+    }
+    if (role === 'it_support') {
+      return allDepartments.filter(d => d.id === 'it');
+    }
+    if (role === 'cleaning') {
+      return allDepartments.filter(d => d.id === 'cleaning');
+    }
+    if (role === 'engineer') {
+      return allDepartments.filter(d => d.id === 'engineering');
+    }
+    if (role === 'storage_manager' || role === 'workerA') {
+      return allDepartments.filter(d => d.id === 'storage');
+    }
+    if (role === 'facilities_manager') {
+      return allDepartments.filter(d => d.id === 'facilities' || d.id === 'storage');
+    }
+    if (role === 'teacher') {
+      return [{ id: 'all', label: t.nav.myTickets || 'My Requests', icon: Layers, color: '#3b82f6' }];
+    }
+    return allDepartments;
+  }, [role, t]);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [deptFilter, setDeptFilter] = useState(() => {
+    if (role === 'it_support') return 'it';
+    if (role === 'cleaning') return 'cleaning';
+    if (role === 'engineer') return 'engineering';
+    if (role === 'storage_manager') return 'storage';
+    if (role === 'facilities_manager') return 'facilities';
+    return 'all';
+  });
+  const [selectedTicket, setSelectedTicket] = useState(null);
+
+  // Synchronize dept filter if role changes
+  React.useEffect(() => {
+    if (role === 'it_support') setDeptFilter('it');
+    else if (role === 'cleaning') setDeptFilter('cleaning');
+    else if (role === 'engineer') setDeptFilter('engineering');
+    else if (role === 'storage_manager') setDeptFilter('storage');
+    else if (role === 'facilities_manager') setDeptFilter('facilities');
+    else setDeptFilter('all');
+  }, [role]);
+
+  // Scoped tickets that this user is legally authorized to see
+  const authorizedTickets = React.useMemo(() => {
+    if (role === 'director' || role === 'admin') {
+      return tickets;
+    }
+    if (role === 'teacher') {
+      // Teacher sees requests created by them or math STEM
+      return tickets.filter(tk => 
+        (tk.teacherName && currentUser?.name && tk.teacherName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
+        tk.teacherName === 'Aigul Nurlan' ||
+        tk.teacherName === 'Teacher'
+      );
+    }
+    if (role === 'it_support') {
+      return tickets.filter(tk => (tk.department || 'storage') === 'it');
+    }
+    if (role === 'cleaning') {
+      return tickets.filter(tk => (tk.department || 'storage') === 'cleaning');
+    }
+    if (role === 'engineer') {
+      return tickets.filter(tk => (tk.department || 'storage') === 'engineering');
+    }
+    if (role === 'storage_manager' || role === 'workerA') {
+      return tickets.filter(tk => (tk.department || 'storage') === 'storage');
+    }
+    if (role === 'facilities_manager') {
+      return tickets.filter(tk => (tk.department || 'storage') === 'facilities' || (tk.department || 'storage') === 'storage');
+    }
+    return tickets;
+  }, [tickets, role, currentUser]);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -116,7 +191,7 @@ export const TicketList = ({ onOpenNewTicket }) => {
     );
   };
 
-  const filteredTickets = tickets.filter(ticket => {
+  const filteredTickets = authorizedTickets.filter(ticket => {
     const term = searchTerm.toLowerCase();
     const matchesSearch = (ticket.itemTitle || '').toLowerCase().includes(term) ||
                           (ticket.teacherName || '').toLowerCase().includes(term) ||
@@ -128,10 +203,10 @@ export const TicketList = ({ onOpenNewTicket }) => {
     return matchesSearch && matchesStatus && matchesDept;
   });
 
-  // Calculate counts per department
+  // Calculate counts per department within authorized scope
   const getDeptCount = (deptId) => {
-    if (deptId === 'all') return tickets.length;
-    return tickets.filter(tk => (tk.department || 'storage') === deptId).length;
+    if (deptId === 'all') return authorizedTickets.length;
+    return authorizedTickets.filter(tk => (tk.department || 'storage') === deptId).length;
   };
 
   // Determine if current user can process ticket
@@ -162,10 +237,24 @@ export const TicketList = ({ onOpenNewTicket }) => {
       {/* Header Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0 }}>{t.tickets.title}</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-            Showing {filteredTickets.length} of {tickets.length} total facility requests
-          </p>
+          <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0 }}>
+            {role === 'teacher' ? (t.nav.myTickets || 'My Requests') : t.tickets.title}
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+              Showing {filteredTickets.length} of {authorizedTickets.length} authorized requests
+            </span>
+            <span style={{
+              fontSize: '11px',
+              padding: '2px 8px',
+              borderRadius: '8px',
+              background: 'rgba(99, 102, 241, 0.15)',
+              color: '#818cf8',
+              fontWeight: '700'
+            }}>
+              🔒 {t.auth.scopeLabel} {role === 'teacher' ? t.auth.onlyMyTickets : (role === 'it_support' ? t.auth.onlyIT : (role === 'cleaning' ? t.auth.onlyCleaning : (role === 'engineer' ? t.auth.onlyEngineering : (role === 'storage_manager' ? t.auth.onlyStorage : (role === 'facilities_manager' ? t.auth.onlyFacilities : t.auth.allOperations)))))}
+            </span>
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: '100%', maxWidth: 'max-content' }}>
@@ -358,6 +447,58 @@ export const TicketList = ({ onOpenNewTicket }) => {
                   <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0, lineHeight: 1.4 }}>
                     {ticket.description}
                   </p>
+                )}
+
+                {/* Attached Request Photos */}
+                {ticket.photos && ticket.photos.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>📸 Photos ({ticket.photos.length}):</div>
+                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+                      {ticket.photos.map((imgSrc, idx) => (
+                        <img 
+                          key={idx} 
+                          src={imgSrc} 
+                          alt={`ticket-photo-${idx}`}
+                          onClick={() => window.open(imgSrc, '_blank')}
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '8px',
+                            objectFit: 'cover',
+                            border: '1px solid var(--border-color)',
+                            cursor: 'pointer',
+                            flexShrink: 0
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Completion Photos */}
+                {ticket.completionPhotos && ticket.completionPhotos.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontSize: '11px', color: '#34d399', fontWeight: '600' }}>✅ Completed Work Proof:</div>
+                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+                      {ticket.completionPhotos.map((imgSrc, idx) => (
+                        <img 
+                          key={idx} 
+                          src={imgSrc} 
+                          alt={`completion-photo-${idx}`}
+                          onClick={() => window.open(imgSrc, '_blank')}
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '8px',
+                            objectFit: 'cover',
+                            border: '1px solid #34d399',
+                            cursor: 'pointer',
+                            flexShrink: 0
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {/* Bottom Row: Metadata & Action Buttons */}

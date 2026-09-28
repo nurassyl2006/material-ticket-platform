@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { AppProvider } from './AppContext';
+import { AppProvider, useApp } from './AppContext';
+import { AuthScreen } from './components/AuthScreen';
 import { Navbar } from './components/Navbar';
 import { Dashboard } from './components/Dashboard';
 import { TicketList } from './components/TicketList';
@@ -9,9 +10,14 @@ import { UserProfileModal } from './components/UserProfileModal';
 import './index.css';
 
 function MainApp() {
+  const { isAuthenticated } = useApp();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: '70px' }}>

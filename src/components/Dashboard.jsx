@@ -26,6 +26,24 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
   const [modalDepartment, setModalDepartment] = useState('storage');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Scoped tickets that this user is authorized to see
+  const scopedTickets = React.useMemo(() => {
+    if (role === 'director' || role === 'admin') return tickets;
+    if (role === 'teacher') {
+      return tickets.filter(tk => 
+        (tk.teacherName && currentUser?.name && tk.teacherName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
+        tk.teacherName === 'Aigul Nurlan' ||
+        tk.teacherName === 'Teacher'
+      );
+    }
+    if (role === 'it_support') return tickets.filter(t => (t.department || 'storage') === 'it');
+    if (role === 'cleaning') return tickets.filter(t => (t.department || 'storage') === 'cleaning');
+    if (role === 'engineer') return tickets.filter(t => (t.department || 'storage') === 'engineering');
+    if (role === 'storage_manager' || role === 'workerA') return tickets.filter(t => (t.department || 'storage') === 'storage');
+    if (role === 'facilities_manager') return tickets.filter(t => (t.department || 'storage') === 'facilities' || (t.department || 'storage') === 'storage');
+    return tickets;
+  }, [tickets, role, currentUser]);
+
   // General Metrics
   const totalTickets = tickets.length;
   const pendingCount = tickets.filter(t => t.status === 'pending').length;
@@ -805,7 +823,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
       {/* Recent Requests Section */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
         <h3 style={{ fontSize: '17px', fontWeight: '800', margin: 0 }}>
-          {t.dashboard.allJobsOverview}
+          {role === 'teacher' ? (t.nav.myTickets || 'My Requests') : t.dashboard.allJobsOverview}
         </h3>
         <button
           onClick={() => setActiveTab('tickets')}
@@ -821,13 +839,13 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
             gap: '4px'
           }}
         >
-          View All Requests ({tickets.length}) <ArrowRight size={14} />
+          View Requests ({scopedTickets.length}) <ArrowRight size={14} />
         </button>
       </div>
 
       {/* Ticket Preview List */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
-        {tickets.slice(0, 4).map(ticket => {
+        {scopedTickets.slice(0, 4).map(ticket => {
           const targetDept = ticket.department || 'storage';
           return (
             <div key={ticket.id} className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>

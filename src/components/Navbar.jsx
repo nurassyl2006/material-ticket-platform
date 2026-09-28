@@ -1,9 +1,9 @@
 import React from 'react';
 import { useApp } from '../AppContext';
-import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw } from 'lucide-react';
+import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut } from 'lucide-react';
 
 export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket }) => {
-  const { lang, setLang, role, setRole, t, currentUser, resetDemoData } = useApp();
+  const { lang, setLang, role, setRole, t, currentUser, resetDemoData, logout } = useApp();
 
   return (
     <>
@@ -147,31 +147,41 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
               </select>
             </div>
 
-            {/* Role Switcher Pill - All 6 Platform Roles */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(99, 102, 241, 0.15)', padding: '5px 12px', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.35)' }}>
+            {/* Active User Badge & Logout */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(99, 102, 241, 0.12)', padding: '5px 10px', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
               <UserCheck size={15} color="var(--primary)" />
-              <span className="role-logged-text" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t.auth.loggedAs}</span>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{
-                  background: 'transparent',
-                  color: '#818cf8',
-                  border: 'none',
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="teacher" style={{ background: '#1e293b', color: '#fff' }}>👩‍🏫 {t.roles.teacher}</option>
-                <option value="it_support" style={{ background: '#1e293b', color: '#fff' }}>💻 {t.roles.it_support}</option>
-                <option value="cleaning" style={{ background: '#1e293b', color: '#fff' }}>🧹 {t.roles.cleaning}</option>
-                <option value="storage_manager" style={{ background: '#1e293b', color: '#fff' }}>📦 {t.roles.storage_manager}</option>
-                <option value="facilities_manager" style={{ background: '#1e293b', color: '#fff' }}>🚚 {t.roles.facilities_manager}</option>
-                <option value="engineer" style={{ background: '#1e293b', color: '#fff' }}>🔧 {t.roles.engineer}</option>
-                <option value="director" style={{ background: '#1e293b', color: '#fff' }}>👔 {t.roles.director}</option>
-              </select>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff', lineHeight: 1.2 }}>
+                  {currentUser?.name || t.roles[role]}
+                </span>
+                <span style={{ fontSize: '10px', color: '#818cf8', fontWeight: '600', lineHeight: 1 }}>
+                  {t.roles[role]}
+                </span>
+              </div>
             </div>
+
+            {/* Logout / Switch Role Button */}
+            <button
+              onClick={() => logout()}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                padding: '6px 12px',
+                borderRadius: '10px',
+                color: '#f87171',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              title={t.auth.logout}
+            >
+              <LogOut size={13} />
+              <span className="logout-btn-text">{t.auth.logout}</span>
+            </button>
 
             {/* Profile Button */}
             <button

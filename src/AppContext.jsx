@@ -16,6 +16,11 @@ export const AppProvider = ({ children }) => {
     return saved || 'teacher';
   });
 
+  // Authentication session state
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('app_auth') === 'true';
+  });
+
   // Inventory state
   const [inventory, setInventory] = useState(() => {
     const saved = localStorage.getItem('app_inventory_v2');
@@ -79,6 +84,19 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('app_role', role);
   }, [role]);
+
+  useEffect(() => {
+    localStorage.setItem('app_auth', isAuthenticated ? 'true' : 'false');
+  }, [isAuthenticated]);
+
+  const login = (roleKey) => {
+    setRole(roleKey);
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+  };
 
   useEffect(() => {
     localStorage.setItem('app_inventory_v2', JSON.stringify(inventory));
@@ -308,6 +326,9 @@ export const AppProvider = ({ children }) => {
       setLang,
       role,
       setRole,
+      isAuthenticated,
+      login,
+      logout,
       t,
       users,
       currentUser,

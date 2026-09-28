@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../AppContext';
-import { X, User, Phone, Mail, Building, Check, PhoneCall, MessageSquare } from 'lucide-react';
+import { X, User, Phone, Mail, Building, Check, PhoneCall, MessageSquare, LogOut } from 'lucide-react';
 
 export const UserProfileModal = ({ isOpen, onClose }) => {
-  const { currentUser, updateUserProfile, t } = useApp();
+  const { currentUser, updateUserProfile, t, logout, role } = useApp();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -249,37 +249,65 @@ export const UserProfileModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '14px', flexWrap: 'wrap' }}>
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                logout();
+              }}
               style={{
-                padding: '10px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '10px 14px',
                 borderRadius: '10px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-muted)',
-                fontWeight: '600',
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#f87171',
+                fontWeight: '700',
+                fontSize: '12px',
                 cursor: 'pointer'
               }}
             >
-              {t.common.cancel}
+              <LogOut size={14} />
+              {t.auth.logout}
             </button>
-            <button
-              type="submit"
-              style={{
-                padding: '10px 20px',
-                borderRadius: '10px',
-                background: 'var(--primary)',
-                border: 'none',
-                color: '#ffffff',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
-              }}
-            >
-              {t.profile.saveProfile}
-            </button>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-muted)',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+              >
+                {t.common.cancel}
+              </button>
+              <button
+                type="submit"
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '10px',
+                  background: 'var(--primary)',
+                  border: 'none',
+                  color: '#ffffff',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
+                }}
+              >
+                {t.profile.saveProfile}
+              </button>
+            </div>
           </div>
         </form>
       </div>
