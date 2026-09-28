@@ -1,18 +1,18 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../AppContext';
 import { PlusCircle, X, Package, Laptop, Sparkles, Truck, Shield, ArrowRight, Wrench, Camera, ImagePlus, Trash2 } from 'lucide-react';
 
-export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) => {
+export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering' }) => {
   const { t, addTicket, inventory, currentUser } = useApp();
 
   const [department, setDepartment] = useState(initialDepartment);
   const [formData, setFormData] = useState({
     itemTitle: '',
-    category: 'stationary',
+    category: 'electrical',
     quantity: 1,
     unit: 'pcs',
     urgency: 'medium',
-    roomNumber: '',
+    roomNumber: 'Room 101',
     description: '',
     fromRoom: '',
     toRoom: '',
@@ -21,6 +21,19 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
   const [photos, setPhotos] = useState([]);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+
+  // Synchronize department when modal opens or initialDepartment prop changes
+  useEffect(() => {
+    if (isOpen) {
+      const dept = initialDepartment || 'engineering';
+      setDepartment(dept);
+      setFormData(prev => ({
+        ...prev,
+        category: dept === 'engineering' ? 'electrical' : (dept === 'it' ? 'electronics' : (dept === 'cleaning' ? 'cleaning' : (dept === 'facilities' ? 'furniture' : (dept === 'storage' ? 'stationary' : 'other')))),
+        roomNumber: prev.roomNumber || 'Room 101'
+      }));
+    }
+  }, [isOpen, initialDepartment]);
 
   if (!isOpen) return null;
 
@@ -34,39 +47,39 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
   ];
 
   const presets = {
+    engineering: [
+      { title: 'Ceiling Fluorescent / LED Lights Flickering', cat: 'electrical', urg: 'high', room: 'Room 302 - English' },
+      { title: 'Air Conditioner (AC) Leaking Water / Warm Air', cat: 'hvac', urg: 'critical', room: 'Server Room 204' },
+      { title: 'Burnt Wall Power Socket & Sparking Breaker', cat: 'electrical', urg: 'critical', room: 'Chemistry Lab 102' },
+      { title: 'Ventilation / Exhaust Fan Rattle & Noise', cat: 'hvac', urg: 'medium', room: 'Chemistry Prep 103' },
+      { title: 'Heating Radiator Valve Stuck / Overheating', cat: 'hvac', urg: 'medium', room: 'Room 208' }
+    ],
     it: [
-      { title: 'Wi-Fi Disconnected / Weak Signal', cat: 'electronics', urg: 'high' },
-      { title: 'Teacher Laptop Screen Black / Won\'t Boot', cat: 'electronics', urg: 'critical' },
-      { title: 'Interactive Board / Projector Signal Lost', cat: 'electronics', urg: 'high' },
-      { title: 'HDMI / Audio Cable Missing in Room', cat: 'electronics', urg: 'medium' }
+      { title: 'Wi-Fi Disconnected / Weak Signal', cat: 'electronics', urg: 'high', room: 'Computer Lab 204' },
+      { title: 'Teacher Laptop Screen Black / Won\'t Boot', cat: 'electronics', urg: 'critical', room: 'Physics Lab 108' },
+      { title: 'Interactive Board / Projector Signal Lost', cat: 'electronics', urg: 'high', room: 'Room 102' },
+      { title: 'HDMI / Audio Cable Missing in Room', cat: 'electronics', urg: 'medium', room: 'Room 215' }
     ],
     cleaning: [
-      { title: 'Urgent Liquid / Paint Spill on Floor', cat: 'cleaning', urg: 'critical' },
-      { title: 'Classroom Deep Cleaning & Sanitizing', cat: 'cleaning', urg: 'medium' },
-      { title: 'Waste Bin Overflow & Disposal', cat: 'cleaning', urg: 'medium' },
-      { title: 'Whiteboard Stained / Cleaner Needed', cat: 'cleaning', urg: 'low' }
+      { title: 'Urgent Liquid / Paint Spill on Floor', cat: 'cleaning', urg: 'critical', room: '2nd Floor Corridor' },
+      { title: 'Classroom Deep Cleaning & Sanitizing', cat: 'cleaning', urg: 'medium', room: 'Room 305 - Biology' },
+      { title: 'Waste Bin Overflow & Disposal', cat: 'cleaning', urg: 'medium', room: 'Cafeteria / Hall' },
+      { title: 'Whiteboard Stained / Cleaner Needed', cat: 'cleaning', urg: 'low', room: 'Room 104' }
     ],
     storage: [
-      { title: 'A4 Printing Paper (80gsm)', cat: 'stationary', unit: 'pack', qty: 2 },
-      { title: 'Whiteboard Markers Set', cat: 'stationary', unit: 'box', qty: 1 },
-      { title: 'Chemistry Lab Test Tubes Set', cat: 'lab', unit: 'set', qty: 1 }
+      { title: 'A4 Printing Paper (80gsm)', cat: 'stationary', unit: 'pack', qty: 2, room: 'Storage Room 102' },
+      { title: 'Whiteboard Markers Set', cat: 'stationary', unit: 'box', qty: 1, room: 'Teachers Lounge' },
+      { title: 'Chemistry Lab Test Tubes Set', cat: 'lab', unit: 'set', qty: 1, room: 'Chemistry Lab 102' }
     ],
     facilities: [
-      { title: 'Move 15 Desks & 30 Chairs to Assembly Hall', cat: 'furniture', urg: 'high', from: 'Room 102 - Storage', to: 'Main Assembly Hall', items: '15 student desks, 30 blue chairs, 1 podium' },
-      { title: 'Relocate Extra Student Chairs to Room', cat: 'furniture', urg: 'medium', from: 'Storage Warehouse', to: 'Room 205', items: '10 ergonomic chairs' },
-      { title: 'Fix Loose Door Handle & Latch', cat: 'furniture', urg: 'medium' }
+      { title: 'Move 15 Desks & 30 Chairs to Assembly Hall', cat: 'furniture', urg: 'high', from: 'Room 102 - Storage', to: 'Main Assembly Hall', items: '15 student desks, 30 blue chairs, 1 podium', room: 'Main Assembly Hall' },
+      { title: 'Relocate Extra Student Chairs to Room', cat: 'furniture', urg: 'medium', from: 'Storage Warehouse', to: 'Room 205', items: '10 ergonomic chairs', room: 'Room 205' },
+      { title: 'Fix Loose Door Handle & Latch', cat: 'furniture', urg: 'medium', room: 'Room 215 - History' }
     ],
     security: [
-      { title: 'Teacher RFID Keycard Not Unlocking Door', cat: 'other', urg: 'high' },
-      { title: 'Door Lock Jammed / Key Stuck', cat: 'other', urg: 'high' },
-      { title: 'Lost & Found Student Item Report', cat: 'other', urg: 'low' }
-    ],
-    engineering: [
-      { title: 'Ceiling Fluorescent / LED Lights Flickering', cat: 'electrical', urg: 'high' },
-      { title: 'Air Conditioner (AC) Leaking Water / Warm Air', cat: 'hvac', urg: 'critical' },
-      { title: 'Burnt Wall Power Socket & Sparking Breaker', cat: 'electrical', urg: 'critical' },
-      { title: 'Ventilation / Exhaust Fan Rattle & Noise', cat: 'hvac', urg: 'medium' },
-      { title: 'Heating Radiator Valve Stuck / Room Overheating', cat: 'hvac', urg: 'medium' }
+      { title: 'Teacher RFID Keycard Not Unlocking Door', cat: 'other', urg: 'high', room: 'STEM Robotics Lab 110' },
+      { title: 'Door Lock Jammed / Key Stuck', cat: 'other', urg: 'high', room: 'Room 201' },
+      { title: 'Lost & Found Student Item Report', cat: 'other', urg: 'low', room: 'Security Desk' }
     ]
   };
 
@@ -81,7 +94,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
       fromRoom: p.from || prev.fromRoom,
       toRoom: p.to || prev.toRoom,
       furnitureItems: p.items || prev.furnitureItems,
-      roomNumber: p.to || prev.roomNumber || (p.from ? `${p.from} ➔ ${p.to}` : '')
+      roomNumber: p.room || p.to || prev.roomNumber || (p.from ? `${p.from} ➔ ${p.to}` : 'Classroom')
     }));
   };
 
@@ -113,24 +126,27 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.itemTitle) return;
+    if (!formData.itemTitle || !formData.itemTitle.trim()) return;
+
+    const targetRoom = (formData.roomNumber && formData.roomNumber.trim()) || (formData.toRoom && formData.toRoom.trim()) || 'Main Campus';
 
     const moveDetails = department === 'facilities' && (formData.fromRoom || formData.toRoom || formData.furnitureItems) ? {
       fromRoom: formData.fromRoom || 'Current Room',
-      toRoom: formData.toRoom || formData.roomNumber || 'Target Location',
+      toRoom: formData.toRoom || targetRoom,
       items: formData.furnitureItems || formData.itemTitle
     } : null;
 
     addTicket({
       ...formData,
+      itemTitle: formData.itemTitle.trim(),
       department,
-      roomNumber: formData.roomNumber || formData.toRoom || 'Classroom',
+      roomNumber: targetRoom,
       moveDetails,
       photos
     });
 
     onClose();
-    setFormData({ itemTitle: '', category: 'stationary', quantity: 1, unit: 'pcs', urgency: 'medium', roomNumber: '', description: '', fromRoom: '', toRoom: '', furnitureItems: '' });
+    setFormData({ itemTitle: '', category: 'electrical', quantity: 1, unit: 'pcs', urgency: 'medium', roomNumber: '', description: '', fromRoom: '', toRoom: '', furnitureItems: '' });
     setPhotos([]);
   };
 
@@ -346,8 +362,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'storage' }) 
               </select>
             </div>
             <div>
-              <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.roomNumber} *</label>
-              <input type="text" required placeholder="e.g. Room 204 / Gym" value={formData.roomNumber} onChange={e => setFormData({ ...formData, roomNumber: e.target.value })} style={{ ...inputStyle, padding: '9px 12px' }} />
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.roomNumber}</label>
+              <input type="text" placeholder="e.g. Room 204 / Gym / Server Room" value={formData.roomNumber} onChange={e => setFormData({ ...formData, roomNumber: e.target.value })} style={{ ...inputStyle, padding: '9px 12px' }} />
             </div>
           </div>
 

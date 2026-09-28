@@ -13,12 +13,18 @@ function MainApp() {
   const { isAuthenticated } = useApp();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
+  const [newTicketDept, setNewTicketDept] = useState('engineering');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [targetTicketId, setTargetTicketId] = useState(null);
 
   if (!isAuthenticated) {
     return <AuthScreen />;
   }
+
+  const handleOpenNewTicket = (dept = 'engineering') => {
+    setNewTicketDept(dept);
+    setIsNewTicketOpen(true);
+  };
 
   const handleSelectTicketFromNotification = (ticketId) => {
     setActiveTab('tickets');
@@ -31,7 +37,7 @@ function MainApp() {
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         onOpenProfile={() => setIsProfileOpen(true)}
-        onOpenNewTicket={() => setIsNewTicketOpen(true)}
+        onOpenNewTicket={() => handleOpenNewTicket('engineering')}
         onSelectTicket={handleSelectTicketFromNotification}
       />
       
@@ -39,12 +45,12 @@ function MainApp() {
         {activeTab === 'dashboard' && (
           <Dashboard 
             setActiveTab={setActiveTab} 
-            onOpenNewTicket={() => setIsNewTicketOpen(true)}
+            onOpenNewTicket={handleOpenNewTicket}
           />
         )}
         {activeTab === 'tickets' && (
           <TicketList 
-            onOpenNewTicket={() => setIsNewTicketOpen(true)}
+            onOpenNewTicket={handleOpenNewTicket}
             initialSearchTerm={targetTicketId || ''}
           />
         )}
@@ -54,6 +60,7 @@ function MainApp() {
       <TicketModal 
         isOpen={isNewTicketOpen} 
         onClose={() => setIsNewTicketOpen(false)} 
+        initialDepartment={newTicketDept}
       />
 
       <UserProfileModal 

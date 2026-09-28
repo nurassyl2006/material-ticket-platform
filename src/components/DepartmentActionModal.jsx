@@ -21,6 +21,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const { 
     t, 
     currentUser, 
+    updateTicket,
     issueTicketFromStock, 
     markTicketToPurchase, 
     startTicketWork, 
@@ -29,6 +30,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     addPhotosToTicket,
     inventory 
   } = useApp();
+
+  const [transferSuccess, setTransferSuccess] = useState(false);
 
   // Storage states
   const [storageActionType, setStorageActionType] = useState('stock'); // 'stock' | 'purchase'
@@ -631,6 +634,75 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             </div>
           </form>
         )}
+
+        {/* 7. RE-ROUTE / FORWARD TICKET TO ANOTHER FACILITY */}
+        <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            🔄 Re-route / Transfer Ticket to Another Facility:
+          </div>
+
+          {transferSuccess ? (
+            <div style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>
+              ✓ Ticket successfully transferred to new facility!
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+              {[
+                { id: 'engineering', label: '🔧 Engineering', color: '#f97316' },
+                { id: 'facilities', label: '🚚 Facilities', color: '#a78bfa' },
+                { id: 'it', label: '💻 IT Support', color: '#38bdf8' },
+                { id: 'cleaning', label: '🧹 Cleaning', color: '#34d399' },
+                { id: 'storage', label: '📦 Storage', color: '#fbbf24' },
+                { id: 'security', label: '🛡️ Security', color: '#f87171' }
+              ].map(fac => {
+                if (fac.id === targetDept) return null;
+                return (
+                  <button
+                    key={fac.id}
+                    type="button"
+                    onClick={() => {
+                      const deptNames = {
+                        engineering: 'Engineering (Lights/AC/Power)',
+                        facilities: 'Facilities (Furniture/Repairs)',
+                        it: 'IT Support',
+                        cleaning: 'Cleaning Staff',
+                        storage: 'Warehouse Storage',
+                        security: 'Security Desk'
+                      };
+                      const transferNote = `[Transferred to ${deptNames[fac.id] || fac.id} by ${currentUser.name || 'Staff'}]: ${notes || 'Transferred for specialized facility resolution.'}`;
+                      updateTicket(ticket.id, {
+                        department: fac.id,
+                        status: 'pending',
+                        assignedWorker: null,
+                        assignedRole: null,
+                        notes: transferNote
+                      });
+                      setTransferSuccess(true);
+                      setTimeout(() => {
+                        setTransferSuccess(false);
+                        onClose();
+                      }, 1000);
+                    }}
+                    style={{
+                      background: 'rgba(30, 41, 59, 0.7)',
+                      border: `1px solid ${fac.color}60`,
+                      borderRadius: '8px',
+                      padding: '8px 10px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    Send to {fac.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
       </div>
     </div>

@@ -94,27 +94,10 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   }, [role]);
 
   // Scoped tickets that this user is legally authorized to see
+  // All tickets available in the platform across facilities
   const authorizedTickets = React.useMemo(() => {
-    if (role === 'director' || role === 'admin' || role === 'teacher') {
-      return tickets;
-    }
-    if (role === 'it_support') {
-      return tickets.filter(tk => (tk.department || 'storage') === 'it');
-    }
-    if (role === 'cleaning') {
-      return tickets.filter(tk => (tk.department || 'storage') === 'cleaning');
-    }
-    if (role === 'engineer') {
-      return tickets.filter(tk => (tk.department || 'storage') === 'engineering');
-    }
-    if (role === 'storage_manager' || role === 'workerA') {
-      return tickets.filter(tk => (tk.department || 'storage') === 'storage');
-    }
-    if (role === 'facilities_manager') {
-      return tickets.filter(tk => (tk.department || 'storage') === 'facilities' || (tk.department || 'storage') === 'storage');
-    }
     return tickets;
-  }, [tickets, role, currentUser]);
+  }, [tickets]);
 
   const getStatusBadge = (status) => {
     switch (status) {

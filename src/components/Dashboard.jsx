@@ -21,10 +21,8 @@ import {
 } from 'lucide-react';
 import { TicketModal } from './TicketModal';
 
-export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) => {
+export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const { t, role, currentUser, tickets, inventory } = useApp();
-  const [modalDepartment, setModalDepartment] = useState('storage');
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Scoped tickets that this user is authorized to see
   const scopedTickets = React.useMemo(() => {
@@ -59,9 +57,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
   const lowStockItems = inventory.filter(item => item.quantity <= item.minLevel);
   const activeFurnitureMoves = facilitiesTickets.filter(t => t.moveDetails && t.status !== 'completed');
 
-  const openNewRequestForDept = (dept) => {
-    setModalDepartment(dept);
-    setIsModalOpen(true);
+  const openNewRequestForDept = (dept = 'engineering') => {
+    if (onOpenNewTicket) {
+      onOpenNewTicket(dept);
+    }
   };
 
   const getDeptProgress = (deptTickets) => {
@@ -101,7 +100,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
 
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button
-              onClick={() => openNewRequestForDept('facilities')}
+              onClick={() => openNewRequestForDept('engineering')}
               style={{
                 background: 'linear-gradient(135deg, #6366f1, #06b6d4)',
                 color: '#fff',
@@ -625,17 +624,15 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
       )}
 
       {/* ============================================================== */}
-      {/* 6. TEACHER VIEW */}
-      {/* "Teachers, sends all their problem to facilities like IT, cleaning, security, storage manager." */}
+      {/* QUICK PROBLEM LAUNCHPAD (Send request directly to any facility) */}
       {/* ============================================================== */}
-      {role === 'teacher' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          
-          {/* Quick Problem Launchpad for Teachers */}
-          <div className="glass-panel" style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 12px 0' }}>
-              ⚡ {t.dashboard.quickActions}:
-            </h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        
+        {/* Quick Problem Launchpad for All Facilities */}
+        <div className="glass-panel" style={{ padding: '20px' }}>
+          <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 12px 0' }}>
+            ⚡ {t.dashboard.quickActions || 'Send Request to Facility'}:
+          </h3>
             
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
               
@@ -781,7 +778,6 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
           </div>
 
         </div>
-      )}
 
       {/* Low Stock Warning Card (for Storage, Facilities & Director) */}
       {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin' || role === 'engineer') && lowStockItems.length > 0 && (
@@ -872,13 +868,6 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
           );
         })}
       </div>
-
-      {/* Modal for creating a ticket */}
-      <TicketModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        initialDepartment={modalDepartment}
-      />
 
     </div>
   );
