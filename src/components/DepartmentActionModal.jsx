@@ -456,7 +456,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 type="text"
                 value={movingCrew}
                 onChange={e => setMovingCrew(e.target.value)}
-                placeholder="e.g. Nurassyl + Facilities Logistics Team"
+                placeholder="e.g. Facilities Logistics Crew"
                 style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
               />
             </div>

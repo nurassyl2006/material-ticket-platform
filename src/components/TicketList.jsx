@@ -95,16 +95,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
   // Scoped tickets that this user is legally authorized to see
   const authorizedTickets = React.useMemo(() => {
-    if (role === 'director' || role === 'admin') {
+    if (role === 'director' || role === 'admin' || role === 'teacher') {
       return tickets;
-    }
-    if (role === 'teacher') {
-      // Teacher sees requests created by them or math STEM
-      return tickets.filter(tk => 
-        (tk.teacherName && currentUser?.name && tk.teacherName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
-        tk.teacherName === 'Aigul Nurlan' ||
-        tk.teacherName === 'Teacher'
-      );
     }
     if (role === 'it_support') {
       return tickets.filter(tk => (tk.department || 'storage') === 'it');

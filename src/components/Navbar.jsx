@@ -4,7 +4,7 @@ import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCi
 import { NotificationDropdown } from './NotificationDropdown';
 
 export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket, onSelectTicket }) => {
-  const { lang, setLang, role, setRole, t, currentUser, resetDemoData, logout, unreadCount } = useApp();
+  const { lang, setLang, role, setRole, t, currentUser, resetDemoData, logout, unreadCount, cloudStatus, syncWithCloud } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
@@ -275,6 +275,35 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
                 {currentUser?.name ? currentUser.name.split(' ')[0] : t.nav.profile}
               </span>
             </button>
+
+            {/* Multi-Device Live Cloud Sync Indicator */}
+            <div
+              onClick={syncWithCloud}
+              title={cloudStatus === 'syncing' ? 'Syncing across devices...' : 'Live multi-device sync active (click to refresh)'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: cloudStatus === 'syncing' ? 'rgba(56, 189, 248, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                border: `1px solid ${cloudStatus === 'syncing' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                padding: '5px 9px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                userSelect: 'none',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span style={{
+                width: '7px',
+                height: '7px',
+                borderRadius: '50%',
+                background: cloudStatus === 'syncing' ? '#38bdf8' : '#10b981',
+                boxShadow: cloudStatus === 'syncing' ? '0 0 6px #38bdf8' : '0 0 6px #10b981'
+              }} />
+              <span className="profile-btn-text" style={{ fontSize: '11px', fontWeight: '700', color: cloudStatus === 'syncing' ? '#38bdf8' : '#34d399' }}>
+                {cloudStatus === 'syncing' ? 'Syncing' : 'Live Sync'}
+              </span>
+            </div>
 
             {/* Reset Demo Data button */}
             <button

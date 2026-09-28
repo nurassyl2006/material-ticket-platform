@@ -1,8 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { translations } from './translations';
 import { mockInventory, mockTickets, mockUsers } from './mockData';
+import { fetchCloudTickets, pushCloudTickets, mergeTickets } from './cloudSync';
 
 const AppContext = createContext();
+
+const OLD_MOCK_IDS = new Set([
+  'TCK-1001', 'TCK-1002', 'TCK-1003', 'TCK-1004', 'TCK-1005',
+  'TCK-1006', 'TCK-1007', 'TCK-1008', 'TCK-1009', 'TCK-1010',
+  'TCK-1011', 'TCK-1012', 'TCK-1013', 'TCK-1014'
+]);
 
 export const AppProvider = ({ children }) => {
   // Language state
@@ -23,16 +30,10 @@ export const AppProvider = ({ children }) => {
 
   // Inventory state
   const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem('app_inventory_v2');
+    const saved = localStorage.getItem('app_inventory_v3');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        const hasEng = parsed.some(i => i.category === 'electrical' || i.category === 'hvac');
-        if (!hasEng) {
-          const engItems = mockInventory.filter(i => i.category === 'electrical' || i.category === 'hvac');
-          return [...parsed, ...engItems];
-        }
-        return parsed;
+        return JSON.parse(saved);
       } catch (e) {
         return mockInventory;
       }
@@ -40,36 +41,45 @@ export const AppProvider = ({ children }) => {
     return mockInventory;
   });
 
-  // Tickets state
+  // Tickets state: empty by default, purged of old mock tickets
   const [tickets, setTickets] = useState(() => {
-    const saved = localStorage.getItem('app_tickets_v2');
+    const saved = localStorage.getItem('app_tickets_v3') || localStorage.getItem('app_tickets_v2');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        const hasEng = parsed.some(t => t.department === 'engineering');
-        if (!hasEng) {
-          const engTickets = mockTickets.filter(t => t.department === 'engineering');
-          return [...engTickets, ...parsed];
+        if (Array.isArray(parsed)) {
+          // Filter out legacy demo tickets
+          const clean = parsed.filter(t => !OLD_MOCK_IDS.has(t.id));
+          return clean;
         }
-        return parsed;
       } catch (e) {
-        return mockTickets;
+        return [];
       }
     }
-    return mockTickets;
+    return [];
   });
 
-  // Users state
+  // Users state: cleaned of mock names & photos
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('app_users_v2');
+    const saved = localStorage.getItem('app_users_v3');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return {
-          ...mockUsers,
-          ...parsed,
-          engineer: parsed.engineer || mockUsers.engineer
-        };
+        // Ensure no lingering unsplash avatars or mock names
+        const cleanUsers = { ...mockUsers };
+        for (const k of Object.keys(parsed)) {
+          if (cleanUsers[k]) {
+            cleanUsers[k] = {
+              ...cleanUsers[k],
+              name: (parsed[k]?.name === 'Aigul Nurlan' || parsed[k]?.name === 'Dias Saparov' || parsed[k]?.name === 'Gulnara Akhmetova' || parsed[k]?.name === 'Kairat Smagulov' || parsed[k]?.name === 'Nurassyl (Facilities Manager)' || parsed[k]?.name === 'Erlan Kozhakhmetov' || parsed[k]?.name === 'Bauyrzhan Akhmetov')
+                ? cleanUsers[k].name
+                : (parsed[k]?.name || cleanUsers[k].name),
+              phone: parsed[k]?.phone?.includes('777') ? '' : (parsed[k]?.phone || ''),
+              avatar: parsed[k]?.avatar?.includes('unsplash') ? '' : (parsed[k]?.avatar || '')
+            };
+          }
+        }
+        return cleanUsers;
       } catch (e) {
         return mockUsers;
       }
@@ -77,9 +87,9 @@ export const AppProvider = ({ children }) => {
     return mockUsers;
   });
 
-  // Notifications state
+  // Notifications state: empty by default
   const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('app_notifications_v1');
+    const saved = localStorage.getItem('app_notifications_v3');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -87,30 +97,100 @@ export const AppProvider = ({ children }) => {
         return [];
       }
     }
-    // Default initial notifications for demonstration
-    return [
-      {
-        id: 'notif-1',
-        recipientName: 'Aigul Nurlan',
-        ticketId: 'TCK-1006',
-        title: 'Item Issued from Stock',
-        message: 'Your request for "A4 Printing Paper (80gsm)" was issued from Storage Cabinet 102.',
-        status: 'issued',
-        read: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString()
-      },
-      {
-        id: 'notif-2',
-        recipientName: 'Aigul Nurlan',
-        ticketId: 'TCK-1005',
-        title: 'Cleaning In Progress',
-        message: 'Gulnara Akhmetova started sanitizing Room 305 - Biology.',
-        status: 'in_progress',
-        read: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString()
-      }
-    ];
+    return [];
   });
+
+  // Cloud sync status: 'idle' | 'syncing' | 'synced'
+  const [cloudStatus, setCloudStatus] = useState('idle');
+
+  // Persistence effects
+  useEffect(() => {
+    localStorage.setItem('app_notifications_v3', JSON.stringify(notifications));
+  }, [notifications]);
+
+  useEffect(() => {
+    localStorage.setItem('app_lang', lang);
+  }, [lang]);
+
+  useEffect(() => {
+    localStorage.setItem('app_role', role);
+  }, [role]);
+
+  useEffect(() => {
+    localStorage.setItem('app_auth', isAuthenticated ? 'true' : 'false');
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    localStorage.setItem('app_inventory_v3', JSON.stringify(inventory));
+  }, [inventory]);
+
+  useEffect(() => {
+    localStorage.setItem('app_tickets_v3', JSON.stringify(tickets));
+  }, [tickets]);
+
+  useEffect(() => {
+    localStorage.setItem('app_users_v3', JSON.stringify(users));
+  }, [users]);
+
+  // Helper: Save tickets and immediately push to cloud
+  const saveAndBroadcastTickets = useCallback((updater) => {
+    setTickets(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      pushCloudTickets(next);
+      return next;
+    });
+  }, []);
+
+  // Sync with cloud (fetches, merges, and broadcasts back if local has newer tickets)
+  const syncWithCloud = useCallback(async () => {
+    try {
+      setCloudStatus('syncing');
+      const remoteTickets = await fetchCloudTickets();
+      if (Array.isArray(remoteTickets)) {
+        // Strip legacy mock tickets from remote
+        const cleanRemote = remoteTickets.filter(t => !OLD_MOCK_IDS.has(t.id));
+        setTickets(currentTickets => {
+          const merged = mergeTickets(currentTickets, cleanRemote);
+
+          // If local has updates that remote lacks, push back
+          const remoteKeySet = new Set(cleanRemote.map(t => `${t.id}_${t.updatedAt || t.createdAt}`));
+          const needsPush = merged.some(t => !remoteKeySet.has(`${t.id}_${t.updatedAt || t.createdAt}`));
+          if (needsPush) {
+            pushCloudTickets(merged);
+          }
+          return merged;
+        });
+        setCloudStatus('synced');
+      } else {
+        setCloudStatus('idle');
+      }
+    } catch (err) {
+      setCloudStatus('idle');
+    }
+  }, []);
+
+  // Periodic cloud sync & sync on window focus/tab switch
+  useEffect(() => {
+    syncWithCloud();
+
+    // Poll every 3.5 seconds so devices see changes quickly
+    const interval = setInterval(syncWithCloud, 3500);
+
+    const onActive = () => {
+      if (!document.hidden) {
+        syncWithCloud();
+      }
+    };
+
+    window.addEventListener('focus', onActive);
+    document.addEventListener('visibilitychange', onActive);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onActive);
+      document.removeEventListener('visibilitychange', onActive);
+    };
+  }, [syncWithCloud]);
 
   const addNotification = (recipientName, ticketId, title, message, status) => {
     if (!recipientName) return;
@@ -139,22 +219,6 @@ export const AppProvider = ({ children }) => {
     setNotifications([]);
   };
 
-  useEffect(() => {
-    localStorage.setItem('app_notifications_v1', JSON.stringify(notifications));
-  }, [notifications]);
-
-  useEffect(() => {
-    localStorage.setItem('app_lang', lang);
-  }, [lang]);
-
-  useEffect(() => {
-    localStorage.setItem('app_role', role);
-  }, [role]);
-
-  useEffect(() => {
-    localStorage.setItem('app_auth', isAuthenticated ? 'true' : 'false');
-  }, [isAuthenticated]);
-
   const login = (roleKey) => {
     setRole(roleKey);
     setIsAuthenticated(true);
@@ -163,18 +227,6 @@ export const AppProvider = ({ children }) => {
   const logout = () => {
     setIsAuthenticated(false);
   };
-
-  useEffect(() => {
-    localStorage.setItem('app_inventory_v2', JSON.stringify(inventory));
-  }, [inventory]);
-
-  useEffect(() => {
-    localStorage.setItem('app_tickets_v2', JSON.stringify(tickets));
-  }, [tickets]);
-
-  useEffect(() => {
-    localStorage.setItem('app_users_v2', JSON.stringify(users));
-  }, [users]);
 
   const t = translations[lang] || translations.en;
   
@@ -191,14 +243,21 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  // Reset to default mock data (useful if user wants clean multi-department demo data)
+  // Reset to default mock data (clean empty tickets)
   const resetDemoData = () => {
     setInventory(mockInventory);
-    setTickets(mockTickets);
+    setTickets([]);
     setUsers(mockUsers);
+    setNotifications([]);
+    localStorage.removeItem('app_inventory_v3');
     localStorage.removeItem('app_inventory_v2');
+    localStorage.removeItem('app_tickets_v3');
     localStorage.removeItem('app_tickets_v2');
+    localStorage.removeItem('app_users_v3');
     localStorage.removeItem('app_users_v2');
+    localStorage.removeItem('app_notifications_v3');
+    localStorage.removeItem('app_notifications_v1');
+    pushCloudTickets([]);
   };
 
   // Ticket Management
@@ -216,7 +275,7 @@ export const AppProvider = ({ children }) => {
       description: ticketData.description || '',
       photos: ticketData.photos || [],
       completionPhotos: [],
-      teacherName: currentUser.name,
+      teacherName: currentUser.name || t.roles[role] || 'Teacher',
       teacherPhone: currentUser.phone || '',
       status: 'pending',
       assignedWorker: null,
@@ -226,13 +285,13 @@ export const AppProvider = ({ children }) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    setTickets(prev => [newTicket, ...prev]);
+    saveAndBroadcastTickets(prev => [newTicket, ...prev]);
     return newTicket;
   };
 
   // Generic status updater
   const updateTicket = (ticketId, updates) => {
-    setTickets(prev => prev.map(ticket => {
+    saveAndBroadcastTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         return {
           ...ticket,
@@ -244,10 +303,10 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  // Start working on ticket (used by IT, Cleaning, Facilities)
+  // Start working on ticket (used by IT, Cleaning, Facilities, Engineer)
   const startTicketWork = (ticketId, notes = '') => {
     let target = null;
-    setTickets(prev => prev.map(ticket => {
+    saveAndBroadcastTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
         return {
@@ -276,7 +335,7 @@ export const AppProvider = ({ children }) => {
   // Storage Manager: Issue item directly from stock
   const issueTicketFromStock = (ticketId, notes = '') => {
     let target = null;
-    setTickets(prev => prev.map(ticket => {
+    saveAndBroadcastTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
         return {
@@ -318,7 +377,7 @@ export const AppProvider = ({ children }) => {
   // Storage Manager: Mark item to be purchased
   const markTicketToPurchase = (ticketId, purchaseCost, supplier, notes) => {
     let target = null;
-    setTickets(prev => prev.map(ticket => {
+    saveAndBroadcastTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
         return {
@@ -350,7 +409,7 @@ export const AppProvider = ({ children }) => {
   // Complete ticket / Deliver / Resolve
   const completeTicketDelivery = (ticketId, notes = '') => {
     let target = null;
-    setTickets(prev => prev.map(ticket => {
+    saveAndBroadcastTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
         return {
@@ -379,7 +438,7 @@ export const AppProvider = ({ children }) => {
 
   // Add photos to an existing ticket (before or after completion)
   const addPhotosToTicket = (ticketId, photosArray, isCompletion = false) => {
-    setTickets(prev => prev.map(ticket => {
+    saveAndBroadcastTickets(prev => prev.map(ticket => {
       if (ticket.id !== ticketId) return ticket;
       if (isCompletion) {
         return {
@@ -398,7 +457,7 @@ export const AppProvider = ({ children }) => {
 
   // Facilities Manager: Update moving details / dispatch
   const updateFacilitiesMove = (ticketId, moveDetails, notes = '') => {
-    setTickets(prev => prev.map(ticket => {
+    saveAndBroadcastTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         return {
           ...ticket,
@@ -436,14 +495,14 @@ export const AppProvider = ({ children }) => {
   // Notifications visible to the current logged in user
   const userNotifications = React.useMemo(() => {
     if (!currentUser?.name) return [];
-    // Director sees all notifications
     if (role === 'director' || role === 'admin') return notifications;
-    // Users see notifications addressed specifically to them (by teacherName / recipientName)
     const myName = currentUser.name.toLowerCase();
     return notifications.filter(n => 
       n.recipientName && (
         n.recipientName.toLowerCase().includes(myName) ||
-        myName.includes(n.recipientName.toLowerCase())
+        myName.includes(n.recipientName.toLowerCase()) ||
+        n.recipientName.toLowerCase() === 'teacher' ||
+        role === 'teacher'
       )
     );
   }, [notifications, currentUser, role]);
@@ -465,6 +524,8 @@ export const AppProvider = ({ children }) => {
       updateUserProfile,
       inventory,
       tickets,
+      cloudStatus,
+      syncWithCloud,
       notifications: userNotifications,
       allNotifications: notifications,
       unreadCount,

@@ -28,14 +28,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket: _onOpenNewTicket }) =
 
   // Scoped tickets that this user is authorized to see
   const scopedTickets = React.useMemo(() => {
-    if (role === 'director' || role === 'admin') return tickets;
-    if (role === 'teacher') {
-      return tickets.filter(tk => 
-        (tk.teacherName && currentUser?.name && tk.teacherName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
-        tk.teacherName === 'Aigul Nurlan' ||
-        tk.teacherName === 'Teacher'
-      );
-    }
+    if (role === 'director' || role === 'admin' || role === 'teacher') return tickets;
     if (role === 'it_support') return tickets.filter(t => (t.department || 'storage') === 'it');
     if (role === 'cleaning') return tickets.filter(t => (t.department || 'storage') === 'cleaning');
     if (role === 'engineer') return tickets.filter(t => (t.department || 'storage') === 'engineering');
