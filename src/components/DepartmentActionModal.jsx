@@ -14,9 +14,12 @@ import {
   MessageSquare,
   Wrench,
   Camera,
-  ImagePlus
+  ImagePlus,
+  Globe,
+  RotateCcw
 } from 'lucide-react';
-import { DEPARTMENTS, resolveDepartment } from '../departments';
+import { DEPARTMENTS, resolveDepartment, translateSubcategory } from '../departments';
+import { translateText, detectLanguage } from '../services/translator';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const { 
@@ -49,6 +52,17 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   // General notes
   const [notes, setNotes] = useState('');
 
+  // Ticket translation states for engineer / staff
+  const { translatorTargetLang } = useApp();
+  const [modalLang, setModalLang] = useState(translatorTargetLang || 'ru');
+  const [modalTransData, setModalTransData] = useState(null);
+  const [isModalTranslating, setIsModalTranslating] = useState(false);
+  const [showModalOriginal, setShowModalOriginal] = useState(false);
+
+  // Resolution note translator to English for teacher
+  const [isTranslatingNotes, setIsTranslatingNotes] = useState(false);
+  const [translatedNotePreview, setTranslatedNotePreview] = useState(null);
+
   // Completion photos
   const [completionPhotos, setCompletionPhotos] = useState([]);
   const completionFileRef = useRef(null);
@@ -80,8 +94,149 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
         setFurnitureItems(ticket.itemTitle || '');
       }
       setMovingCrew(ticket.assignedWorker || currentUser.name || '');
+      setTranslatedNotePreview(null);
     }
   }, [ticket, currentUser]);
+
+  // Effect to perform translation on the active ticket
+  useEffect(() => {
+    if (!ticket) return;
+    let isMounted = true;
+
+    const performTranslation = async () => {
+      const detected = detectLanguage(`${ticket.itemTitle || ''} ${ticket.description || ''}`);
+      if (modalLang === 'orig' || detected === modalLang) {
+        if (isMounted) setModalTransData(null);
+        return;
+      }
+
+      setIsModalTranslating(true);
+      try {
+        const [titleRes, descRes] = await Promise.all([
+          ticket.itemTitle ? translateText(ticket.itemTitle, modalLang, detected) : Promise.resolve({ translatedText: '' }),
+          ticket.description ? translateText(ticket.description, modalLang, detected) : Promise.resolve({ translatedText: '' })
+        ]);
+        const transSubcat = ticket.subcategory ? translateSubcategory(ticket.subcategory, modalLang) : '';
+
+        if (isMounted) {
+          setModalTransData({
+            title: titleRes.translatedText || ticket.itemTitle,
+            description: descRes.translatedText || ticket.description,
+            subcategory: transSubcat || ticket.subcategory,
+            lang: modalLang,
+            detected
+          });
+        }
+      } catch (err) {
+        // ignore
+      } finally {
+        if (isMounted) setIsModalTranslating(false);
+      }
+    };
+
+    performTranslation();
+    return () => { isMounted = false; };
+  }, [ticket, modalLang]);
+
+  // Note translator helper
+  const handleTranslateNoteToEnglish = async () => {
+    if (!notes || !notes.trim()) return;
+    setIsTranslatingNotes(true);
+    try {
+      const res = await translateText(notes, 'en', 'auto');
+      setTranslatedNotePreview(res.translatedText);
+    } catch (e) {
+      // ignore
+    } finally {
+      setIsTranslatingNotes(false);
+    }
+  };
+
+  const renderNoteTranslatorHelper = () => {
+    if (!notes || !notes.trim()) return null;
+    return (
+      <div style={{ marginTop: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleTranslateNoteToEnglish}
+            style={{
+              background: 'rgba(99, 102, 241, 0.15)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              color: '#818cf8',
+              padding: '3px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontWeight: '600'
+            }}
+          >
+            <Globe size={12} />
+            {isTranslatingNotes ? (t.translator?.translating || 'Translating...') : (t.translator?.translateNoteForTeacher || '🌐 Translate note to English for Teacher')}
+          </button>
+        </div>
+
+        {translatedNotePreview && (
+          <div style={{
+            marginTop: '6px',
+            padding: '8px 10px',
+            borderRadius: '8px',
+            background: 'rgba(56, 189, 248, 0.1)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px'
+          }}>
+            <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '700' }}>
+              🇬🇧 English for Teacher: "{translatedNotePreview}"
+            </div>
+            <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setNotes(translatedNotePreview);
+                  setTranslatedNotePreview(null);
+                }}
+                style={{
+                  background: '#38bdf8',
+                  color: '#000',
+                  border: 'none',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Use English
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setNotes(prev => `${prev}\n[EN for Teacher]: ${translatedNotePreview}`);
+                  setTranslatedNotePreview(null);
+                }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  color: '#fff',
+                  border: '1px solid var(--border-color)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '11px',
+                  cursor: 'pointer'
+                }}
+              >
+                Keep Both (RU + EN)
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   if (!isOpen || !ticket) return null;
 
@@ -213,15 +368,119 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
         {/* Ticket Snapshot Card */}
         <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', marginBottom: '18px', border: '1px solid var(--border-color)' }}>
+          
+          {/* Translator Bar inside Snapshot */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '10px',
+            paddingBottom: '8px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            flexWrap: 'wrap',
+            gap: '8px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#38bdf8', fontWeight: '700' }}>
+              <Globe size={13} />
+              <span>{t.translator?.badge || 'Ticket Translator'}:</span>
+              {modalTransData && (
+                <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>
+                  ({modalTransData.detected === 'en' ? 'English Request 🇬🇧' : modalTransData.detected.toUpperCase()})
+                </span>
+              )}
+              {isModalTranslating && (
+                <span style={{ color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  <Sparkles size={11} /> {t.translator?.translating || 'Translating...'}
+                </span>
+              )}
+            </div>
+
+            {/* Language switch buttons */}
+            <div style={{ display: 'inline-flex', gap: '3px', background: 'rgba(15, 23, 42, 0.8)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <button
+                type="button"
+                onClick={() => { setModalLang('ru'); setShowModalOriginal(false); }}
+                style={{
+                  background: modalLang === 'ru' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+                  border: modalLang === 'ru' ? '1px solid #38bdf8' : 'none',
+                  color: modalLang === 'ru' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '6px',
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                🇷🇺 Русский
+              </button>
+              <button
+                type="button"
+                onClick={() => { setModalLang('kk'); setShowModalOriginal(false); }}
+                style={{
+                  background: modalLang === 'kk' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+                  border: modalLang === 'kk' ? '1px solid #38bdf8' : 'none',
+                  color: modalLang === 'kk' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '6px',
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                🇰🇿 Қазақша
+              </button>
+              <button
+                type="button"
+                onClick={() => { setModalLang('orig'); setShowModalOriginal(false); }}
+                style={{
+                  background: modalLang === 'orig' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                  border: modalLang === 'orig' ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+                  color: modalLang === 'orig' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '6px',
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                🇬🇧 Original
+              </button>
+
+              {modalTransData && (
+                <button
+                  type="button"
+                  onClick={() => setShowModalOriginal(prev => !prev)}
+                  title={showModalOriginal ? (t.translator?.showTranslation || 'Hide original') : (t.translator?.showOriginal || 'Show original')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: showModalOriginal ? '#38bdf8' : 'var(--text-muted)',
+                    padding: '2px 6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  <RotateCcw size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '6px' }}>
             <div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff' }}>
-                {ticket.itemTitle} {ticket.quantity ? `x ${ticket.quantity} ${ticket.unit}` : ''}
+              <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff' }}>
+                {modalTransData ? modalTransData.title : ticket.itemTitle} {ticket.quantity ? `x ${ticket.quantity} ${ticket.unit}` : ''}
               </div>
-              {ticket.subcategory && (
-                <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '3px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              {modalTransData && showModalOriginal && (
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', marginTop: '2px' }}>
+                  English: "{ticket.itemTitle}"
+                </div>
+              )}
+              {(modalTransData?.subcategory || ticket.subcategory) && (
+                <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                   <span style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-                    🏷️ {ticket.subcategory}
+                    🏷️ {modalTransData ? modalTransData.subcategory : ticket.subcategory}
                   </span>
                 </div>
               )}
@@ -254,10 +513,18 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             )}
           </div>
 
-          {ticket.description && (
-            <p style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '8px', marginBottom: 0, fontStyle: 'italic', background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '6px' }}>
-              "{ticket.description}"
-            </p>
+          {/* Description with Translation & Original */}
+          {(modalTransData?.description || ticket.description) && (
+            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0, fontStyle: 'italic', background: 'rgba(0,0,0,0.25)', padding: '8px 10px', borderRadius: '6px' }}>
+                "{modalTransData ? modalTransData.description : ticket.description}"
+              </p>
+              {modalTransData && showModalOriginal && ticket.description && (
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', background: 'rgba(15, 23, 42, 0.4)', padding: '6px 8px', borderRadius: '4px', borderLeft: '2px solid #38bdf8' }}>
+                  Original English: "{ticket.description}"
+                </div>
+              )}
+            </div>
           )}
 
           {/* Show existing ticket photos (submitted by requester) */}
@@ -554,6 +821,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 placeholder="e.g. Tested Wi-Fi AP signal, updated graphics drivers, or replaced HDMI cable..."
                 style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
               />
+              {renderNoteTranslatorHelper()}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
@@ -659,6 +927,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 placeholder="e.g. Replaced LED driver ballast, rewired loose terminal, or tested socket voltage..."
                 style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
               />
+              {renderNoteTranslatorHelper()}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
@@ -698,6 +967,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 placeholder="e.g. Cleared drain blockage with auger, tightened valve gasket, bled radiator air..."
                 style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
               />
+              {renderNoteTranslatorHelper()}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>

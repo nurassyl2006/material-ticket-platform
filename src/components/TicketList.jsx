@@ -23,13 +23,26 @@ import {
   MapPin,
   Droplets,
   Footprints,
-  DoorOpen
+  DoorOpen,
+  Globe
 } from 'lucide-react';
 import { DepartmentActionModal } from './DepartmentActionModal';
+import { TicketCard } from './TicketCard';
 import { DEPARTMENTS, resolveDepartment } from '../departments';
 
 export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
-  const { t, tickets, role, currentUser, completeTicketDelivery, lang } = useApp();
+  const { 
+    t, 
+    tickets, 
+    role, 
+    currentUser, 
+    completeTicketDelivery, 
+    lang,
+    autoTranslateTickets,
+    setAutoTranslateTickets,
+    translatorTargetLang,
+    setTranslatorTargetLang
+  } = useApp();
   
   // Available departments based on DEPARTMENTS core specification
   const allDepartments = React.useMemo(() => [
@@ -366,6 +379,93 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             </select>
           </div>
 
+          {/* Ticket Translator Toolbar Pill */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: autoTranslateTickets ? 'rgba(56, 189, 248, 0.12)' : 'rgba(30, 41, 59, 0.6)',
+            border: autoTranslateTickets ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-color)',
+            padding: '4px 8px',
+            borderRadius: '10px',
+            transition: 'all 0.2s ease'
+          }}>
+            <button
+              type="button"
+              onClick={() => setAutoTranslateTickets(prev => !prev)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: autoTranslateTickets ? '#38bdf8' : 'var(--text-muted)',
+                fontSize: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+              title={t.translator?.autoTranslateHelp || 'Auto-translates English teacher requests to Russian/Kazakh'}
+            >
+              <Globe size={14} color={autoTranslateTickets ? '#38bdf8' : 'var(--text-muted)'} />
+              <span>{autoTranslateTickets ? (t.translator?.autoTranslateOn || 'Auto-Translate: ON') : (t.translator?.autoTranslateOff || 'Auto-Translate: OFF')}</span>
+            </button>
+
+            {/* Target language pill selector */}
+            <div style={{ display: 'flex', gap: '2px', background: 'rgba(15, 23, 42, 0.7)', borderRadius: '6px', padding: '2px' }}>
+              <button
+                type="button"
+                onClick={() => setTranslatorTargetLang('ru')}
+                style={{
+                  background: translatorTargetLang === 'ru' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+                  border: translatorTargetLang === 'ru' ? '1px solid #38bdf8' : 'none',
+                  color: translatorTargetLang === 'ru' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '4px',
+                  padding: '2px 5px',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+                title="Translate to Russian"
+              >
+                🇷🇺 RU
+              </button>
+              <button
+                type="button"
+                onClick={() => setTranslatorTargetLang('kk')}
+                style={{
+                  background: translatorTargetLang === 'kk' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+                  border: translatorTargetLang === 'kk' ? '1px solid #38bdf8' : 'none',
+                  color: translatorTargetLang === 'kk' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '4px',
+                  padding: '2px 5px',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+                title="Translate to Kazakh"
+              >
+                🇰🇿 KK
+              </button>
+              <button
+                type="button"
+                onClick={() => setTranslatorTargetLang('en')}
+                style={{
+                  background: translatorTargetLang === 'en' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+                  border: translatorTargetLang === 'en' ? '1px solid #38bdf8' : 'none',
+                  color: translatorTargetLang === 'en' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '4px',
+                  padding: '2px 5px',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+                title="Translate to English"
+              >
+                🇬🇧 EN
+              </button>
+            </div>
+          </div>
+
           {/* New Request Button */}
           {onOpenNewTicket && (
             <button
@@ -481,223 +581,26 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-          {filteredTickets.map(ticket => {
-            const cleanPhone = (ticket.teacherPhone || '').replace(/[^\d+]/g, '');
-            const targetDept = ticket.department || 'storage';
-            const isCompleted = ticket.status === 'completed' || ticket.status === 'delivered';
-
-            return (
-              <div 
-                key={ticket.id}
-                className="glass-panel"
-                style={{
-                  padding: '16px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                  borderLeft: `4px solid ${
-                    targetDept === 'it' ? '#38bdf8' :
-                    targetDept === 'cleaning' ? '#34d399' :
-                    targetDept === 'facilities' ? '#a78bfa' :
-                    targetDept === 'security' ? '#f87171' : '#fbbf24'
-                  }`
-                }}
-              >
-                {/* Top Row: Department, Title, Urgency, Status */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      {getDepartmentBadge(ticket)}
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>#{ticket.id}</span>
-                      {getUrgencyBadge(ticket.urgency)}
-                    </div>
-
-                    <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', margin: 0 }}>
-                      {ticket.itemTitle}
-                      {ticket.quantity ? ` (${ticket.quantity} ${ticket.unit})` : ''}
-                    </h3>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {getStatusBadge(ticket.status)}
-                  </div>
-
-                </div>
-
-                {/* Facilities Furniture Moving Info Banner (if present) */}
-                {ticket.moveDetails && (
-                  <div style={{
-                    background: 'rgba(167, 139, 250, 0.1)',
-                    border: '1px dashed rgba(167, 139, 250, 0.4)',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    fontSize: '12px',
-                    color: '#e2e8f0',
-                    flexWrap: 'wrap'
-                  }}>
-                    <Truck size={16} color="#a78bfa" />
-                    <span><strong>Relocation:</strong> {ticket.moveDetails.fromRoom} ➔ <strong style={{ color: '#a78bfa' }}>{ticket.moveDetails.toRoom}</strong></span>
-                    {ticket.moveDetails.items && <span style={{ color: 'var(--text-muted)' }}>({ticket.moveDetails.items})</span>}
-                  </div>
-                )}
-
-                {/* Description */}
-                {ticket.description && (
-                  <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0, lineHeight: 1.4 }}>
-                    {ticket.description}
-                  </p>
-                )}
-
-                {/* Attached Request Photos */}
-                {ticket.photos && ticket.photos.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>📸 Photos ({ticket.photos.length}):</div>
-                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
-                      {ticket.photos.map((imgSrc, idx) => (
-                        <img 
-                          key={idx} 
-                          src={imgSrc} 
-                          alt={`ticket-photo-${idx}`}
-                          onClick={() => window.open(imgSrc, '_blank')}
-                          style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '8px',
-                            objectFit: 'cover',
-                            border: '1px solid var(--border-color)',
-                            cursor: 'pointer',
-                            flexShrink: 0
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Completion Photos */}
-                {ticket.completionPhotos && ticket.completionPhotos.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <div style={{ fontSize: '11px', color: '#34d399', fontWeight: '600' }}>✅ Completed Work Proof:</div>
-                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
-                      {ticket.completionPhotos.map((imgSrc, idx) => (
-                        <img 
-                          key={idx} 
-                          src={imgSrc} 
-                          alt={`completion-photo-${idx}`}
-                          onClick={() => window.open(imgSrc, '_blank')}
-                          style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '8px',
-                            objectFit: 'cover',
-                            border: '1px solid #34d399',
-                            cursor: 'pointer',
-                            flexShrink: 0
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Bottom Row: Metadata & Action Buttons */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '10px', marginTop: '4px' }}>
-                  
-                  {/* Left: Room, Requesting Teacher, Date */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-muted)' }}>
-                    {renderLocationBadge(ticket.roomNumber)}
-
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <User size={13} color="var(--text-muted)" /> {ticket.teacherName}
-                      {cleanPhone && (
-                        <span style={{ display: 'inline-flex', gap: '4px', marginLeft: '4px' }}>
-                          <a href={`tel:${cleanPhone}`} title={t.profile.call} style={{ color: 'var(--accent-emerald)', padding: '2px', display: 'flex', alignItems: 'center' }}>
-                            <PhoneCall size={12} />
-                          </a>
-                          <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" title={t.profile.whatsapp} style={{ color: '#4ade80', padding: '2px', display: 'flex', alignItems: 'center' }}>
-                            <MessageSquare size={12} />
-                          </a>
-                        </span>
-                      )}
-                    </span>
-
-                    <span>{t.tickets.createdAt}: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-                  </div>
-
-                  {/* Right: Handler details & Action Buttons */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    
-                    {/* Handled by info */}
-                    {ticket.assignedWorker && (
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'rgba(15, 23, 42, 0.6)', padding: '4px 8px', borderRadius: '6px' }}>
-                        Assigned: <strong style={{ color: '#e2e8f0' }}>{ticket.assignedWorker}</strong>
-                        {ticket.purchaseCost ? ` (Cost: ₸${ticket.purchaseCost.toLocaleString()})` : ''}
-                      </div>
-                    )}
-
-                    {/* Department Processing Button */}
-                    {canProcessTicket(ticket) && !isCompleted && (
-                      <button
-                        onClick={() => setSelectedTicket(ticket)}
-                        style={{
-                          background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                          color: '#fff',
-                          border: 'none',
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          boxShadow: '0 2px 8px rgba(6, 182, 212, 0.3)'
-                        }}
-                      >
-                        {getProcessButtonLabel(ticket)}
-                      </button>
-                    )}
-
-                    {/* Mark Completed Button */}
-                    {canProcessTicket(ticket) && !isCompleted && ticket.status !== 'pending' && (
-                      <button
-                        onClick={() => completeTicketDelivery(ticket.id)}
-                        style={{
-                          background: 'rgba(16, 185, 129, 0.15)',
-                          color: 'var(--success)',
-                          border: '1px solid var(--success)',
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}
-                      >
-                        <CheckCircle2 size={13} /> {t.tickets.markComplete}
-                      </button>
-                    )}
-
-                  </div>
-
-                </div>
-
-                {/* Handler Notes Banner (if any) */}
-                {ticket.notes && (
-                  <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', background: 'rgba(15, 23, 42, 0.4)', padding: '6px 10px', borderRadius: '6px' }}>
-                    Note: "{ticket.notes}"
-                  </div>
-                )}
-
-              </div>
-            );
-          })}
+          {filteredTickets.map(ticket => (
+            <TicketCard
+              key={ticket.id}
+              ticket={ticket}
+              targetLang={translatorTargetLang}
+              autoTranslate={autoTranslateTickets}
+              t={t}
+              lang={lang}
+              role={role}
+              currentUser={currentUser}
+              canProcessTicket={canProcessTicket}
+              getProcessButtonLabel={getProcessButtonLabel}
+              getStatusBadge={getStatusBadge}
+              getDepartmentBadge={getDepartmentBadge}
+              getUrgencyBadge={getUrgencyBadge}
+              renderLocationBadge={renderLocationBadge}
+              onSelectTicket={setSelectedTicket}
+              onCompleteTicket={completeTicketDelivery}
+            />
+          ))}
         </div>
       )}
 

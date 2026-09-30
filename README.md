@@ -2,6 +2,17 @@
 
 Full-stack school and campus operations platform for managing facilities, storage materials, IT support, cleaning, and maintenance requests with persistent SQLite database storage.
 
+**Live Demo**: [https://nurassyl2006.github.io/material-ticket-platform](https://nurassyl2006.github.io/material-ticket-platform)
+
+---
+
+## Key Features
+
+- **Bidirectional Ticket Translator**: Real-time translation between English-speaking teachers and Russian/Kazakh-speaking maintenance engineers (auto-translation, 0ms school terminology dictionary, and neural translation API).
+- **Trilingual Departments & Subcategories**: Localized in English (`EN`), Russian (`RU`), and Kazakh (`KK`).
+- **Resolution Notes Translator**: Engineers can write notes in Russian/Kazakh and translate them into English for teachers with 1 click.
+- **Role-Based Workflows**: Custom views for Teacher, IT Support, Cleaning Staff, Storage Manager, Facilities Manager, Director, and Maintenance Engineer.
+
 ---
 
 ## Architecture Overview
@@ -9,6 +20,7 @@ Full-stack school and campus operations platform for managing facilities, storag
 - **Frontend**: React 19 + Vite (Tailored dark UI, multi-language EN/RU/KK, role-based workflows)
 - **Backend**: Node.js + Express 5 (`server/index.js`)
 - **Database**: SQLite via `better-sqlite3` (`server/data/platform.db`) with WAL mode
+- **Translation API**: Built-in `/api/translate` endpoint with multi-tier caching and client fallback
 - **Real-Time Sync**: Automatic background polling (every 3 seconds), focus-reconnect, and seamless offline-first local storage caching
 
 ---
@@ -87,4 +99,5 @@ npm run dev
 | `GET` | `/api/users` | Retrieve all user profiles |
 | `PATCH` | `/api/users/:roleKey` | Update user profile (name, phone, avatar) |
 | `GET` | `/api/notifications` | Retrieve user notifications |
+| `POST` | `/api/translate` | Translate text between English, Russian, and Kazakh |
 | `POST` | `/api/reset` | Reset database to clean default seed data |

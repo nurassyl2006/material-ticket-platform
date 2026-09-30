@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../AppContext';
-import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight } from 'lucide-react';
+import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, Sparkles } from 'lucide-react';
 import { CampusLocationSelector } from './CampusLocationSelector';
-import { DEPARTMENTS, resolveDepartment } from '../departments';
+import { DEPARTMENTS, resolveDepartment, getSubcategories } from '../departments';
+import { translateText } from '../services/translator';
 
 export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk' }) => {
   const { t, addTicket, inventory, currentUser, lang } = useApp();
@@ -22,6 +23,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     furnitureItems: ''
   });
   const [photos, setPhotos] = useState([]);
+  const [translatedPreview, setTranslatedPreview] = useState(null);
+  const [isTranslatingPreview, setIsTranslatingPreview] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -49,15 +52,15 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     setFormData(prev => {
       let room = prev.roomNumber;
       const lower = subcat.toLowerCase();
-      if (lower.includes('унитаз') || lower.includes('раковин') || lower.includes('смесител') || lower.includes('санузл') || lower.includes('полотенцесушител')) {
+      if (lower.includes('унитаз') || lower.includes('раковин') || lower.includes('смесител') || lower.includes('санузл') || lower.includes('полотенцесушител') || lower.includes('toilet') || lower.includes('sink') || lower.includes('faucet') || lower.includes('restroom') || lower.includes('әжетхана')) {
         room = 'Block A (Main) • 1st Floor • Restroom (Girls Restroom)';
-      } else if (lower.includes('коридор') || lower.includes('холл') || lower.includes('турникет')) {
+      } else if (lower.includes('коридор') || lower.includes('холл') || lower.includes('турникет') || lower.includes('corridor') || lower.includes('hallway') || lower.includes('дәліз')) {
         room = 'Block A (Main) • 1st Floor • Corridor (Central Hallway)';
-      } else if (lower.includes('снег') || lower.includes('лед') || lower.includes('дорожек') || lower.includes('крыльц') || lower.includes('подъездных') || lower.includes('территори')) {
+      } else if (lower.includes('снег') || lower.includes('лед') || lower.includes('дорожек') || lower.includes('крыльц') || lower.includes('подъездных') || lower.includes('территори') || lower.includes('snow') || lower.includes('ice') || lower.includes('pathway') || lower.includes('driveway') || lower.includes('қар') || lower.includes('мұз')) {
         room = 'School Yard / Outdoors • Ground • Main Driveway';
-      } else if (lower.includes('актового зала')) {
+      } else if (lower.includes('актового зала') || lower.includes('assembly') || lower.includes('акт залы')) {
         room = 'Block A (Main) • 1st Floor • Main Assembly Hall';
-      } else if (lower.includes('столов') || lower.includes('буфет') || lower.includes('куллер')) {
+      } else if (lower.includes('столов') || lower.includes('буфет') || lower.includes('куллер') || lower.includes('cafeteria') || lower.includes('canteen') || lower.includes('cooler') || lower.includes('су құтысы')) {
         room = 'Block A (Main) • 1st Floor • Cafeteria (Dining Hall)';
       }
 
@@ -237,7 +240,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               <span>{t.tickets.selectSubcategory || 'Выберите тему / подкатегорию:'}</span>
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {activeDeptObj.subcategories.map(subcat => {
+              {getSubcategories(activeDeptObj, lang).map(subcat => {
                 const isSelected = formData.subcategory === subcat || formData.itemTitle === subcat;
                 return (
                   <button
@@ -371,14 +374,73 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
           {/* Description */}
           <div>
-            <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.description}</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t.tickets.description}</label>
+              {(formData.description || formData.itemTitle) && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setIsTranslatingPreview(true);
+                    try {
+                      const textToTrans = formData.description || formData.itemTitle;
+                      const res = await translateText(textToTrans, 'ru', 'auto');
+                      setTranslatedPreview(res.translatedText);
+                    } catch (e) {
+                      // ignore
+                    } finally {
+                      setIsTranslatingPreview(false);
+                    }
+                  }}
+                  style={{
+                    background: 'rgba(99, 102, 241, 0.15)',
+                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                    color: '#818cf8',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontWeight: '600'
+                  }}
+                >
+                  <Globe size={11} />
+                  {isTranslatingPreview ? (t.translator?.translating || 'Translating...') : (t.translator?.translateDescForEngineer || '🇷🇺 Preview Russian for Engineer')}
+                </button>
+              )}
+            </div>
             <textarea
               rows="2"
               placeholder={t.tickets.descPlaceholder}
               value={formData.description}
-              onChange={e => setFormData({ ...formData, description: e.target.value })}
+              onChange={e => {
+                setFormData({ ...formData, description: e.target.value });
+                if (translatedPreview) setTranslatedPreview(null);
+              }}
               style={{ ...inputStyle, resize: 'vertical' }}
             />
+            {translatedPreview && (
+              <div style={{
+                marginTop: '6px',
+                padding: '8px 10px',
+                borderRadius: '8px',
+                background: 'rgba(56, 189, 248, 0.1)',
+                border: '1px solid rgba(56, 189, 248, 0.25)',
+                fontSize: '12px',
+                color: '#e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px'
+              }}>
+                <span style={{ fontSize: '10px', color: '#38bdf8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🇷🇺 Russian translation for Maintenance Staff:
+                </span>
+                <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>
+                  "{translatedPreview}"
+                </span>
+              </div>
+            )}
           </div>
 
           {/* ── PHOTO UPLOAD ────────────────────────────────────────────────── */}

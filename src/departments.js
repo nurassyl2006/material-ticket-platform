@@ -1,6 +1,8 @@
 /**
  * Core School Operations Departments & Subcategories Specification
  * Synchronized with BI Education and School Operations Helpdesk Standards.
+ * Fully localized across English, Russian, and Kazakh to enable seamless
+ * communication between English-speaking teachers and Russian/Kazakh-speaking engineers.
  */
 
 export const DEPARTMENTS = {
@@ -26,7 +28,45 @@ export const DEPARTMENTS = {
       "Не работает школьный сайт/электронный журнал",
       "Создание СКУД карты",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Password reset",
+        "Laptop issue",
+        "Printer issue",
+        "Interactive whiteboard / Smartboard",
+        "Internet / Wi-Fi disconnected",
+        "Projector not working",
+        "Speakers / Microphone issue",
+        "School portal / Gradebook not loading",
+        "RFID keycard / Access card issue",
+        "Other IT issue"
+      ],
+      ru: [
+        "Сброс пароля",
+        "Проблема с ноутбуком",
+        "Проблема с принтером",
+        "Проблема с интерактивной доской",
+        "Не работает интернет/Wi-Fi",
+        "Не работает проектор",
+        "Проблема с колонками/микрофоном",
+        "Не работает школьный сайт/электронный журнал",
+        "Создание СКУД карты",
+        "Прочее"
+      ],
+      kk: [
+        "Құпиясөзді қалпына келтіру",
+        "Ноутбук мәселесі",
+        "Принтер мәселесі",
+        "Интерактивті тақта мәселесі",
+        "Интернет/Wi-Fi жұмыс істемейді",
+        "Проектор жұмыс істемейді",
+        "Динамиктер/микрофон мәселесі",
+        "Мектеп сайты/электронды журнал істемейді",
+        "СКУД картасын жасау",
+        "Басқа IT мәселесі"
+      ]
+    }
   },
   "plumbing": {
     id: "plumbing",
@@ -50,7 +90,45 @@ export const DEPARTMENTS = {
       "Проблемы с системой отопления (холодные батареи)",
       "Проблемы с системой отопления (текут батареи)",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Clogged toilet / sink",
+        "Leaking faucet / pipe",
+        "Toilet bowl leaking",
+        "Flush button broken / not flushing",
+        "No hot / cold water",
+        "Sewage odor in restroom",
+        "Towel warmer not heating",
+        "Heating problem (radiators cold)",
+        "Heating problem (radiators leaking)",
+        "Other plumbing issue"
+      ],
+      ru: [
+        "Засор в унитазе/раковине",
+        "Протекает смеситель/труба",
+        "Протекает унитаз",
+        "Кнопка слива не работает",
+        "Нет горячей/холодной воды",
+        "Запах из канализации",
+        "Не работает полотенцесушитель",
+        "Проблемы с системой отопления (холодные батареи)",
+        "Проблемы с системой отопления (текут батареи)",
+        "Прочее"
+      ],
+      kk: [
+        "Әжетхана/раковина бітелуі",
+        "Шүмек/құбыр ағуы",
+        "Әжетхананың ағуы",
+        "Ағызу түймесі істемейді",
+        "Ыстық/суық су жоқ",
+        "Кәріз иісі шығады",
+        "Сүлгі кептіргіш жұмыс істемейді",
+        "Жылыту мәселесі (салқын батареялар)",
+        "Жылыту мәселесі (батареядан су ағу)",
+        "Басқа сантехникалық жұмыс"
+      ]
+    }
   },
   "electrical": {
     id: "electrical",
@@ -72,7 +150,39 @@ export const DEPARTMENTS = {
       "Не работает электрический чайник/микроволновка",
       "Проблемы с системой пожарной сигнализации",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "No electricity in classroom / power outage",
+        "Light bulb burned out / flickering",
+        "Wall socket / light switch not working",
+        "School bell not working",
+        "Hallway / corridor lighting issue",
+        "Appliance not working (kettle / microwave)",
+        "Fire alarm system issue",
+        "Other electrical issue"
+      ],
+      ru: [
+        "Отсутствует электричество в кабинете",
+        "Сгорела/мигает лампа",
+        "Не работает розетка/выключатель",
+        "Не работает звонок",
+        "Проблемы с освещением в коридоре",
+        "Не работает электрический чайник/микроволновка",
+        "Проблемы с системой пожарной сигнализации",
+        "Прочее"
+      ],
+      kk: [
+        "Кабинетте жарық/электр жоқ",
+        "Шам күйіп кетті/жыпылықтайды",
+        "Розетка/қосқыш жұмыс істемейді",
+        "Мектеп қоңырауы жұмыс істемейді",
+        "Дәліздегі жарықтандыру мәселесі",
+        "Электр шәйнегі/микротолқынды пеш істемейді",
+        "Өрт дабылы жүйесінің мәселесі",
+        "Басқа электротехникалық жұмыс"
+      ]
+    }
   },
   "carpentry": {
     id: "carpentry",
@@ -94,7 +204,39 @@ export const DEPARTMENTS = {
       "Крепление карниза/штор",
       "Проблемы с окнами (не закрывается, сквозит)",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Furniture repair (chair, desk, closet)",
+        "Door adjustment / repair",
+        "Window handle repair",
+        "Coat rack / hook loose or broken",
+        "Blackboard / shelf repair",
+        "Curtain rod / blinds mounting",
+        "Window won't close / draft",
+        "Other carpentry issue"
+      ],
+      ru: [
+        "Ремонт мебели (стул, стол, шкаф)",
+        "Регулировка/ремонт двери",
+        "Ремонт ручки окна",
+        "Расшаталась/сломалась вешалка",
+        "Ремонт доски/полки",
+        "Крепление карниза/штор",
+        "Проблемы с окнами (не закрывается, сквозит)",
+        "Прочее"
+      ],
+      kk: [
+        "Жиһаз жөндеу (орындық, үстел, шкаф)",
+        "Есікті реттеу/жөндеу",
+        "Терезе тұтқасын жөндеу",
+        "Киім ілгіш босаған/сынған",
+        "Тақта/сөрені жөндеу",
+        "Карниз/пердені бекіту",
+        "Терезе жабылмайды/жел соғады",
+        "Басқа ұсталық жұмыс"
+      ]
+    }
   },
   "cleaning": {
     id: "cleaning",
@@ -116,7 +258,39 @@ export const DEPARTMENTS = {
       "Чистка ковровых покрытий",
       "Уборка после ремонта/мероприятия",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Classroom cleaning",
+        "Restroom sanitization / cleaning",
+        "Corridor / hallway cleaning",
+        "Trash / waste removal",
+        "Window washing",
+        "Carpet vacuuming / cleaning",
+        "Post-event / post-repair cleanup",
+        "Other cleaning request"
+      ],
+      ru: [
+        "Уборка кабинета",
+        "Уборка санузла",
+        "Уборка в холле/коридоре",
+        "Вынос мусора",
+        "Мойка окон",
+        "Чистка ковровых покрытий",
+        "Уборка после ремонта/мероприятия",
+        "Прочее"
+      ],
+      kk: [
+        "Кабинетті тазалау",
+        "Әжетхананы тазалау",
+        "Дәлізді/холлды тазалау",
+        "Қоқыс шығару",
+        "Терезе жуу",
+        "Кілемдерді тазалау",
+        "Шарадан/жөндеуден кейінгі тазалық",
+        "Басқа тазалық жұмысы"
+      ]
+    }
   },
   "event_prep": {
     id: "event_prep",
@@ -134,7 +308,27 @@ export const DEPARTMENTS = {
       "Установка звукового оборудования",
       "Установка проекционного оборудования",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Assembly hall / room preparation",
+        "Sound & speaker equipment setup",
+        "Projector & screen setup",
+        "Other event prep"
+      ],
+      ru: [
+        "Подготовка актового зала/помещения",
+        "Установка звукового оборудования",
+        "Установка проекционного оборудования",
+        "Прочее"
+      ],
+      kk: [
+        "Акт залын/бөлмені дайындау",
+        "Дыбыстық құралдарды орнату",
+        "Проекциялық құралдарды орнату",
+        "Басқа дайындық жұмысы"
+      ]
+    }
   },
   "grounds": {
     id: "grounds",
@@ -155,7 +349,36 @@ export const DEPARTMENTS = {
       "Очистка крыши от сосулек/снега",
       "Расчистка подъездных путей",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Snow shoveling on pathways",
+        "Porch / stairs snow clearing",
+        "De-icing / spreading salt & sand",
+        "Ice chipping on sidewalks",
+        "Icicle / roof snow clearing",
+        "Driveway & parking clearing",
+        "Other grounds maintenance"
+      ],
+      ru: [
+        "Уборка снега с дорожек",
+        "Уборка снега с крыльца/ступеней",
+        "Посыпка дорожек песком/солью (гололед)",
+        "Уборка льда с тротуаров",
+        "Очистка крыши от сосулек/снега",
+        "Расчистка подъездных путей",
+        "Прочее"
+      ],
+      kk: [
+        "Жолдардағы қарды тазалау",
+        "Баспалдақтан қар тазалау",
+        "Мұзға тұз/құм себу (көктайғақ)",
+        "Тротуардағы мұзды жою",
+        "Шатырдан мұз/қар түсіру",
+        "Көлік жолдарын қардан тазарту",
+        "Басқа абаттандыру жұмысы"
+      ]
+    }
   },
   "security": {
     id: "security",
@@ -177,7 +400,39 @@ export const DEPARTMENTS = {
       "Утеря/кража вещей",
       "Неисправность системы контроля доступа",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Call security guard",
+        "CCTV security camera issue",
+        "Room access / forgot keys",
+        "Suspicious individuals on campus",
+        "Entrance turnstile barrier issue",
+        "Lost and found / missing item",
+        "Access control system failure",
+        "Other security request"
+      ],
+      ru: [
+        "Вызвать охрану",
+        "Проблемы с камерами видеонаблюдения",
+        "Доступ в помещение (забыл ключ)",
+        "Подозрительные лица на территории",
+        "Проблемы с турникетом",
+        "Утеря/кража вещей",
+        "Неисправность системы контроля доступа",
+        "Прочее"
+      ],
+      kk: [
+        "Күзетті шақыру",
+        "Бейнебақылау камерасы мәселесі",
+        "Бөлмеге кіру (кілтті ұмыттым)",
+        "Аумақтағы күдікті адамдар",
+        "Турникет мәселесі",
+        "Заттың жоғалуы/ұрлануы",
+        "Қолжетімділікті бақылау жүйесінің ақауы",
+        "Басқа күзет мәселесі"
+      ]
+    }
   },
   "admin": {
     id: "admin",
@@ -196,7 +451,30 @@ export const DEPARTMENTS = {
       "Запрос документов/справок",
       "Вопросы по аренде помещений",
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Inquiry for Principal / Director",
+        "Inquiry for Facilities Manager",
+        "Document / Certificate request",
+        "Room rental inquiry",
+        "Other admin inquiry"
+      ],
+      ru: [
+        "Вопросы к директору",
+        "Вопросы к завхозу",
+        "Запрос документов/справок",
+        "Вопросы по аренде помещений",
+        "Прочее"
+      ],
+      kk: [
+        "Директорға сұрақ",
+        "Шаруашылық меңгерушісіне сұрақ",
+        "Құжат/анықтама сұрау",
+        "Бөлме жалдау сұрағы",
+        "Басқа әкімшілік сұрақ"
+      ]
+    }
   },
   "bi_education": {
     id: "bi_education",
@@ -211,7 +489,12 @@ export const DEPARTMENTS = {
     },
     subcategories: [
       "Прочее"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: ["General BI Education appeal"],
+      ru: ["Прочее"],
+      kk: ["Жалпы BI Education өтініші"]
+    }
   },
   "other": {
     id: "other",
@@ -228,7 +511,24 @@ export const DEPARTMENTS = {
       "Доставка воды куллерам",
       "Другая проблема",
       "Неопределенная категория"
-    ]
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "Water cooler refill delivery",
+        "Other facility issue",
+        "Uncategorized request"
+      ],
+      ru: [
+        "Доставка воды куллерам",
+        "Другая проблема",
+        "Неопределенная категория"
+      ],
+      kk: [
+        "Куллерлерге су жеткізу",
+        "Басқа мәселе",
+        "Анықталмаған санат"
+      ]
+    }
   }
 };
 
@@ -260,6 +560,43 @@ export function resolveDepartment(rawId) {
   const alias = DEPARTMENT_ALIASES[rawId];
   if (alias && DEPARTMENTS[alias]) return DEPARTMENTS[alias];
   return DEPARTMENTS.other;
+}
+
+/**
+ * Get localized subcategories for a given department
+ */
+export function getSubcategories(deptIdOrObj, lang = 'ru') {
+  const dept = typeof deptIdOrObj === 'string' ? resolveDepartment(deptIdOrObj) : deptIdOrObj;
+  if (!dept) return [];
+  if (dept.subcategoriesLocalized && dept.subcategoriesLocalized[lang]) {
+    return dept.subcategoriesLocalized[lang];
+  }
+  return dept.subcategories || [];
+}
+
+/**
+ * Translate any subcategory across languages in 0ms using the cross-index
+ */
+export function translateSubcategory(subcatText, targetLang = 'ru') {
+  if (!subcatText) return '';
+  const clean = subcatText.trim().toLowerCase();
+
+  for (const dept of Object.values(DEPARTMENTS)) {
+    const loc = dept.subcategoriesLocalized;
+    if (!loc) continue;
+
+    for (const [langKey, list] of Object.entries(loc)) {
+      const idx = list.findIndex(item => item.toLowerCase() === clean);
+      if (idx !== -1) {
+        if (loc[targetLang] && loc[targetLang][idx]) {
+          return loc[targetLang][idx];
+        }
+        return list[idx];
+      }
+    }
+  }
+
+  return subcatText;
 }
 
 /**

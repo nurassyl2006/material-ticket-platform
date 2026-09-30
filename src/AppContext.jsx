@@ -18,6 +18,12 @@ import {
   clearNotificationsInDb,
   resetDatabaseInDb
 } from './api';
+import {
+  translateText,
+  translateTicket,
+  detectLanguage,
+  TRANSLATOR_LANGUAGES
+} from './services/translator';
 
 const AppContext = createContext();
 
@@ -30,6 +36,31 @@ const OLD_MOCK_IDS = new Set([
 export const AppProvider = ({ children }) => {
   // Language state
   const [lang, setLang] = useState(() => localStorage.getItem('app_lang') || 'en');
+
+  // Auto-translate state (Engineers have auto-translation active by default for English tickets)
+  const [autoTranslateTickets, setAutoTranslateTicketsState] = useState(() => {
+    const saved = localStorage.getItem('app_auto_translate_tickets');
+    if (saved !== null) return saved === 'true';
+    return true; // Default ON to immediately help engineers
+  });
+
+  const setAutoTranslateTickets = useCallback((val) => {
+    setAutoTranslateTicketsState(prev => {
+      const next = typeof val === 'function' ? val(prev) : val;
+      localStorage.setItem('app_auto_translate_tickets', String(next));
+      return next;
+    });
+  }, []);
+
+  // Translator target language (default 'ru' for engineers, can be toggled to 'kk' or 'en')
+  const [translatorTargetLang, setTranslatorTargetLangState] = useState(() => {
+    return localStorage.getItem('app_translator_target_lang') || (lang === 'kk' ? 'kk' : 'ru');
+  });
+
+  const setTranslatorTargetLang = useCallback((val) => {
+    setTranslatorTargetLangState(val);
+    localStorage.setItem('app_translator_target_lang', val);
+  }, []);
 
   // Role state with legacy mapping
   const [role, setRole] = useState(() => {
@@ -654,7 +685,16 @@ export const AppProvider = ({ children }) => {
       addInventoryItem,
       updateInventoryQty,
       addPhotosToTicket,
-      resetDemoData
+      resetDemoData,
+      // Ticket Translation Suite for Engineers & Teachers
+      autoTranslateTickets,
+      setAutoTranslateTickets,
+      translatorTargetLang,
+      setTranslatorTargetLang,
+      translateText,
+      translateTicket,
+      detectLanguage,
+      TRANSLATOR_LANGUAGES
     }}>
       {children}
     </AppContext.Provider>

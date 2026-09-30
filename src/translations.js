@@ -287,6 +287,26 @@ export const translations = {
       delete: "Delete",
       success: "Operation completed successfully!",
       error: "An error occurred."
+    },
+    translator: {
+      badge: "Ticket Translator",
+      autoTranslate: "Auto-Translate for Engineers",
+      autoTranslateOn: "Auto-Translate: ON",
+      autoTranslateOff: "Auto-Translate: OFF",
+      autoTranslateHelp: "Auto-translates English teacher requests to Russian or Kazakh for maintenance staff",
+      translateBtn: "Translate",
+      translating: "Translating...",
+      translatedTo: "Translated to",
+      showOriginal: "Show Original",
+      showTranslation: "Show Translation",
+      targetLanguage: "Target Language:",
+      original: "Original",
+      translateNoteForTeacher: "Translate Note to English for Teacher",
+      noteTranslatedToEnglish: "Note translated to English for teacher!",
+      translateDescForEngineer: "Translate to Russian for Engineer",
+      engineerHelpNotice: "Automatic translation between English-speaking teachers and Russian/Kazakh-speaking engineers",
+      originalText: "Original Request",
+      translatedText: "Translated Request"
     }
   },
 
@@ -578,6 +598,26 @@ export const translations = {
       delete: "Удалить",
       success: "Операция успешно выполнена!",
       error: "Произошла ошибка."
+    },
+    translator: {
+      badge: "Переводчик заявок",
+      autoTranslate: "Автоперевод для инженеров",
+      autoTranslateOn: "Автоперевод: ВКЛ",
+      autoTranslateOff: "Автоперевод: ВЫКЛ",
+      autoTranslateHelp: "Автоматически переводит английские заявки учителей на русский или казахский для инженера",
+      translateBtn: "Перевести",
+      translating: "Переводим...",
+      translatedTo: "Переведено на",
+      showOriginal: "Показать оригинал",
+      showTranslation: "Показать перевод",
+      targetLanguage: "Язык перевода:",
+      original: "Оригинал",
+      translateNoteForTeacher: "Перевести заметку на английский для учителя",
+      noteTranslatedToEnglish: "Заметка переведена на английский для учителя!",
+      translateDescForEngineer: "Перевести на русский для инженера",
+      engineerHelpNotice: "Автоматический перевод между учителями (English) и инженерами (Русский / Қазақша)",
+      originalText: "Оригинал заявки",
+      translatedText: "Переведенная заявка"
     }
   },
 
@@ -870,6 +910,26 @@ export const translations = {
       delete: "Жою",
       success: "Әрекет сәтті орындалды!",
       error: "Қате орын алды."
+    },
+    translator: {
+      badge: "Өтінімдер аудармашысы",
+      autoTranslate: "Инженерлер үшін автоаударма",
+      autoTranslateOn: "Автоаударма: ҚОСУЛЫ",
+      autoTranslateOff: "Автоаударма: ӨШІРУЛІ",
+      autoTranslateHelp: "Мұғалімдердің ағылшын тіліндегі өтінімдерін қазақшаға немесе орысшаға автоматты түрде аударады",
+      translateBtn: "Аудару",
+      translating: "Аударуда...",
+      translatedTo: "Аударылды:",
+      showOriginal: "Түпнұсқаны көрсету",
+      showTranslation: "Аударманы көрсету",
+      targetLanguage: "Аудару тілі:",
+      original: "Түпнұсқа",
+      translateNoteForTeacher: "Мұғалім үшін жазбаны ағылшыншаға аудару",
+      noteTranslatedToEnglish: "Жазба мұғалім үшін ағылшын тіліне аударылды!",
+      translateDescForEngineer: "Инженер үшін сипаттаманы аудару",
+      engineerHelpNotice: "Мұғалімдер (English) мен инженерлер (Қазақша / Орысша) арасындағы автоматты аударма",
+      originalText: "Өтінімнің түпнұсқасы",
+      translatedText: "Аударылған өтінім"
     }
   }
 };

@@ -585,6 +585,84 @@ app.delete('/api/notifications', (req, res) => {
 });
 
 // -------------------------------------------------------------
+// Translation API Endpoint (Assists Engineers & Teachers)
+// -------------------------------------------------------------
+const serverTranslationCache = new Map();
+
+app.post('/api/translate', async (req, res) => {
+  try {
+    const { text, from = 'auto', to = 'ru' } = req.body;
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      return res.json({ translatedText: text || '', from, to });
+    }
+
+    const trimmed = text.trim();
+    const cacheKey = `${from}:${to}:${trimmed}`;
+    if (serverTranslationCache.has(cacheKey)) {
+      return res.json({
+        translatedText: serverTranslationCache.get(cacheKey),
+        from,
+        to,
+        cached: true
+      });
+    }
+
+    let source = from;
+    if (source === 'auto') {
+      if (/[әғқңөұүһіӘҒҚҢӨҰҮҺІ]/.test(trimmed)) {
+        source = 'kk';
+      } else if (/[а-яёА-ЯЁ]/.test(trimmed)) {
+        source = 'ru';
+      } else {
+        source = 'en';
+      }
+    }
+
+    if (source === to) {
+      return res.json({ translatedText: trimmed, from: source, to, isSame: true });
+    }
+
+    const langpair = `${source}|${to}`;
+    const myMemoryUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed)}&langpair=${langpair}`;
+
+    const response = await fetch(myMemoryUrl, {
+      headers: { 'User-Agent': 'EduOps-Ticket-Platform/1.0' },
+      signal: AbortSignal.timeout(9000)
+    });
+
+    if (!response.ok) {
+      return res.json({ translatedText: trimmed, from, to, fallback: true });
+    }
+
+    const data = await response.json();
+    let translated = data?.responseData?.translatedText;
+
+    if (translated && !data.quotaFinished && translated.toLowerCase() !== 'null') {
+      translated = translated
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
+
+      serverTranslationCache.set(cacheKey, translated);
+      // Keep cache bounded
+      if (serverTranslationCache.size > 2000) {
+        const firstKey = serverTranslationCache.keys().next().value;
+        serverTranslationCache.delete(firstKey);
+      }
+
+      return res.json({ translatedText: translated, from, to, cached: false });
+    }
+
+    res.json({ translatedText: trimmed, from, to, fallback: true });
+  } catch (error) {
+    // Return original text gracefully on timeout or network error
+    res.json({ translatedText: req.body?.text || '', from: req.body?.from || 'auto', to: req.body?.to || 'ru', fallback: true, error: error.message });
+  }
+});
+
+// -------------------------------------------------------------
 // Database Reset Endpoint (Restores default clean state)
 // -------------------------------------------------------------
 app.post('/api/reset', (req, res) => {
