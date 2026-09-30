@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut, Bell } from 'lucide-react';
+import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut, Bell, Database } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 
 export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket, onSelectTicket }) => {
@@ -276,32 +276,55 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
               </span>
             </button>
 
-            {/* Multi-Device Live Cloud Sync Indicator */}
+            {/* Database & Multi-Device Sync Indicator */}
             <div
               onClick={syncWithCloud}
-              title={cloudStatus === 'syncing' ? 'Syncing across devices...' : 'Live multi-device sync active (click to refresh)'}
+              title={
+                cloudStatus === 'syncing'
+                  ? 'Syncing with SQLite database...'
+                  : cloudStatus === 'offline'
+                  ? 'Offline mode: using local cache (click to retry database connection)'
+                  : 'SQLite Database Connected & Synced (click to refresh)'
+              }
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '5px',
-                background: cloudStatus === 'syncing' ? 'rgba(56, 189, 248, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                border: `1px solid ${cloudStatus === 'syncing' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-                padding: '5px 9px',
+                gap: '6px',
+                background: cloudStatus === 'syncing'
+                  ? 'rgba(56, 189, 248, 0.14)'
+                  : cloudStatus === 'offline'
+                  ? 'rgba(245, 158, 11, 0.14)'
+                  : 'rgba(16, 185, 129, 0.14)',
+                border: `1px solid ${
+                  cloudStatus === 'syncing'
+                    ? 'rgba(56, 189, 248, 0.35)'
+                    : cloudStatus === 'offline'
+                    ? 'rgba(245, 158, 11, 0.35)'
+                    : 'rgba(16, 185, 129, 0.35)'
+                }`,
+                padding: '5px 10px',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 userSelect: 'none',
                 transition: 'all 0.2s ease'
               }}
             >
-              <span style={{
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                background: cloudStatus === 'syncing' ? '#38bdf8' : '#10b981',
-                boxShadow: cloudStatus === 'syncing' ? '0 0 6px #38bdf8' : '0 0 6px #10b981'
+              <Database size={13} style={{
+                color: cloudStatus === 'syncing' ? '#38bdf8' : cloudStatus === 'offline' ? '#fbbf24' : '#34d399'
               }} />
-              <span className="profile-btn-text" style={{ fontSize: '11px', fontWeight: '700', color: cloudStatus === 'syncing' ? '#38bdf8' : '#34d399' }}>
-                {cloudStatus === 'syncing' ? 'Syncing' : 'Live Sync'}
+              <span style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: cloudStatus === 'syncing' ? '#38bdf8' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981',
+                boxShadow: cloudStatus === 'syncing' ? '0 0 6px #38bdf8' : cloudStatus === 'offline' ? '0 0 6px #f59e0b' : '0 0 6px #10b981'
+              }} />
+              <span className="profile-btn-text" style={{
+                fontSize: '11px',
+                fontWeight: '700',
+                color: cloudStatus === 'syncing' ? '#38bdf8' : cloudStatus === 'offline' ? '#fbbf24' : '#34d399'
+              }}>
+                {cloudStatus === 'syncing' ? 'Syncing...' : cloudStatus === 'offline' ? 'Offline' : 'DB Synced'}
               </span>
             </div>
 

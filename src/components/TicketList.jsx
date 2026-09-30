@@ -19,23 +19,28 @@ import {
   Package,
   CheckCircle,
   Layers,
-  Wrench
+  Wrench,
+  MapPin,
+  Droplets,
+  Footprints,
+  DoorOpen
 } from 'lucide-react';
 import { DepartmentActionModal } from './DepartmentActionModal';
+import { DEPARTMENTS, resolveDepartment } from '../departments';
 
 export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
-  const { t, tickets, role, currentUser, completeTicketDelivery } = useApp();
+  const { t, tickets, role, currentUser, completeTicketDelivery, lang } = useApp();
   
-  // Available departments based on role authorization
-  const allDepartments = [
-    { id: 'all', label: t.departments.all, icon: Layers, color: '#94a3b8' },
-    { id: 'it', label: t.departments.it, icon: Laptop, color: '#38bdf8' },
-    { id: 'cleaning', label: t.departments.cleaning, icon: Sparkles, color: '#34d399' },
-    { id: 'storage', label: t.departments.storage, icon: Package, color: '#fbbf24' },
-    { id: 'facilities', label: t.departments.facilities, icon: Truck, color: '#a78bfa' },
-    { id: 'engineering', label: t.departments.engineering, icon: Wrench, color: '#f97316' },
-    { id: 'security', label: t.departments.security, icon: Shield, color: '#f87171' }
-  ];
+  // Available departments based on DEPARTMENTS core specification
+  const allDepartments = React.useMemo(() => [
+    { id: 'all', label: t.departments.all || 'All Facilities', emoji: '🏢', color: '#94a3b8' },
+    ...Object.values(DEPARTMENTS).map(d => ({
+      id: d.id,
+      label: d.translations?.[lang] || d.name,
+      emoji: d.emoji,
+      color: d.color
+    }))
+  ], [lang, t]);
 
   // Determine authorized department filter options and default filter
   const departments = React.useMemo(() => {
@@ -43,34 +48,34 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
       return allDepartments;
     }
     if (role === 'it_support') {
-      return allDepartments.filter(d => d.id === 'it');
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'it_helpdesk');
     }
     if (role === 'cleaning') {
-      return allDepartments.filter(d => d.id === 'cleaning');
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'cleaning');
     }
     if (role === 'engineer') {
-      return allDepartments.filter(d => d.id === 'engineering');
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'plumbing' || d.id === 'electrical');
     }
     if (role === 'storage_manager' || role === 'workerA') {
-      return allDepartments.filter(d => d.id === 'storage');
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'other');
     }
     if (role === 'facilities_manager') {
-      return allDepartments.filter(d => d.id === 'facilities' || d.id === 'storage');
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'carpentry' || d.id === 'event_prep' || d.id === 'grounds');
     }
     if (role === 'teacher') {
-      return [{ id: 'all', label: t.nav.myTickets || 'My Requests', icon: Layers, color: '#3b82f6' }];
+      return allDepartments;
     }
     return allDepartments;
-  }, [role, t]);
+  }, [allDepartments, role]);
 
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState(() => {
-    if (role === 'it_support') return 'it';
+    if (role === 'it_support') return 'it_helpdesk';
     if (role === 'cleaning') return 'cleaning';
-    if (role === 'engineer') return 'engineering';
-    if (role === 'storage_manager') return 'storage';
-    if (role === 'facilities_manager') return 'facilities';
+    if (role === 'engineer') return 'plumbing';
+    if (role === 'facilities_manager') return 'carpentry';
     return 'all';
   });
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -85,11 +90,10 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
   // Synchronize dept filter if role changes
   React.useEffect(() => {
-    if (role === 'it_support') setDeptFilter('it');
+    if (role === 'it_support') setDeptFilter('it_helpdesk');
     else if (role === 'cleaning') setDeptFilter('cleaning');
-    else if (role === 'engineer') setDeptFilter('engineering');
-    else if (role === 'storage_manager') setDeptFilter('storage');
-    else if (role === 'facilities_manager') setDeptFilter('facilities');
+    else if (role === 'engineer') setDeptFilter('plumbing');
+    else if (role === 'facilities_manager') setDeptFilter('carpentry');
     else setDeptFilter('all');
   }, [role]);
 
@@ -141,21 +145,41 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     }
   };
 
-  const getDepartmentBadge = (dept) => {
-    const config = {
-      it: { label: t.departments.it, icon: Laptop, color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.15)' },
-      cleaning: { label: t.departments.cleaning, icon: Sparkles, color: '#34d399', bg: 'rgba(52, 211, 153, 0.15)' },
-      storage: { label: t.departments.storage, icon: Package, color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)' },
-      facilities: { label: t.departments.facilities, icon: Truck, color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.15)' },
-      engineering: { label: t.departments.engineering, icon: Wrench, color: '#f97316', bg: 'rgba(249, 115, 22, 0.15)' },
-      security: { label: t.departments.security, icon: Shield, color: '#f87171', bg: 'rgba(248, 113, 113, 0.15)' }
-    };
-    const c = config[dept] || config.storage;
-    const Icon = c.icon;
+  const getDepartmentBadge = (ticket) => {
+    const rawDept = typeof ticket === 'string' ? ticket : ticket?.department;
+    const subcat = typeof ticket === 'object' ? ticket?.subcategory : null;
+    const d = resolveDepartment(rawDept);
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: c.bg, color: c.color, border: `1px solid ${c.color}40`, padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: '700' }}>
-        <Icon size={12} /> {c.label}
-      </span>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '4px',
+          background: `${d.color}20`,
+          color: '#fff',
+          border: `1px solid ${d.color}45`,
+          padding: '3px 8px',
+          borderRadius: '8px',
+          fontSize: '11px',
+          fontWeight: '700'
+        }}>
+          <span>{d.emoji}</span>
+          <span>{d.translations?.[lang] || d.name}</span>
+        </span>
+        {subcat && (
+          <span style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            color: '#e2e8f0',
+            padding: '2px 7px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: '600'
+          }}>
+            {subcat}
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -182,25 +206,82 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                           (ticket.roomNumber || '').toLowerCase().includes(term) ||
                           (ticket.assignedWorker || '').toLowerCase().includes(term);
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
-    const matchesDept = deptFilter === 'all' || (ticket.department || 'storage') === deptFilter;
-    return matchesSearch && matchesStatus && matchesDept;
+    const resolvedDeptId = resolveDepartment(ticket.department).id;
+    const matchesDept = deptFilter === 'all' || resolvedDeptId === deptFilter;
+
+    const matchesLocation = locationFilter === 'all' || (() => {
+      const loc = (ticket.roomNumber || '').toLowerCase();
+      if (locationFilter === 'restroom') {
+        return loc.includes('restroom') || loc.includes('wc') || loc.includes('туалет') || loc.includes('санузел') || loc.includes('әжетхана');
+      }
+      if (locationFilter === 'corridor') {
+        return loc.includes('corridor') || loc.includes('hallway') || loc.includes('коридор') || loc.includes('рекреация') || loc.includes('дәліз');
+      }
+      if (locationFilter === 'classroom') {
+        return loc.includes('room') || loc.includes('кабинет') || loc.includes('lab') || loc.includes('зертхана');
+      }
+      return true;
+    })();
+
+    return matchesSearch && matchesStatus && matchesDept && matchesLocation;
   });
+
+  const renderLocationBadge = (locStr = '') => {
+    const lower = locStr.toLowerCase();
+    let LocIcon = MapPin;
+    let iconColor = '#38bdf8';
+    let badgeBg = 'rgba(56, 189, 248, 0.1)';
+    let badgeBorder = 'rgba(56, 189, 248, 0.25)';
+
+    if (lower.includes('restroom') || lower.includes('wc') || lower.includes('санузел') || lower.includes('туалет') || lower.includes('әжетхана')) {
+      LocIcon = Droplets;
+      iconColor = '#a78bfa';
+      badgeBg = 'rgba(167, 139, 250, 0.12)';
+      badgeBorder = 'rgba(167, 139, 250, 0.3)';
+    } else if (lower.includes('corridor') || lower.includes('hallway') || lower.includes('коридор') || lower.includes('дәліз')) {
+      LocIcon = Footprints;
+      iconColor = '#34d399';
+      badgeBg = 'rgba(52, 211, 153, 0.12)';
+      badgeBorder = 'rgba(52, 211, 153, 0.3)';
+    } else if (lower.includes('room') || lower.includes('кабинет') || lower.includes('lab') || lower.includes('класс')) {
+      LocIcon = DoorOpen;
+      iconColor = '#60a5fa';
+      badgeBg = 'rgba(96, 165, 250, 0.12)';
+      badgeBorder = 'rgba(96, 165, 250, 0.3)';
+    }
+
+    return (
+      <span style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '5px',
+        background: badgeBg,
+        border: `1px solid ${badgeBorder}`,
+        padding: '3px 8px',
+        borderRadius: '6px',
+        fontSize: '12px'
+      }}>
+        <LocIcon size={13} color={iconColor} />
+        <strong style={{ color: '#fff' }}>{locStr || 'Main Campus'}</strong>
+      </span>
+    );
+  };
 
   // Calculate counts per department within authorized scope
   const getDeptCount = (deptId) => {
     if (deptId === 'all') return authorizedTickets.length;
-    return authorizedTickets.filter(tk => (tk.department || 'storage') === deptId).length;
+    return authorizedTickets.filter(tk => resolveDepartment(tk.department).id === deptId).length;
   };
 
   // Determine if current user can process ticket
   const canProcessTicket = (ticket) => {
     if (role === 'director' || role === 'admin') return true;
-    const dept = ticket.department || 'storage';
-    if (role === 'storage_manager' || role === 'workerA') return dept === 'storage';
-    if (role === 'facilities_manager') return dept === 'facilities' || dept === 'storage';
-    if (role === 'it_support') return dept === 'it';
+    const dept = resolveDepartment(ticket.department).id;
+    if (role === 'it_support') return dept === 'it_helpdesk';
     if (role === 'cleaning') return dept === 'cleaning';
-    if (role === 'engineer') return dept === 'engineering';
+    if (role === 'engineer') return dept === 'plumbing' || dept === 'electrical';
+    if (role === 'facilities_manager') return dept === 'carpentry' || dept === 'event_prep' || dept === 'grounds';
+    if (role === 'storage_manager' || role === 'workerA') return dept === 'other';
     return false;
   };
 
@@ -313,41 +394,80 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
       {/* Department Filter Tabs */}
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-        {departments.map(dept => {
-          const Icon = dept.icon;
-          const isActive = deptFilter === dept.id;
-          const count = getDeptCount(dept.id);
+              {departments.map(dept => {
+                const isActive = deptFilter === dept.id;
+                const count = getDeptCount(dept.id);
+                return (
+                  <button
+                    key={dept.id}
+                    onClick={() => setDeptFilter(dept.id)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap',
+                      border: isActive ? `1px solid ${dept.color}` : '1px solid var(--border-color)',
+                      background: isActive ? `${dept.color}25` : 'rgba(30, 41, 59, 0.5)',
+                      color: isActive ? '#fff' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <span style={{ fontSize: '14px', lineHeight: 1 }}>{dept.emoji}</span>
+                    {dept.label}
+                    <span style={{ 
+                      background: isActive ? dept.color : 'rgba(255,255,255,0.1)', 
+                      color: isActive ? '#000' : '#fff', 
+                      padding: '1px 6px', 
+                      borderRadius: '10px', 
+                      fontSize: '10px' 
+                    }}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+      </div>
+
+      {/* Location Area Quick-Filters */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', padding: '2px 0' }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginRight: '4px' }}>
+          <MapPin size={12} color="var(--primary)" />
+          {t?.tickets?.areaType || 'Location'}:
+        </span>
+        {[
+          { id: 'all', label: t?.tickets?.locationFilters?.all || 'All Areas', icon: MapPin },
+          { id: 'restroom', label: t?.tickets?.locationFilters?.restrooms || 'Restrooms', icon: Droplets, color: '#a78bfa' },
+          { id: 'corridor', label: t?.tickets?.locationFilters?.corridors || 'Corridors', icon: Footprints, color: '#34d399' },
+          { id: 'classroom', label: t?.tickets?.locationFilters?.classrooms || 'Classrooms', icon: DoorOpen, color: '#60a5fa' }
+        ].map(locItem => {
+          const isSelected = locationFilter === locItem.id;
+          const LocIcon = locItem.icon;
           return (
             <button
-              key={dept.id}
-              onClick={() => setDeptFilter(dept.id)}
+              key={locItem.id}
+              onClick={() => setLocationFilter(locItem.id)}
               style={{
-                padding: '6px 12px',
-                borderRadius: '10px',
-                fontSize: '12px',
-                fontWeight: '700',
-                display: 'flex',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: isSelected ? '700' : '500',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                whiteSpace: 'nowrap',
-                border: isActive ? `1px solid ${dept.color}` : '1px solid var(--border-color)',
-                background: isActive ? `${dept.color}25` : 'rgba(30, 41, 59, 0.5)',
-                color: isActive ? '#fff' : 'var(--text-muted)',
+                gap: '5px',
+                border: isSelected ? `1px solid ${locItem.color || 'var(--primary)'}` : '1px solid rgba(255,255,255,0.08)',
+                background: isSelected ? (locItem.color ? `${locItem.color}25` : 'rgba(99, 102, 241, 0.25)') : 'rgba(15, 23, 42, 0.4)',
+                color: isSelected ? '#fff' : 'var(--text-muted)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
               }}
             >
-              <Icon size={14} color={isActive ? dept.color : 'var(--text-muted)'} />
-              {dept.label}
-              <span style={{ 
-                background: isActive ? dept.color : 'rgba(255,255,255,0.1)', 
-                color: isActive ? '#000' : '#fff', 
-                padding: '1px 6px', 
-                borderRadius: '10px', 
-                fontSize: '10px' 
-              }}>
-                {count}
-              </span>
+              <LocIcon size={12} color={isSelected ? (locItem.color || 'var(--primary)') : 'var(--text-muted)'} />
+              {locItem.label}
             </button>
           );
         })}
@@ -388,7 +508,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                      {getDepartmentBadge(targetDept)}
+                      {getDepartmentBadge(ticket)}
                       <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>#{ticket.id}</span>
                       {getUrgencyBadge(ticket.urgency)}
                     </div>
@@ -489,9 +609,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                   
                   {/* Left: Room, Requesting Teacher, Date */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-muted)' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Building size={13} color="var(--text-muted)" /> Room: <strong style={{ color: '#fff' }}>{ticket.roomNumber}</strong>
-                    </span>
+                    {renderLocationBadge(ticket.roomNumber)}
 
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <User size={13} color="var(--text-muted)" /> {ticket.teacherName}

@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../AppContext';
-import { PlusCircle, X, Package, Laptop, Sparkles, Truck, Shield, ArrowRight, Wrench, Camera, ImagePlus, Trash2 } from 'lucide-react';
+import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight } from 'lucide-react';
+import { CampusLocationSelector } from './CampusLocationSelector';
+import { DEPARTMENTS, resolveDepartment } from '../departments';
 
-export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering' }) => {
-  const { t, addTicket, inventory, currentUser } = useApp();
+export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk' }) => {
+  const { t, addTicket, inventory, currentUser, lang } = useApp();
 
-  const [department, setDepartment] = useState(initialDepartment);
+  const [department, setDepartment] = useState(() => resolveDepartment(initialDepartment).id);
   const [formData, setFormData] = useState({
     itemTitle: '',
-    category: 'electrical',
+    subcategory: '',
+    category: 'other',
     quantity: 1,
     unit: 'pcs',
     urgency: 'medium',
-    roomNumber: 'Room 101',
+    roomNumber: 'Block A (Main) • 1st Floor • Room 101',
     description: '',
     fromRoom: '',
     toRoom: '',
@@ -25,77 +28,46 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering'
   // Synchronize department when modal opens or initialDepartment prop changes
   useEffect(() => {
     if (isOpen) {
-      const dept = initialDepartment || 'engineering';
-      setDepartment(dept);
+      const resolved = resolveDepartment(initialDepartment);
+      setDepartment(resolved.id);
       setFormData(prev => ({
         ...prev,
-        category: dept === 'engineering' ? 'electrical' : (dept === 'it' ? 'electronics' : (dept === 'cleaning' ? 'cleaning' : (dept === 'facilities' ? 'furniture' : (dept === 'storage' ? 'stationary' : 'other')))),
-        roomNumber: prev.roomNumber || 'Room 101'
+        subcategory: '',
+        roomNumber: prev.roomNumber && prev.roomNumber !== 'Room 101'
+          ? prev.roomNumber
+          : (resolved.id === 'cleaning' ? 'Block A (Main) • 2nd Floor • Corridor (North Wing)' : 'Block A (Main) • 1st Floor • Room 101')
       }));
     }
   }, [isOpen, initialDepartment]);
 
   if (!isOpen) return null;
 
-  const departmentList = [
-    { id: 'it', name: t.departments.it, icon: Laptop, color: '#38bdf8', desc: 'Wi-Fi, laptop, projector, cables' },
-    { id: 'cleaning', name: t.departments.cleaning, icon: Sparkles, color: '#34d399', desc: 'Spills, classroom sanitation, waste' },
-    { id: 'storage', name: t.departments.storage, icon: Package, color: '#fbbf24', desc: 'Paper, markers, consumable materials' },
-    { id: 'facilities', name: t.departments.facilities, icon: Truck, color: '#a78bfa', desc: 'Move furniture (desks/chairs), repairs' },
-    { id: 'engineering', name: t.departments.engineering, icon: Wrench, color: '#f97316', desc: 'Lights, AC, sockets, heating, ventilation' },
-    { id: 'security', name: t.departments.security, icon: Shield, color: '#f87171', desc: 'Keycards, door locks, access' }
-  ];
+  const activeDeptObj = resolveDepartment(department);
+  const departmentList = Object.values(DEPARTMENTS);
 
-  const presets = {
-    engineering: [
-      { title: 'Ceiling Fluorescent / LED Lights Flickering', cat: 'electrical', urg: 'high', room: 'Room 302 - English' },
-      { title: 'Air Conditioner (AC) Leaking Water / Warm Air', cat: 'hvac', urg: 'critical', room: 'Server Room 204' },
-      { title: 'Burnt Wall Power Socket & Sparking Breaker', cat: 'electrical', urg: 'critical', room: 'Chemistry Lab 102' },
-      { title: 'Ventilation / Exhaust Fan Rattle & Noise', cat: 'hvac', urg: 'medium', room: 'Chemistry Prep 103' },
-      { title: 'Heating Radiator Valve Stuck / Overheating', cat: 'hvac', urg: 'medium', room: 'Room 208' }
-    ],
-    it: [
-      { title: 'Wi-Fi Disconnected / Weak Signal', cat: 'electronics', urg: 'high', room: 'Computer Lab 204' },
-      { title: 'Teacher Laptop Screen Black / Won\'t Boot', cat: 'electronics', urg: 'critical', room: 'Physics Lab 108' },
-      { title: 'Interactive Board / Projector Signal Lost', cat: 'electronics', urg: 'high', room: 'Room 102' },
-      { title: 'HDMI / Audio Cable Missing in Room', cat: 'electronics', urg: 'medium', room: 'Room 215' }
-    ],
-    cleaning: [
-      { title: 'Urgent Liquid / Paint Spill on Floor', cat: 'cleaning', urg: 'critical', room: '2nd Floor Corridor' },
-      { title: 'Classroom Deep Cleaning & Sanitizing', cat: 'cleaning', urg: 'medium', room: 'Room 305 - Biology' },
-      { title: 'Waste Bin Overflow & Disposal', cat: 'cleaning', urg: 'medium', room: 'Cafeteria / Hall' },
-      { title: 'Whiteboard Stained / Cleaner Needed', cat: 'cleaning', urg: 'low', room: 'Room 104' }
-    ],
-    storage: [
-      { title: 'A4 Printing Paper (80gsm)', cat: 'stationary', unit: 'pack', qty: 2, room: 'Storage Room 102' },
-      { title: 'Whiteboard Markers Set', cat: 'stationary', unit: 'box', qty: 1, room: 'Teachers Lounge' },
-      { title: 'Chemistry Lab Test Tubes Set', cat: 'lab', unit: 'set', qty: 1, room: 'Chemistry Lab 102' }
-    ],
-    facilities: [
-      { title: 'Move 15 Desks & 30 Chairs to Assembly Hall', cat: 'furniture', urg: 'high', from: 'Room 102 - Storage', to: 'Main Assembly Hall', items: '15 student desks, 30 blue chairs, 1 podium', room: 'Main Assembly Hall' },
-      { title: 'Relocate Extra Student Chairs to Room', cat: 'furniture', urg: 'medium', from: 'Storage Warehouse', to: 'Room 205', items: '10 ergonomic chairs', room: 'Room 205' },
-      { title: 'Fix Loose Door Handle & Latch', cat: 'furniture', urg: 'medium', room: 'Room 215 - History' }
-    ],
-    security: [
-      { title: 'Teacher RFID Keycard Not Unlocking Door', cat: 'other', urg: 'high', room: 'STEM Robotics Lab 110' },
-      { title: 'Door Lock Jammed / Key Stuck', cat: 'other', urg: 'high', room: 'Room 201' },
-      { title: 'Lost & Found Student Item Report', cat: 'other', urg: 'low', room: 'Security Desk' }
-    ]
-  };
+  const handleSelectSubcategory = (subcat) => {
+    setFormData(prev => {
+      let room = prev.roomNumber;
+      const lower = subcat.toLowerCase();
+      if (lower.includes('унитаз') || lower.includes('раковин') || lower.includes('смесител') || lower.includes('санузл') || lower.includes('полотенцесушител')) {
+        room = 'Block A (Main) • 1st Floor • Restroom (Girls Restroom)';
+      } else if (lower.includes('коридор') || lower.includes('холл') || lower.includes('турникет')) {
+        room = 'Block A (Main) • 1st Floor • Corridor (Central Hallway)';
+      } else if (lower.includes('снег') || lower.includes('лед') || lower.includes('дорожек') || lower.includes('крыльц') || lower.includes('подъездных') || lower.includes('территори')) {
+        room = 'School Yard / Outdoors • Ground • Main Driveway';
+      } else if (lower.includes('актового зала')) {
+        room = 'Block A (Main) • 1st Floor • Main Assembly Hall';
+      } else if (lower.includes('столов') || lower.includes('буфет') || lower.includes('куллер')) {
+        room = 'Block A (Main) • 1st Floor • Cafeteria (Dining Hall)';
+      }
 
-  const handleApplyPreset = (p) => {
-    setFormData(prev => ({
-      ...prev,
-      itemTitle: p.title,
-      category: p.cat || prev.category,
-      urgency: p.urg || prev.urgency,
-      quantity: p.qty || prev.quantity,
-      unit: p.unit || prev.unit,
-      fromRoom: p.from || prev.fromRoom,
-      toRoom: p.to || prev.toRoom,
-      furnitureItems: p.items || prev.furnitureItems,
-      roomNumber: p.room || p.to || prev.roomNumber || (p.from ? `${p.from} ➔ ${p.to}` : 'Classroom')
-    }));
+      return {
+        ...prev,
+        itemTitle: subcat,
+        subcategory: subcat,
+        roomNumber: room
+      };
+    });
   };
 
   const handleSelectCatalogItem = (item) => {
@@ -128,9 +100,9 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering'
     e.preventDefault();
     if (!formData.itemTitle || !formData.itemTitle.trim()) return;
 
-    const targetRoom = (formData.roomNumber && formData.roomNumber.trim()) || (formData.toRoom && formData.toRoom.trim()) || 'Main Campus';
+    const targetRoom = (formData.roomNumber && formData.roomNumber.trim()) || (formData.toRoom && formData.toRoom.trim()) || 'Block A (Main) • 1st Floor • Room 101';
 
-    const moveDetails = department === 'facilities' && (formData.fromRoom || formData.toRoom || formData.furnitureItems) ? {
+    const moveDetails = (department === 'facilities' || department === 'carpentry' || department === 'event_prep') && (formData.fromRoom || formData.toRoom || formData.furnitureItems) ? {
       fromRoom: formData.fromRoom || 'Current Room',
       toRoom: formData.toRoom || targetRoom,
       items: formData.furnitureItems || formData.itemTitle
@@ -139,6 +111,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering'
     addTicket({
       ...formData,
       itemTitle: formData.itemTitle.trim(),
+      subcategory: formData.subcategory || '',
       department,
       roomNumber: targetRoom,
       moveDetails,
@@ -146,7 +119,19 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering'
     });
 
     onClose();
-    setFormData({ itemTitle: '', category: 'electrical', quantity: 1, unit: 'pcs', urgency: 'medium', roomNumber: '', description: '', fromRoom: '', toRoom: '', furnitureItems: '' });
+    setFormData({
+      itemTitle: '',
+      subcategory: '',
+      category: 'other',
+      quantity: 1,
+      unit: 'pcs',
+      urgency: 'medium',
+      roomNumber: 'Block A (Main) • 1st Floor • Room 101',
+      description: '',
+      fromRoom: '',
+      toRoom: '',
+      furnitureItems: ''
+    });
     setPhotos([]);
   };
 
@@ -190,76 +175,91 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering'
           <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {t.tickets.selectDepartment} *
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
             {departmentList.map(dept => {
-              const Icon = dept.icon;
               const isSelected = department === dept.id;
+              const deptTitle = dept.translations?.[lang] || dept.name;
               return (
                 <button
                   key={dept.id}
                   type="button"
                   onClick={() => {
                     setDepartment(dept.id);
-                    if (dept.id === 'storage') setFormData(prev => ({ ...prev, category: 'stationary' }));
-                    if (dept.id === 'it') setFormData(prev => ({ ...prev, category: 'electronics' }));
-                    if (dept.id === 'cleaning') setFormData(prev => ({ ...prev, category: 'cleaning' }));
-                    if (dept.id === 'facilities') setFormData(prev => ({ ...prev, category: 'furniture' }));
-                    if (dept.id === 'engineering') setFormData(prev => ({ ...prev, category: 'electrical' }));
-                    if (dept.id === 'security') setFormData(prev => ({ ...prev, category: 'other' }));
+                    setFormData(prev => ({
+                      ...prev,
+                      subcategory: '',
+                      itemTitle: prev.subcategory ? '' : prev.itemTitle
+                    }));
                   }}
                   style={{
                     padding: '10px 8px',
                     borderRadius: '12px',
                     border: isSelected ? `2px solid ${dept.color}` : '1px solid var(--border-color)',
-                    background: isSelected ? `${dept.color}22` : 'rgba(30, 41, 59, 0.5)',
+                    background: isSelected ? `${dept.color}25` : 'rgba(30, 41, 59, 0.5)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '4px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.15s ease',
                     textAlign: 'center'
                   }}
                 >
-                  <Icon size={20} color={dept.color} />
-                  <span style={{ fontSize: '11px', fontWeight: '700', color: isSelected ? '#fff' : 'var(--text-muted)', lineHeight: 1.2 }}>
-                    {dept.name}
+                  <span style={{ fontSize: '22px', lineHeight: 1 }}>{dept.emoji}</span>
+                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '500', color: isSelected ? '#fff' : 'var(--text-muted)', lineHeight: 1.2 }}>
+                    {deptTitle}
                   </span>
                 </button>
               );
             })}
           </div>
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px', fontStyle: 'italic' }}>
-            {t.departmentDescriptions[department]}
-          </p>
         </div>
 
-        {/* Quick Presets */}
-        {presets[department] && (
-          <div style={{ marginBottom: '16px', background: 'rgba(15, 23, 42, 0.5)', padding: '10px 12px', borderRadius: '10px', border: '1px dashed var(--border-color)' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
-              ⚡ Quick Common Scenarios:
-            </span>
-            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-              {presets[department].map((p, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleApplyPreset(p)}
-                  style={{
-                    background: formData.itemTitle === p.title ? 'var(--primary)' : 'rgba(30, 41, 59, 0.8)',
-                    color: '#fff',
-                    padding: '5px 10px',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    whiteSpace: 'nowrap',
-                    border: '1px solid var(--border-color)',
-                    cursor: 'pointer'
-                  }}
-                >
-                  + {p.title}
-                </button>
-              ))}
+        {/* Step 2: Select Subcategory / Problem */}
+        {activeDeptObj && activeDeptObj.subcategories && (
+          <div style={{
+            marginBottom: '16px',
+            background: 'rgba(15, 23, 42, 0.55)',
+            border: `1px solid ${activeDeptObj.color}40`,
+            borderRadius: '12px',
+            padding: '12px 14px'
+          }}>
+            <div style={{
+              fontSize: '12px',
+              fontWeight: '700',
+              color: '#fff',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              <span>{activeDeptObj.emoji}</span>
+              <span>{t.tickets.selectSubcategory || 'Выберите тему / подкатегорию:'}</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {activeDeptObj.subcategories.map(subcat => {
+                const isSelected = formData.subcategory === subcat || formData.itemTitle === subcat;
+                return (
+                  <button
+                    key={subcat}
+                    type="button"
+                    onClick={() => handleSelectSubcategory(subcat)}
+                    style={{
+                      background: isSelected ? `${activeDeptObj.color}35` : 'rgba(30, 41, 59, 0.75)',
+                      border: `1px solid ${isSelected ? activeDeptObj.color : 'rgba(255, 255, 255, 0.1)'}`,
+                      color: isSelected ? '#fff' : '#cbd5e1',
+                      fontWeight: isSelected ? '700' : 'normal',
+                      padding: '6px 11px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {isSelected ? '✓ ' : ''}{subcat}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -350,22 +350,24 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'engineering'
             </div>
           )}
 
-          {/* Urgency & Room */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.urgency}</label>
-              <select value={formData.urgency} onChange={e => setFormData({ ...formData, urgency: e.target.value })} style={{ ...inputStyle, padding: '9px' }}>
-                <option value="low">{t.tickets.urgencies.low}</option>
-                <option value="medium">{t.tickets.urgencies.medium}</option>
-                <option value="high">{t.tickets.urgencies.high}</option>
-                <option value="critical">{t.tickets.urgencies.critical}</option>
-              </select>
-            </div>
-            <div>
-              <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.roomNumber}</label>
-              <input type="text" placeholder="e.g. Room 204 / Gym / Server Room" value={formData.roomNumber} onChange={e => setFormData({ ...formData, roomNumber: e.target.value })} style={{ ...inputStyle, padding: '9px 12px' }} />
-            </div>
+          {/* Urgency */}
+          <div>
+            <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.urgency}</label>
+            <select value={formData.urgency} onChange={e => setFormData({ ...formData, urgency: e.target.value })} style={{ ...inputStyle, padding: '9px' }}>
+              <option value="low">{t.tickets.urgencies.low}</option>
+              <option value="medium">{t.tickets.urgencies.medium}</option>
+              <option value="high">{t.tickets.urgencies.high}</option>
+              <option value="critical">{t.tickets.urgencies.critical}</option>
+            </select>
           </div>
+
+          {/* Campus Location (Block, Floor & Area: Corridors, Restrooms, Classrooms) */}
+          <CampusLocationSelector
+            value={formData.roomNumber}
+            onChange={val => setFormData(prev => ({ ...prev, roomNumber: val }))}
+            department={department}
+            t={t}
+          />
 
           {/* Description */}
           <div>

@@ -20,18 +20,19 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { TicketModal } from './TicketModal';
+import { DEPARTMENTS, resolveDepartment } from '../departments';
 
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
-  const { t, role, currentUser, tickets, inventory } = useApp();
+  const { t, role, currentUser, tickets, inventory, lang } = useApp();
 
   // Scoped tickets that this user is authorized to see
   const scopedTickets = React.useMemo(() => {
     if (role === 'director' || role === 'admin' || role === 'teacher') return tickets;
-    if (role === 'it_support') return tickets.filter(t => (t.department || 'storage') === 'it');
-    if (role === 'cleaning') return tickets.filter(t => (t.department || 'storage') === 'cleaning');
-    if (role === 'engineer') return tickets.filter(t => (t.department || 'storage') === 'engineering');
-    if (role === 'storage_manager' || role === 'workerA') return tickets.filter(t => (t.department || 'storage') === 'storage');
-    if (role === 'facilities_manager') return tickets.filter(t => (t.department || 'storage') === 'facilities' || (t.department || 'storage') === 'storage');
+    if (role === 'it_support') return tickets.filter(t => resolveDepartment(t.department).id === 'it_helpdesk');
+    if (role === 'cleaning') return tickets.filter(t => resolveDepartment(t.department).id === 'cleaning');
+    if (role === 'engineer') return tickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
+    if (role === 'storage_manager' || role === 'workerA') return tickets.filter(t => (t.department || 'storage') === 'storage' || resolveDepartment(t.department).id === 'other');
+    if (role === 'facilities_manager') return tickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
     return tickets;
   }, [tickets, role, currentUser]);
 
@@ -44,20 +45,20 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   // Total Spent (₸) from storage purchasing and facility parts
   const totalSpent = tickets.reduce((sum, tk) => sum + (Number(tk.purchaseCost) || 0), 0);
 
-  // Department specific stats
-  const itTickets = tickets.filter(t => (t.department || 'storage') === 'it');
-  const cleaningTickets = tickets.filter(t => (t.department || 'storage') === 'cleaning');
-  const storageTickets = tickets.filter(t => (t.department || 'storage') === 'storage');
-  const facilitiesTickets = tickets.filter(t => (t.department || 'storage') === 'facilities');
-  const securityTickets = tickets.filter(t => (t.department || 'storage') === 'security');
-  const engineeringTickets = tickets.filter(t => t.department === 'engineering');
+  // Department specific stats based on 11 core departments
+  const itTickets = tickets.filter(t => resolveDepartment(t.department).id === 'it_helpdesk');
+  const cleaningTickets = tickets.filter(t => resolveDepartment(t.department).id === 'cleaning');
+  const storageTickets = tickets.filter(t => (t.department || 'storage') === 'storage' || resolveDepartment(t.department).id === 'other');
+  const facilitiesTickets = tickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
+  const securityTickets = tickets.filter(t => resolveDepartment(t.department).id === 'security');
+  const engineeringTickets = tickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
 
   // Critical alerts
   const criticalTickets = tickets.filter(t => t.urgency === 'critical' && t.status !== 'completed' && t.status !== 'delivered');
   const lowStockItems = inventory.filter(item => item.quantity <= item.minLevel);
   const activeFurnitureMoves = facilitiesTickets.filter(t => t.moveDetails && t.status !== 'completed');
 
-  const openNewRequestForDept = (dept = 'engineering') => {
+  const openNewRequestForDept = (dept = 'it_helpdesk') => {
     if (onOpenNewTicket) {
       onOpenNewTicket(dept);
     }
@@ -141,7 +142,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 🚨 {t.dashboard.urgentAlerts} ({criticalTickets.length})
               </strong>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                {criticalTickets.map(ct => `[${ct.department.toUpperCase()}] ${ct.itemTitle} (${ct.roomNumber})`).join(' • ')}
+                {criticalTickets.map(ct => `[${resolveDepartment(ct.department).emoji} ${ct.itemTitle}] (${ct.roomNumber || 'Campus'})`).join(' • ')}
               </p>
             </div>
           </div>
@@ -238,115 +239,61 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Real-time facility status</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '14px' }}>
-              
-              {/* IT Support Card */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#38bdf8' }}>
-                    <Laptop size={15} /> {t.departments.it}
-                  </span>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{getDeptProgress(itTickets)}%</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
-                  <div style={{ width: `${getDeptProgress(itTickets)}%`, height: '100%', background: '#38bdf8', borderRadius: '3px' }} />
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Total: {itTickets.length}</span>
-                  <span>In Process: {itTickets.filter(t => t.status === 'in_progress').length}</span>
-                  <span style={{ color: '#34d399' }}>Done: {itTickets.filter(t => t.status === 'completed').length}</span>
-                </div>
-              </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(215px, 1fr))', gap: '14px' }}>
+              {Object.values(DEPARTMENTS).map(dept => {
+                const deptTickets = tickets.filter(t => resolveDepartment(t.department).id === dept.id);
+                const progress = getDeptProgress(deptTickets);
+                const inProgressCount = deptTickets.filter(t => t.status === 'in_progress').length;
+                const completedCount = deptTickets.filter(t => t.status === 'completed' || t.status === 'delivered' || t.status === 'issued').length;
+                const deptName = dept.translations?.[lang] || dept.name;
 
-              {/* Cleaning Service Card */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#34d399' }}>
-                    <Sparkles size={15} /> {t.departments.cleaning}
-                  </span>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{getDeptProgress(cleaningTickets)}%</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
-                  <div style={{ width: `${getDeptProgress(cleaningTickets)}%`, height: '100%', background: '#34d399', borderRadius: '3px' }} />
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Total: {cleaningTickets.length}</span>
-                  <span>In Process: {cleaningTickets.filter(t => t.status === 'in_progress').length}</span>
-                  <span style={{ color: '#34d399' }}>Done: {cleaningTickets.filter(t => t.status === 'completed').length}</span>
-                </div>
-              </div>
-
-              {/* Storage Manager Card */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#fbbf24' }}>
-                    <Package size={15} /> {t.departments.storage}
-                  </span>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{getDeptProgress(storageTickets)}%</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
-                  <div style={{ width: `${getDeptProgress(storageTickets)}%`, height: '100%', background: '#fbbf24', borderRadius: '3px' }} />
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Total: {storageTickets.length}</span>
-                  <span>Issued: {storageTickets.filter(t => t.status === 'issued').length}</span>
-                  <span style={{ color: '#fbbf24' }}>Buying: {storageTickets.filter(t => t.status === 'purchasing').length}</span>
-                </div>
-              </div>
-
-              {/* Facilities Manager (Me) Card */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#a78bfa' }}>
-                    <Truck size={15} /> {t.departments.facilities}
-                  </span>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{getDeptProgress(facilitiesTickets)}%</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
-                  <div style={{ width: `${getDeptProgress(facilitiesTickets)}%`, height: '100%', background: '#a78bfa', borderRadius: '3px' }} />
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Total: {facilitiesTickets.length}</span>
-                  <span>Moving: {facilitiesTickets.filter(t => t.status === 'in_progress').length}</span>
-                  <span style={{ color: '#34d399' }}>Done: {facilitiesTickets.filter(t => t.status === 'completed').length}</span>
-                </div>
-              </div>
-
-              {/* Security Service Card */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#f87171' }}>
-                    <Shield size={15} /> {t.departments.security}
-                  </span>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{getDeptProgress(securityTickets)}%</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
-                  <div style={{ width: `${getDeptProgress(securityTickets)}%`, height: '100%', background: '#f87171', borderRadius: '3px' }} />
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Total: {securityTickets.length}</span>
-                  <span style={{ color: '#34d399' }}>Resolved: {securityTickets.filter(t => t.status === 'completed').length}</span>
-                </div>
-              </div>
-
-              {/* Engineering Service Card */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#f97316' }}>
-                    🔧 {t.departments.engineering}
-                  </span>
-                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{getDeptProgress(engineeringTickets)}%</span>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
-                  <div style={{ width: `${getDeptProgress(engineeringTickets)}%`, height: '100%', background: '#f97316', borderRadius: '3px' }} />
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Total: {engineeringTickets.length}</span>
-                  <span>In Repair: {engineeringTickets.filter(t => t.status === 'in_progress').length}</span>
-                  <span style={{ color: '#34d399' }}>Fixed: {engineeringTickets.filter(t => t.status === 'completed').length}</span>
-                </div>
-              </div>
-
+                return (
+                  <div
+                    key={dept.id}
+                    onClick={() => setActiveTab('tickets')}
+                    style={{
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      padding: '14px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border-color)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = dept.color;
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'var(--border-color)';
+                      e.currentTarget.style.transform = 'none';
+                    }}
+                    title={`${deptName}: ${deptTickets.length} tickets`}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: dept.color }}>
+                          <span>{dept.emoji}</span>
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '145px' }}>
+                            {deptName}
+                          </span>
+                        </span>
+                        <span style={{ fontSize: '13px', fontWeight: '800', color: '#fff' }}>{progress}%</span>
+                      </div>
+                      <div style={{ background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                        <div style={{ width: `${progress}%`, height: '100%', background: dept.color, borderRadius: '3px' }} />
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Total: {deptTickets.length}</span>
+                      <span>In Work: {inProgressCount}</span>
+                      <span style={{ color: '#34d399' }}>Done: {completedCount}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -634,146 +581,47 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             ⚡ {t.dashboard.quickActions || 'Send Request to Facility'}:
           </h3>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-              
-              {/* Send to IT */}
-              <button
-                onClick={() => openNewRequestForDept('it')}
-                style={{
-                  background: 'rgba(56, 189, 248, 0.12)',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
-                  padding: '14px',
-                  borderRadius: '12px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontWeight: '700', fontSize: '14px' }}>
-                  <Laptop size={18} /> IT Support
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                  Wi-Fi disconnected, laptop screen black, projector signal failed
-                </p>
-              </button>
-
-              {/* Send to Cleaning */}
-              <button
-                onClick={() => openNewRequestForDept('cleaning')}
-                style={{
-                  background: 'rgba(52, 211, 153, 0.12)',
-                  border: '1px solid rgba(52, 211, 153, 0.3)',
-                  padding: '14px',
-                  borderRadius: '12px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34d399', fontWeight: '700', fontSize: '14px' }}>
-                  <Sparkles size={18} /> Cleaning Staff
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                  Spilled liquid, classroom deep cleaning, trash bin overflow
-                </p>
-              </button>
-
-              {/* Send to Facilities (Furniture & Repairs) */}
-              <button
-                onClick={() => openNewRequestForDept('facilities')}
-                style={{
-                  background: 'rgba(167, 139, 250, 0.12)',
-                  border: '1px solid rgba(167, 139, 250, 0.3)',
-                  padding: '14px',
-                  borderRadius: '12px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#a78bfa', fontWeight: '700', fontSize: '14px' }}>
-                  <Truck size={18} /> Facilities Manager
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                  Move desks & chairs between rooms, fix door lock/handle
-                </p>
-              </button>
-
-              {/* Send to Storage */}
-              <button
-                onClick={() => openNewRequestForDept('storage')}
-                style={{
-                  background: 'rgba(251, 191, 36, 0.12)',
-                  border: '1px solid rgba(251, 191, 36, 0.3)',
-                  padding: '14px',
-                  borderRadius: '12px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fbbf24', fontWeight: '700', fontSize: '14px' }}>
-                  <Package size={18} /> Storage Manager
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                  A4 printing paper, whiteboard markers, science consumables
-                </p>
-              </button>
-
-              {/* Send to Engineering */}
-              <button
-                onClick={() => openNewRequestForDept('engineering')}
-                style={{
-                  background: 'rgba(249, 115, 22, 0.12)',
-                  border: '1px solid rgba(249, 115, 22, 0.3)',
-                  padding: '14px',
-                  borderRadius: '12px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fb923c', fontWeight: '700', fontSize: '14px' }}>
-                  🔧 Engineering (Lights & AC)
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                  Flickering lights, broken AC, burnt socket, ventilation noise
-                </p>
-              </button>
-
-              {/* Send to Security */}
-              <button
-                onClick={() => openNewRequestForDept('security')}
-                style={{
-                  background: 'rgba(248, 113, 113, 0.12)',
-                  border: '1px solid rgba(248, 113, 113, 0.3)',
-                  padding: '14px',
-                  borderRadius: '12px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f87171', fontWeight: '700', fontSize: '14px' }}>
-                  <Shield size={18} /> Security Desk
-                </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                  RFID keycard access failure, broken lock, lost & found
-                </p>
-              </button>
-
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(215px, 1fr))', gap: '12px' }}>
+              {Object.values(DEPARTMENTS).map(dept => {
+                const localizedName = dept.translations?.[lang] || dept.name;
+                const sampleSubcats = dept.subcategories.slice(0, 3).join(', ') + '...';
+                return (
+                  <button
+                    key={dept.id}
+                    onClick={() => openNewRequestForDept(dept.id)}
+                    style={{
+                      background: `${dept.color}15`,
+                      border: `1px solid ${dept.color}35`,
+                      padding: '14px',
+                      borderRadius: '12px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = dept.color;
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = `${dept.color}35`;
+                      e.currentTarget.style.transform = 'none';
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: dept.color, fontWeight: '700', fontSize: '13px' }}>
+                      <span style={{ fontSize: '16px' }}>{dept.emoji}</span>
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {localizedName}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                      {sampleSubcats}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -835,12 +683,13 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {/* Ticket Preview List */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
         {scopedTickets.slice(0, 4).map(ticket => {
-          const targetDept = ticket.department || 'storage';
+          const deptMeta = resolveDepartment(ticket.department);
+          const deptName = deptMeta.translations?.[lang] || deptMeta.name;
           return (
             <div key={ticket.id} className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
-                  {targetDept} • #{ticket.id}
+                <span style={{ fontSize: '11px', color: deptMeta.color, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>{deptMeta.emoji}</span> {deptName} • #{ticket.id}
                 </span>
                 <span style={{
                   padding: '2px 8px',
@@ -856,6 +705,13 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff' }}>
                 {ticket.itemTitle}
               </div>
+              {ticket.subcategory && (
+                <div style={{ fontSize: '11px', color: '#cbd5e1', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    🏷️ {ticket.subcategory}
+                  </span>
+                </div>
+              )}
               <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                 📍 {ticket.roomNumber} • Teacher: {ticket.teacherName}
               </div>

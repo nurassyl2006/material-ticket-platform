@@ -1,16 +1,90 @@
-# React + Vite
+# EduOps — Facilities & Materials Management Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Full-stack school and campus operations platform for managing facilities, storage materials, IT support, cleaning, and maintenance requests with persistent SQLite database storage.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Architecture Overview
 
-## React Compiler
+- **Frontend**: React 19 + Vite (Tailored dark UI, multi-language EN/RU/KK, role-based workflows)
+- **Backend**: Node.js + Express 5 (`server/index.js`)
+- **Database**: SQLite via `better-sqlite3` (`server/data/platform.db`) with WAL mode
+- **Real-Time Sync**: Automatic background polling (every 3 seconds), focus-reconnect, and seamless offline-first local storage caching
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## Database Entities
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The SQLite database (`server/data/platform.db`) stores:
+
+1. **Tickets (`tickets`)**:
+   - Stores all maintenance, supply, and facilities requests.
+   - Fields: `id`, `department`, `itemTitle`, `category`, `quantity`, `unit`, `urgency`, `roomNumber`, `moveDetails`, `description`, `photos`, `completionPhotos`, `teacherName`, `teacherPhone`, `status`, `assignedWorker`, `assignedRole`, `handledAction`, `purchaseCost`, `supplier`, `notes`, `createdAt`, `updatedAt`.
+
+2. **Storage List of Goods (`inventory`)**:
+   - Stores warehouse assets, stock quantities, minimum stock alerts, and storage locations.
+   - Fields: `id`, `name`, `category`, `quantity`, `unit`, `minLevel`, `location`, `createdAt`, `updatedAt`.
+   - Automatically synchronizes stock deduction when items are issued directly from warehouse stock.
+
+3. **Users (`users`)**:
+   - Stores profiles for all staff roles (Teacher, IT Support, Cleaning Staff, Storage Manager, Facilities Manager, Director, Engineer).
+   - Fields: `roleKey`, `id`, `name`, `role`, `department`, `email`, `phone`, `avatar`, `createdAt`, `updatedAt`.
+
+4. **Notifications (`notifications`)**:
+   - Real-time updates delivered to users when requests are assigned, issued, or resolved.
+
+---
+
+## Quick Start
+
+### 1. Install Dependencies
+```bash
+npm install
+```
+
+### 2. Start Both Backend & Frontend Concurrently (Recommended)
+```bash
+npm run dev
+```
+- **Vite Web App**: http://localhost:5173/material-ticket-platform/
+- **API Server & DB**: http://localhost:5001/api/
+
+### 3. Separate Execution Commands
+- Start only the Express API Server:
+  ```bash
+  npm run server
+  ```
+- Start only the Vite Dev Client:
+  ```bash
+  npm run client
+  ```
+- Build for Production:
+  ```bash
+  npm run build
+  ```
+- Run Production Server (serves API and built client):
+  ```bash
+  npm start
+  ```
+
+---
+
+## REST API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/health` | Check database connectivity and item counts |
+| `GET` | `/api/tickets` | Retrieve all tickets (newest first) |
+| `POST` | `/api/tickets` | Create a new ticket request |
+| `PATCH` | `/api/tickets/:id` | Update ticket details, status, or assignment |
+| `DELETE` | `/api/tickets/:id` | Delete a ticket |
+| `POST` | `/api/tickets/bulk` | Bulk upsert tickets for data sync / migration |
+| `GET` | `/api/inventory` | Retrieve storage list of goods |
+| `POST` | `/api/inventory` | Add a new good/item to warehouse storage |
+| `PATCH` | `/api/inventory/:id` | Update item details (name, category, minLevel) |
+| `PATCH` | `/api/inventory/:id/quantity` | Adjust stock quantity (`quantity` or `delta`) |
+| `DELETE` | `/api/inventory/:id` | Delete an item from storage |
+| `GET` | `/api/users` | Retrieve all user profiles |
+| `PATCH` | `/api/users/:roleKey` | Update user profile (name, phone, avatar) |
+| `GET` | `/api/notifications` | Retrieve user notifications |
+| `POST` | `/api/reset` | Reset database to clean default seed data |

@@ -16,6 +16,7 @@ import {
   Camera,
   ImagePlus
 } from 'lucide-react';
+import { DEPARTMENTS, resolveDepartment } from '../departments';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const { 
@@ -28,7 +29,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     completeTicketDelivery, 
     updateFacilitiesMove, 
     addPhotosToTicket,
-    inventory 
+    inventory,
+    lang
   } = useApp();
 
   const [transferSuccess, setTransferSuccess] = useState(false);
@@ -83,7 +85,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
   if (!isOpen || !ticket) return null;
 
-  const targetDept = ticket.department || 'storage';
+  const deptMeta = resolveDepartment(ticket.department);
+  const targetDept = deptMeta.id;
 
   // Check matching stock level for storage requests
   const stockItem = inventory.find(i => i.name.toLowerCase() === ticket.itemTitle.toLowerCase());
@@ -142,10 +145,43 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const handleEngineeringSubmit = (e, markResolved = false) => {
     e.preventDefault();
     if (markResolved) {
-      completeTicketDelivery(ticket.id, notes || 'Engineering maintenance completed and verified.');
+      completeTicketDelivery(ticket.id, notes || 'Electrical/Engineering maintenance completed and verified.');
       if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
     } else {
-      startTicketWork(ticket.id, notes || 'Engineer inspecting and diagnosing technical issue.');
+      startTicketWork(ticket.id, notes || 'Inspection and repair in progress.');
+    }
+    onClose();
+  };
+
+  const handlePlumbingSubmit = (e, markResolved = false) => {
+    e.preventDefault();
+    if (markResolved) {
+      completeTicketDelivery(ticket.id, notes || 'Plumbing maintenance completed and leak/blockage resolved.');
+      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
+    } else {
+      startTicketWork(ticket.id, notes || 'Plumber diagnosing pipe, fixture or heating system.');
+    }
+    onClose();
+  };
+
+  const handleGroundsSubmit = (e, markResolved = false) => {
+    e.preventDefault();
+    if (markResolved) {
+      completeTicketDelivery(ticket.id, notes || 'Grounds maintenance and safety measures completed.');
+      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
+    } else {
+      startTicketWork(ticket.id, notes || 'Grounds maintenance crew in progress.');
+    }
+    onClose();
+  };
+
+  const handleGeneralSubmit = (e, markResolved = false) => {
+    e.preventDefault();
+    if (markResolved) {
+      completeTicketDelivery(ticket.id, notes || 'Request resolved and verified.');
+      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
+    } else {
+      startTicketWork(ticket.id, notes || 'Request in progress.');
     }
     onClose();
   };
@@ -160,17 +196,12 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: 'rgba(6, 182, 212, 0.2)', padding: '9px', borderRadius: '10px' }}>
-              <ShieldCheck size={22} color="var(--secondary)" />
+            <div style={{ background: `${deptMeta.color}25`, border: `1px solid ${deptMeta.color}50`, padding: '9px', borderRadius: '10px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {deptMeta.emoji}
             </div>
             <div>
-              <h2 style={{ fontSize: '17px', fontWeight: '800', margin: 0 }}>
-                {targetDept === 'storage' && t.tickets.actionStorage}
-                {targetDept === 'facilities' && t.tickets.actionFacilities}
-                {targetDept === 'it' && t.tickets.actionIT}
-                {targetDept === 'cleaning' && t.tickets.actionCleaning}
-                {targetDept === 'engineering' && t.tickets.actionEngineering}
-                {targetDept === 'security' && 'Security Service Action'}
+              <h2 style={{ fontSize: '17px', fontWeight: '800', margin: 0, color: '#fff' }}>
+                {deptMeta.translations?.[lang] || deptMeta.name}
               </h2>
               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Ticket #{ticket.id} • Assigned Handler: <strong style={{ color: '#fff' }}>{currentUser.name}</strong></span>
             </div>
@@ -183,8 +214,17 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
         {/* Ticket Snapshot Card */}
         <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', marginBottom: '18px', border: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '6px' }}>
-            <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff' }}>
-              {ticket.itemTitle} {ticket.quantity ? `x ${ticket.quantity} ${ticket.unit}` : ''}
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff' }}>
+                {ticket.itemTitle} {ticket.quantity ? `x ${ticket.quantity} ${ticket.unit}` : ''}
+              </div>
+              {ticket.subcategory && (
+                <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '3px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                    🏷️ {ticket.subcategory}
+                  </span>
+                </div>
+              )}
             </div>
             <span style={{ 
               background: ticket.urgency === 'critical' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
@@ -408,8 +448,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
           </div>
         )}
 
-        {/* 2. FACILITIES MANAGER (ME) WORKFLOW */}
-        {targetDept === 'facilities' && (
+        {/* 2. FACILITIES / CARPENTRY / EVENT PREP WORKFLOW */}
+        {(targetDept === 'facilities' || targetDept === 'carpentry' || targetDept === 'event_prep' || ticket.moveDetails) && (
           <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.3)', padding: '12px', borderRadius: '10px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#c4b5fd', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -491,8 +531,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
           </form>
         )}
 
-        {/* 3. IT SUPPORT WORKFLOW */}
-        {targetDept === 'it' && (
+        {/* 3. IT HELPDESK WORKFLOW */}
+        {(targetDept === 'it' || targetDept === 'it_helpdesk') && (
           <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '12px', borderRadius: '10px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -596,27 +636,27 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
           </form>
         )}
 
-        {/* 6. ENGINEERING & TECHNICAL UTILITIES WORKFLOW */}
-        {targetDept === 'engineering' && (
+        {/* 6. ELECTRICAL & TECHNICAL UTILITIES WORKFLOW */}
+        {(targetDept === 'engineering' || targetDept === 'electrical') && (
           <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(249, 115, 22, 0.1)', border: '1px solid rgba(249, 115, 22, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#fb923c', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Wrench size={14} /> {t.tickets.actionEngineering}
+            <div style={{ background: 'rgba(251, 191, 36, 0.1)', border: '1px solid rgba(251, 191, 36, 0.3)', padding: '12px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#fbbf24', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Wrench size={14} /> 💡 Electrical & Utility Inspection
               </div>
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Diagnose and repair lighting fixtures, air conditioners (AC), power sockets, ventilation, and heating.
+                Diagnose lighting fixtures, circuits, switches, breakers, sockets, and electrical equipment.
               </p>
             </div>
 
             <div>
               <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                {t.tickets.engineeringCompletedNotes}
+                {t.tickets.engineeringCompletedNotes || 'Diagnostics & Repair Notes'}
               </label>
               <textarea
                 rows="3"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder="e.g. Replaced 36W LED driver ballast, unclogged AC drain hose, or replaced tripped 16A breaker..."
+                placeholder="e.g. Replaced LED driver ballast, rewired loose terminal, or tested socket voltage..."
                 style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
               />
             </div>
@@ -625,11 +665,128 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
                 {t.common.cancel}
               </button>
-              <button type="button" onClick={(e) => handleEngineeringSubmit(e, false)} style={{ background: 'rgba(249, 115, 22, 0.2)', border: '1px solid #f97316', color: '#fb923c', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                🔧 In Diagnostics / Repair
+              <button type="button" onClick={(e) => handleEngineeringSubmit(e, false)} style={{ background: 'rgba(251, 191, 36, 0.2)', border: '1px solid #fbbf24', color: '#fbbf24', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                ⚡ In Diagnostics / Repair
               </button>
               <button type="button" onClick={(e) => handleEngineeringSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Fixed & Operational
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* 6a. PLUMBING WORKFLOW */}
+        {targetDept === 'plumbing' && (
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '12px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#06b6d4', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Wrench size={14} /> 🔧 Plumbing & Heating Diagnostics
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                Unclog drains, repair pipe leaks, replace faucet/flush mechanisms, bleed radiators.
+              </p>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+                Plumbing Action & Repair Notes
+              </label>
+              <textarea
+                rows="3"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="e.g. Cleared drain blockage with auger, tightened valve gasket, bled radiator air..."
+                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                {t.common.cancel}
+              </button>
+              <button type="button" onClick={(e) => handlePlumbingSubmit(e, false)} style={{ background: 'rgba(6, 182, 212, 0.2)', border: '1px solid #06b6d4', color: '#06b6d4', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                🔧 In Diagnostics / Repair
+              </button>
+              <button type="button" onClick={(e) => handlePlumbingSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                ✓ Mark Plumbing Fixed
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* 6b. GROUNDS & TERRITORY WORKFLOW */}
+        {targetDept === 'grounds' && (
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#10b981', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>🌳</span> Grounds Maintenance & Campus Safety
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                Snow/ice removal, walkway sanding, rooftop clearing, outdoor path safety.
+              </p>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+                Grounds Action Notes
+              </label>
+              <textarea
+                rows="3"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="e.g. Cleared snow from entrance stairs, spread anti-slip sand along main pathway..."
+                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                {t.common.cancel}
+              </button>
+              <button type="button" onClick={(e) => handleGroundsSubmit(e, false)} style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#10b981', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                🌳 In Progress
+              </button>
+              <button type="button" onClick={(e) => handleGroundsSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                ✓ Mark Grounds Work Complete
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* 6c. ADMIN / BI EDUCATION / GENERAL WORKFLOW */}
+        {(targetDept === 'admin' || targetDept === 'bi_education' || (targetDept === 'other' && !stockItem)) && (
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'rgba(129, 140, 248, 0.1)', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '12px', borderRadius: '10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#818cf8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>{deptMeta.emoji}</span> {deptMeta.translations?.[lang] || deptMeta.name} Action
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                Process institutional appeals, administrative paperwork, or custom services.
+              </p>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+                Resolution / Response Notes
+              </label>
+              <textarea
+                rows="3"
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="Log resolution steps, documents prepared, or administrative feedback..."
+                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                {t.common.cancel}
+              </button>
+              <button type="button" onClick={(e) => handleGeneralSubmit(e, false)} style={{ background: 'rgba(129, 140, 248, 0.2)', border: '1px solid #818cf8', color: '#818cf8', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                In Review
+              </button>
+              <button type="button" onClick={(e) => handleGeneralSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                ✓ Mark Resolved
               </button>
             </div>
           </form>
@@ -647,29 +804,15 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-              {[
-                { id: 'engineering', label: '🔧 Engineering', color: '#f97316' },
-                { id: 'facilities', label: '🚚 Facilities', color: '#a78bfa' },
-                { id: 'it', label: '💻 IT Support', color: '#38bdf8' },
-                { id: 'cleaning', label: '🧹 Cleaning', color: '#34d399' },
-                { id: 'storage', label: '📦 Storage', color: '#fbbf24' },
-                { id: 'security', label: '🛡️ Security', color: '#f87171' }
-              ].map(fac => {
+              {Object.values(DEPARTMENTS).map(fac => {
                 if (fac.id === targetDept) return null;
+                const facLabel = fac.translations?.[lang] || fac.name;
                 return (
                   <button
                     key={fac.id}
                     type="button"
                     onClick={() => {
-                      const deptNames = {
-                        engineering: 'Engineering (Lights/AC/Power)',
-                        facilities: 'Facilities (Furniture/Repairs)',
-                        it: 'IT Support',
-                        cleaning: 'Cleaning Staff',
-                        storage: 'Warehouse Storage',
-                        security: 'Security Desk'
-                      };
-                      const transferNote = `[Transferred to ${deptNames[fac.id] || fac.id} by ${currentUser.name || 'Staff'}]: ${notes || 'Transferred for specialized facility resolution.'}`;
+                      const transferNote = `[Transferred to ${facLabel} by ${currentUser.name || 'Staff'}]: ${notes || 'Transferred for specialized facility resolution.'}`;
                       updateTicket(ticket.id, {
                         department: fac.id,
                         status: 'pending',
@@ -693,10 +836,19 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                       color: '#fff',
                       cursor: 'pointer',
                       textAlign: 'center',
-                      transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = fac.color}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = `${fac.color}60`}
                   >
-                    Send to {fac.label}
+                    <span>{fac.emoji}</span>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {facLabel}
+                    </span>
                   </button>
                 );
               })}

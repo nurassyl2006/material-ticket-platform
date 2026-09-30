@@ -1,7 +1,23 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { translations } from './translations';
-import { mockInventory, mockTickets, mockUsers } from './mockData';
-import { fetchCloudTickets, pushCloudTickets, mergeTickets } from './cloudSync';
+import { mockInventory, mockUsers } from './mockData';
+import {
+  fetchTicketsFromDb,
+  createTicketInDb,
+  updateTicketInDb,
+  bulkSyncTicketsToDb,
+  fetchInventoryFromDb,
+  createInventoryItemInDb,
+  updateInventoryQtyInDb,
+  fetchUsersFromDb,
+  updateUserProfileInDb,
+  fetchNotificationsFromDb,
+  createNotificationInDb,
+  markNotificationReadInDb,
+  markAllNotificationsReadInDb,
+  clearNotificationsInDb,
+  resetDatabaseInDb
+} from './api';
 
 const AppContext = createContext();
 
@@ -28,7 +44,7 @@ export const AppProvider = ({ children }) => {
     return localStorage.getItem('app_auth') === 'true';
   });
 
-  // Inventory state
+  // Inventory state (Goods storage)
   const [inventory, setInventory] = useState(() => {
     const saved = localStorage.getItem('app_inventory_v3');
     if (saved) {
@@ -41,16 +57,14 @@ export const AppProvider = ({ children }) => {
     return mockInventory;
   });
 
-  // Tickets state: empty by default, purged of old mock tickets
+  // Tickets state
   const [tickets, setTickets] = useState(() => {
     const saved = localStorage.getItem('app_tickets_v3') || localStorage.getItem('app_tickets_v2');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          // Filter out legacy demo tickets
-          const clean = parsed.filter(t => !OLD_MOCK_IDS.has(t.id));
-          return clean;
+          return parsed.filter(t => !OLD_MOCK_IDS.has(t.id));
         }
       } catch (e) {
         return [];
@@ -59,13 +73,12 @@ export const AppProvider = ({ children }) => {
     return [];
   });
 
-  // Users state: cleaned of mock names & photos
+  // Users state
   const [users, setUsers] = useState(() => {
     const saved = localStorage.getItem('app_users_v3');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Ensure no lingering unsplash avatars or mock names
         const cleanUsers = { ...mockUsers };
         for (const k of Object.keys(parsed)) {
           if (cleanUsers[k]) {
@@ -87,7 +100,7 @@ export const AppProvider = ({ children }) => {
     return mockUsers;
   });
 
-  // Notifications state: empty by default
+  // Notifications state
   const [notifications, setNotifications] = useState(() => {
     const saved = localStorage.getItem('app_notifications_v3');
     if (saved) {
@@ -100,10 +113,10 @@ export const AppProvider = ({ children }) => {
     return [];
   });
 
-  // Cloud sync status: 'idle' | 'syncing' | 'synced'
-  const [cloudStatus, setCloudStatus] = useState('idle');
+  // Database Connection Status: 'connected' | 'syncing' | 'offline'
+  const [dbStatus, setDbStatus] = useState('syncing');
 
-  // Persistence effects
+  // Persistence to localStorage for instant startup and offline resilience
   useEffect(() => {
     localStorage.setItem('app_notifications_v3', JSON.stringify(notifications));
   }, [notifications]);
@@ -132,53 +145,77 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('app_users_v3', JSON.stringify(users));
   }, [users]);
 
-  // Helper: Save tickets and immediately push to cloud
-  const saveAndBroadcastTickets = useCallback((updater) => {
-    setTickets(prev => {
-      const next = typeof updater === 'function' ? updater(prev) : updater;
-      pushCloudTickets(next);
-      return next;
-    });
-  }, []);
-
-  // Sync with cloud (fetches, merges, and broadcasts back if local has newer tickets)
-  const syncWithCloud = useCallback(async () => {
+  // Synchronize state with SQLite database
+  const syncWithDb = useCallback(async () => {
     try {
-      setCloudStatus('syncing');
-      const remoteTickets = await fetchCloudTickets();
-      if (Array.isArray(remoteTickets)) {
-        // Strip legacy mock tickets from remote
-        const cleanRemote = remoteTickets.filter(t => !OLD_MOCK_IDS.has(t.id));
-        setTickets(currentTickets => {
-          const merged = mergeTickets(currentTickets, cleanRemote);
+      setDbStatus(prev => prev === 'connected' ? 'connected' : 'syncing');
 
-          // If local has updates that remote lacks, push back
-          const remoteKeySet = new Set(cleanRemote.map(t => `${t.id}_${t.updatedAt || t.createdAt}`));
-          const needsPush = merged.some(t => !remoteKeySet.has(`${t.id}_${t.updatedAt || t.createdAt}`));
-          if (needsPush) {
-            pushCloudTickets(merged);
+      // Fetch all entities concurrently
+      const [ticketsResult, invResult, usersResult, notifsResult] = await Promise.allSettled([
+        fetchTicketsFromDb(),
+        fetchInventoryFromDb(),
+        fetchUsersFromDb(),
+        fetchNotificationsFromDb()
+      ]);
+
+      let reachedServer = false;
+
+      // 1. Process Tickets from DB
+      if (ticketsResult.status === 'fulfilled' && Array.isArray(ticketsResult.value)) {
+        reachedServer = true;
+        const dbTickets = ticketsResult.value.filter(t => !OLD_MOCK_IDS.has(t.id));
+
+        // If DB is empty but local storage has user tickets, migrate them to DB
+        setTickets(currentLocalTickets => {
+          if (dbTickets.length === 0 && currentLocalTickets.length > 0) {
+            bulkSyncTicketsToDb(currentLocalTickets).catch(() => {});
+            return currentLocalTickets;
           }
-          return merged;
+          return dbTickets;
         });
-        setCloudStatus('synced');
+      }
+
+      // 2. Process Goods Inventory from DB
+      if (invResult.status === 'fulfilled' && Array.isArray(invResult.value) && invResult.value.length > 0) {
+        reachedServer = true;
+        setInventory(invResult.value);
+      }
+
+      // 3. Process Users from DB
+      if (usersResult.status === 'fulfilled' && usersResult.value && usersResult.value.map) {
+        reachedServer = true;
+        setUsers(prev => ({
+          ...prev,
+          ...usersResult.value.map
+        }));
+      }
+
+      // 4. Process Notifications from DB
+      if (notifsResult.status === 'fulfilled' && Array.isArray(notifsResult.value)) {
+        reachedServer = true;
+        setNotifications(notifsResult.value);
+      }
+
+      if (reachedServer) {
+        setDbStatus('connected');
       } else {
-        setCloudStatus('idle');
+        setDbStatus('offline');
       }
     } catch (err) {
-      setCloudStatus('idle');
+      setDbStatus('offline');
     }
   }, []);
 
-  // Periodic cloud sync & sync on window focus/tab switch
+  // Periodic DB synchronization & sync on window focus/tab switch
   useEffect(() => {
-    syncWithCloud();
+    syncWithDb();
 
-    // Poll every 3.5 seconds so devices see changes quickly
-    const interval = setInterval(syncWithCloud, 3500);
+    // Poll every 3 seconds for live collaborative updates
+    const interval = setInterval(syncWithDb, 3000);
 
     const onActive = () => {
       if (!document.hidden) {
-        syncWithCloud();
+        syncWithDb();
       }
     };
 
@@ -190,8 +227,9 @@ export const AppProvider = ({ children }) => {
       window.removeEventListener('focus', onActive);
       document.removeEventListener('visibilitychange', onActive);
     };
-  }, [syncWithCloud]);
+  }, [syncWithDb]);
 
+  // Notifications helper
   const addNotification = (recipientName, ticketId, title, message, status) => {
     if (!recipientName) return;
     const newNotif = {
@@ -205,18 +243,24 @@ export const AppProvider = ({ children }) => {
       createdAt: new Date().toISOString()
     };
     setNotifications(prev => [newNotif, ...prev]);
+
+    // Save to DB in background
+    createNotificationInDb(newNotif).catch(() => {});
   };
 
   const markNotificationAsRead = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    markNotificationReadInDb(id).catch(() => {});
   };
 
   const markAllNotificationsAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    markAllNotificationsReadInDb().catch(() => {});
   };
 
   const clearNotifications = () => {
     setNotifications([]);
+    clearNotificationsInDb().catch(() => {});
   };
 
   const login = (roleKey) => {
@@ -241,31 +285,35 @@ export const AppProvider = ({ children }) => {
         ...updatedProfileData
       }
     }));
+
+    // Persist to DB
+    updateUserProfileInDb(role, updatedProfileData).catch(() => {});
   };
 
-  // Reset to default mock data (clean empty tickets)
-  const resetDemoData = () => {
+  // Reset to default clean state
+  const resetDemoData = async () => {
+    try {
+      await resetDatabaseInDb();
+    } catch (e) {
+      // offline fallback
+    }
     setInventory(mockInventory);
     setTickets([]);
     setUsers(mockUsers);
     setNotifications([]);
     localStorage.removeItem('app_inventory_v3');
-    localStorage.removeItem('app_inventory_v2');
     localStorage.removeItem('app_tickets_v3');
-    localStorage.removeItem('app_tickets_v2');
     localStorage.removeItem('app_users_v3');
-    localStorage.removeItem('app_users_v2');
     localStorage.removeItem('app_notifications_v3');
-    localStorage.removeItem('app_notifications_v1');
-    pushCloudTickets([]);
   };
 
   // Ticket Management
   const addTicket = (ticketData) => {
     const newTicket = {
       id: `TCK-${Math.floor(1000 + Math.random() * 9000)}`,
-      department: ticketData.department || 'storage',
+      department: ticketData.department || 'other',
       itemTitle: ticketData.itemTitle,
+      subcategory: ticketData.subcategory || '',
       category: ticketData.category || 'other',
       quantity: Number(ticketData.quantity) || 1,
       unit: ticketData.unit || 'pcs',
@@ -285,42 +333,60 @@ export const AppProvider = ({ children }) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    saveAndBroadcastTickets(prev => [newTicket, ...prev]);
+
+    setTickets(prev => [newTicket, ...prev]);
+
+    // Persist ticket in DB
+    createTicketInDb(newTicket).catch(() => {});
+
     return newTicket;
   };
 
   // Generic status updater
   const updateTicket = (ticketId, updates) => {
-    saveAndBroadcastTickets(prev => prev.map(ticket => {
+    const updatedAt = new Date().toISOString();
+    setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         return {
           ...ticket,
           ...updates,
-          updatedAt: new Date().toISOString()
+          updatedAt
         };
       }
       return ticket;
     }));
+
+    // Persist in DB
+    updateTicketInDb(ticketId, { ...updates, updatedAt }).catch(() => {});
   };
 
   // Start working on ticket (used by IT, Cleaning, Facilities, Engineer)
   const startTicketWork = (ticketId, notes = '') => {
     let target = null;
-    saveAndBroadcastTickets(prev => prev.map(ticket => {
+    const updatedAt = new Date().toISOString();
+    const payload = {
+      status: 'in_progress',
+      handledAction: 'in_progress',
+      assignedWorker: currentUser.name,
+      assignedRole: role,
+      notes: notes || 'Staff member started working on this request.',
+      updatedAt
+    };
+
+    setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
         return {
           ...ticket,
-          status: 'in_progress',
-          handledAction: 'in_progress',
-          assignedWorker: currentUser.name,
-          assignedRole: role,
-          notes: notes || ticket.notes || 'Staff member started working on this request.',
-          updatedAt: new Date().toISOString()
+          ...payload,
+          notes: notes || ticket.notes || payload.notes
         };
       }
       return ticket;
     }));
+
+    updateTicketInDb(ticketId, payload).catch(() => {});
+
     if (target && target.teacherName) {
       addNotification(
         target.teacherName,
@@ -335,21 +401,28 @@ export const AppProvider = ({ children }) => {
   // Storage Manager: Issue item directly from stock
   const issueTicketFromStock = (ticketId, notes = '') => {
     let target = null;
-    saveAndBroadcastTickets(prev => prev.map(ticket => {
+    const updatedAt = new Date().toISOString();
+    const payload = {
+      status: 'issued',
+      handledAction: 'issued',
+      assignedWorker: currentUser.name,
+      assignedRole: 'storage_manager',
+      notes: notes || 'Issued directly from warehouse inventory stock.',
+      updatedAt
+    };
+
+    setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
         return {
           ...ticket,
-          status: 'issued',
-          handledAction: 'issued',
-          assignedWorker: currentUser.name,
-          assignedRole: 'storage_manager',
-          notes: notes || 'Issued directly from warehouse inventory stock.',
-          updatedAt: new Date().toISOString()
+          ...payload
         };
       }
       return ticket;
     }));
+
+    updateTicketInDb(ticketId, payload).catch(() => {});
 
     if (target && target.teacherName) {
       addNotification(
@@ -361,12 +434,13 @@ export const AppProvider = ({ children }) => {
       );
     }
 
-    // Deduct stock quantity if matching inventory item exists
+    // Deduct stock quantity in inventory and in DB if matching item exists
     const targetTicket = target || tickets.find(t => t.id === ticketId);
     if (targetTicket) {
       setInventory(prev => prev.map(item => {
         if (item.name.toLowerCase() === targetTicket.itemTitle.toLowerCase()) {
           const newQty = Math.max(0, item.quantity - (targetTicket.quantity || 1));
+          updateInventoryQtyInDb(item.id, { quantity: newQty }).catch(() => {});
           return { ...item, quantity: newQty };
         }
         return item;
@@ -377,23 +451,30 @@ export const AppProvider = ({ children }) => {
   // Storage Manager: Mark item to be purchased
   const markTicketToPurchase = (ticketId, purchaseCost, supplier, notes) => {
     let target = null;
-    saveAndBroadcastTickets(prev => prev.map(ticket => {
+    const updatedAt = new Date().toISOString();
+    const payload = {
+      status: 'purchasing',
+      handledAction: 'purchased',
+      assignedWorker: currentUser.name,
+      assignedRole: 'storage_manager',
+      purchaseCost: Number(purchaseCost) || 0,
+      supplier: supplier || 'Official Supplier / Vendor',
+      notes: notes || 'Item not in stock. Storage manager initiated procurement order.',
+      updatedAt
+    };
+
+    setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
         return {
           ...ticket,
-          status: 'purchasing',
-          handledAction: 'purchased',
-          assignedWorker: currentUser.name,
-          assignedRole: 'storage_manager',
-          purchaseCost: Number(purchaseCost) || 0,
-          supplier: supplier || 'Official Supplier / Vendor',
-          notes: notes || 'Item not in stock. Storage manager initiated procurement order.',
-          updatedAt: new Date().toISOString()
+          ...payload
         };
       }
       return ticket;
     }));
+
+    updateTicketInDb(ticketId, payload).catch(() => {});
 
     if (target && target.teacherName) {
       addNotification(
@@ -409,21 +490,31 @@ export const AppProvider = ({ children }) => {
   // Complete ticket / Deliver / Resolve
   const completeTicketDelivery = (ticketId, notes = '') => {
     let target = null;
-    saveAndBroadcastTickets(prev => prev.map(ticket => {
+    const updatedAt = new Date().toISOString();
+    let updatedFields = null;
+
+    setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         target = ticket;
-        return {
-          ...ticket,
+        updatedFields = {
           status: 'completed',
           handledAction: 'completed',
           assignedWorker: ticket.assignedWorker || currentUser.name,
           assignedRole: ticket.assignedRole || role,
           notes: notes || ticket.notes || 'Job confirmed as completed and resolved.',
-          updatedAt: new Date().toISOString()
+          updatedAt
+        };
+        return {
+          ...ticket,
+          ...updatedFields
         };
       }
       return ticket;
     }));
+
+    if (updatedFields) {
+      updateTicketInDb(ticketId, updatedFields).catch(() => {});
+    }
 
     if (target && target.teacherName) {
       addNotification(
@@ -436,48 +527,63 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Add photos to an existing ticket (before or after completion)
+  // Add photos to an existing ticket
   const addPhotosToTicket = (ticketId, photosArray, isCompletion = false) => {
-    saveAndBroadcastTickets(prev => prev.map(ticket => {
+    const updatedAt = new Date().toISOString();
+    let currentPhotos = [];
+
+    setTickets(prev => prev.map(ticket => {
       if (ticket.id !== ticketId) return ticket;
       if (isCompletion) {
+        currentPhotos = [...(ticket.completionPhotos || []), ...photosArray];
+        updateTicketInDb(ticketId, { completionPhotos: currentPhotos, updatedAt }).catch(() => {});
         return {
           ...ticket,
-          completionPhotos: [...(ticket.completionPhotos || []), ...photosArray],
-          updatedAt: new Date().toISOString()
+          completionPhotos: currentPhotos,
+          updatedAt
         };
       }
+      currentPhotos = [...(ticket.photos || []), ...photosArray];
+      updateTicketInDb(ticketId, { photos: currentPhotos, updatedAt }).catch(() => {});
       return {
         ...ticket,
-        photos: [...(ticket.photos || []), ...photosArray],
-        updatedAt: new Date().toISOString()
+        photos: currentPhotos,
+        updatedAt
       };
     }));
   };
 
   // Facilities Manager: Update moving details / dispatch
   const updateFacilitiesMove = (ticketId, moveDetails, notes = '') => {
-    saveAndBroadcastTickets(prev => prev.map(ticket => {
+    const updatedAt = new Date().toISOString();
+    let fullMoveDetails = null;
+
+    setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
-        return {
-          ...ticket,
+        fullMoveDetails = {
+          ...(ticket.moveDetails || {}),
+          ...moveDetails
+        };
+        const payload = {
           status: 'in_progress',
           handledAction: 'in_progress',
           assignedWorker: currentUser.name,
           assignedRole: 'facilities_manager',
-          moveDetails: {
-            ...(ticket.moveDetails || {}),
-            ...moveDetails
-          },
+          moveDetails: fullMoveDetails,
           notes: notes || 'Facilities moving crew active.',
-          updatedAt: new Date().toISOString()
+          updatedAt
+        };
+        updateTicketInDb(ticketId, payload).catch(() => {});
+        return {
+          ...ticket,
+          ...payload
         };
       }
       return ticket;
     }));
   };
 
-  // Inventory updates
+  // Storage list of goods (Inventory updates)
   const addInventoryItem = (newItem) => {
     const item = {
       id: `inv-${Date.now()}`,
@@ -486,10 +592,13 @@ export const AppProvider = ({ children }) => {
       minLevel: Number(newItem.minLevel) || 5
     };
     setInventory(prev => [item, ...prev]);
+    createInventoryItemInDb(item).catch(() => {});
   };
 
   const updateInventoryQty = (id, newQty) => {
-    setInventory(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(0, newQty) } : item));
+    const clampedQty = Math.max(0, newQty);
+    setInventory(prev => prev.map(item => item.id === id ? { ...item, quantity: clampedQty } : item));
+    updateInventoryQtyInDb(id, { quantity: clampedQty }).catch(() => {});
   };
 
   // Notifications visible to the current logged in user
@@ -524,8 +633,10 @@ export const AppProvider = ({ children }) => {
       updateUserProfile,
       inventory,
       tickets,
-      cloudStatus,
-      syncWithCloud,
+      dbStatus,
+      cloudStatus: dbStatus === 'connected' ? 'synced' : dbStatus, // Backward-compatibility
+      syncWithDb,
+      syncWithCloud: syncWithDb, // Backward-compatibility
       notifications: userNotifications,
       allNotifications: notifications,
       unreadCount,
