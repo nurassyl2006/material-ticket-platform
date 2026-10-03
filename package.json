@@ -8,6 +8,7 @@
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,green\" \"node server/index.js\" \"vite\"",
     "server": "node server/index.js",
     "client": "vite",
+    "db:view": "node server/view-db.js",
     "start": "node server/index.js",
     "build": "vite build",
     "lint": "oxlint",
