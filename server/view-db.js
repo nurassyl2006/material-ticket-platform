@@ -41,10 +41,15 @@ if (inventory.length === 0) {
   console.table(inventory);
 }
 
-// 4. Users
-console.log('\n👥 USERS & ROLES (users table):');
+// 4. Users & Auth
+console.log('\n👥 USERS & PASSWORDS (users table):');
 const users = db.prepare(`
-  SELECT roleKey, name, role, department, email, phone 
+  SELECT 
+    roleKey, 
+    name, 
+    role, 
+    email,
+    CASE WHEN passwordHash IS NOT NULL AND length(passwordHash) > 0 THEN 'Protected (scrypt)' ELSE 'NO PASSWORD' END as passwordStatus
   FROM users
 `).all();
 
@@ -54,7 +59,22 @@ if (users.length === 0) {
   console.table(users);
 }
 
-// 5. Notifications
+// 5. Active Sessions
+console.log('\n🔐 ACTIVE SESSIONS (sessions table):');
+const sessions = db.prepare(`
+  SELECT token, roleKey, createdAt, expiresAt 
+  FROM sessions 
+  ORDER BY createdAt DESC 
+  LIMIT 5
+`).all();
+
+if (sessions.length === 0) {
+  console.log('  (No active sessions)');
+} else {
+  console.table(sessions);
+}
+
+// 6. Notifications
 console.log('\n🔔 RECENT NOTIFICATIONS (notifications table):');
 const notifications = db.prepare(`
   SELECT id, recipientName, title, message, status, read, createdAt 

@@ -16,7 +16,11 @@ import {
   markNotificationReadInDb,
   markAllNotificationsReadInDb,
   clearNotificationsInDb,
-  resetDatabaseInDb
+  resetDatabaseInDb,
+  loginUserApi,
+  fetchAuthMeApi,
+  changePasswordApi,
+  logoutUserApi
 } from './api';
 import {
   translateText,
@@ -71,6 +75,7 @@ export const AppProvider = ({ children }) => {
   });
 
   // Authentication session state
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('app_auth_token') || '');
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('app_auth') === 'true';
   });
@@ -81,7 +86,7 @@ export const AppProvider = ({ children }) => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         return mockInventory;
       }
     }
@@ -97,7 +102,7 @@ export const AppProvider = ({ children }) => {
         if (Array.isArray(parsed)) {
           return parsed.filter(t => !OLD_MOCK_IDS.has(t.id));
         }
-      } catch (e) {
+      } catch {
         return [];
       }
     }
@@ -124,7 +129,7 @@ export const AppProvider = ({ children }) => {
           }
         }
         return cleanUsers;
-      } catch (e) {
+      } catch {
         return mockUsers;
       }
     }
@@ -137,7 +142,7 @@ export const AppProvider = ({ children }) => {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch {
         return [];
       }
     }
@@ -163,6 +168,14 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('app_auth', isAuthenticated ? 'true' : 'false');
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (authToken) {
+      localStorage.setItem('app_auth_token', authToken);
+    } else {
+      localStorage.removeItem('app_auth_token');
+    }
+  }, [authToken]);
 
   useEffect(() => {
     localStorage.setItem('app_inventory_v3', JSON.stringify(inventory));
@@ -232,10 +245,40 @@ export const AppProvider = ({ children }) => {
       } else {
         setDbStatus('offline');
       }
-    } catch (err) {
+    } catch {
       setDbStatus('offline');
     }
   }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await logoutUserApi();
+    } catch {
+      // ignore offline logout errors
+    }
+    setAuthToken('');
+    localStorage.removeItem('app_auth_token');
+    setIsAuthenticated(false);
+  }, []);
+
+  // Validate active auth token with database on initial mount
+  useEffect(() => {
+    const token = localStorage.getItem('app_auth_token');
+    if (token) {
+      fetchAuthMeApi()
+        .then(res => {
+          if (res && res.user) {
+            setRole(res.user.roleKey);
+            setIsAuthenticated(true);
+          }
+        })
+        .catch(err => {
+          if (err.message && err.message.toLowerCase().includes('unauthorized')) {
+            logout();
+          }
+        });
+    }
+  }, [logout]);
 
   // Periodic DB synchronization & sync on window focus/tab switch
   useEffect(() => {
@@ -294,13 +337,75 @@ export const AppProvider = ({ children }) => {
     clearNotificationsInDb().catch(() => {});
   };
 
-  const login = (roleKey) => {
-    setRole(roleKey);
-    setIsAuthenticated(true);
+  const login = async (credentials, optionalPassword) => {
+    let identifier = '';
+    let roleKey = '';
+    let password = '';
+
+    if (typeof credentials === 'object' && credentials !== null) {
+      identifier = credentials.identifier || credentials.email || '';
+      roleKey = credentials.roleKey || '';
+      password = credentials.password || '';
+    } else if (typeof credentials === 'string') {
+      roleKey = credentials;
+      password = optionalPassword || '';
+    }
+
+    try {
+      const res = await loginUserApi({ identifier, roleKey, password });
+      if (res && res.token && res.user) {
+        setAuthToken(res.token);
+        localStorage.setItem('app_auth_token', res.token);
+        setRole(res.user.roleKey);
+        setUsers(prev => ({
+          ...prev,
+          [res.user.roleKey]: {
+            ...(prev[res.user.roleKey] || {}),
+            ...res.user
+          }
+        }));
+        setIsAuthenticated(true);
+        return { success: true, user: res.user };
+      }
+      throw new Error(res?.error || 'Login failed');
+    } catch (err) {
+      // Offline fallback: verify against role default passwords if offline or server is unreachable
+      const searchRole = roleKey || identifier || 'teacher';
+      const defaultPwds = {
+        teacher: "teacher123",
+        it_support: "it123",
+        cleaning: "clean123",
+        storage_manager: "storage123",
+        facilities_manager: "facilities123",
+        director: "admin123",
+        engineer: "engineer123"
+      };
+      const expectedPwd = defaultPwds[searchRole] || 'school123';
+
+      const isNetworkError = err.message && (
+        err.message.includes('Failed to fetch') ||
+        err.message.includes('NetworkError') ||
+        err.message.includes('abort') ||
+        err.message.includes('404')
+      );
+
+      if (isNetworkError && password && password === expectedPwd) {
+        setRole(searchRole);
+        setIsAuthenticated(true);
+        return { success: true, user: users[searchRole], offline: true };
+      }
+
+      throw err;
+    }
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
+  const changePassword = async (currentPassword, newPassword) => {
+    const res = await changePasswordApi({
+      currentPassword,
+      newPassword,
+      roleKey: role
+    });
+    return res;
   };
 
   const t = translations[lang] || translations.en;
@@ -325,7 +430,7 @@ export const AppProvider = ({ children }) => {
   const resetDemoData = async () => {
     try {
       await resetDatabaseInDb();
-    } catch (e) {
+    } catch {
       // offline fallback
     }
     setInventory(mockInventory);
@@ -656,8 +761,10 @@ export const AppProvider = ({ children }) => {
       role,
       setRole,
       isAuthenticated,
+      authToken,
       login,
       logout,
+      changePassword,
       t,
       users,
       currentUser,

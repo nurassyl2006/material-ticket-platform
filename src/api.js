@@ -17,6 +17,11 @@ async function request(endpoint, options = {}) {
     'Accept': 'application/json'
   };
 
+  const token = localStorage.getItem('app_auth_token');
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
+
   if (options.body && typeof options.body === 'string') {
     defaultHeaders['Content-Type'] = 'application/json';
   }
@@ -189,3 +194,35 @@ export async function resetDatabaseInDb() {
     method: 'POST'
   });
 }
+
+// -------------------------------------------------------------
+// Authentication & Password Management API
+// -------------------------------------------------------------
+export async function loginUserApi(credentials) {
+  return request('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials)
+  });
+}
+
+export async function fetchAuthMeApi() {
+  return request('/auth/me');
+}
+
+export async function changePasswordApi(data) {
+  return request('/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function logoutUserApi() {
+  return request('/auth/logout', {
+    method: 'POST'
+  });
+}
+
+export async function fetchDemoCredentialsApi() {
+  return request('/auth/demo-credentials');
+}
+

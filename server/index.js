@@ -2,8 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
-import db, { resetDatabase } from './db.js';
+import db, { resetDatabase, hashPassword, verifyPassword, DEFAULT_PASSWORDS } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,6 +56,28 @@ function formatInventory(row) {
   };
 }
 
+// Format user row for API response (strip passwordHash and salt)
+function formatUser(row) {
+  if (!row) return null;
+  const { passwordHash, salt, ...safeUser } = row;
+  return safeUser;
+}
+
+// Authenticate session from Bearer token
+function authenticateSession(req) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return null;
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  if (!token) return null;
+
+  const now = new Date().toISOString();
+  const session = db.prepare('SELECT * FROM sessions WHERE token = ? AND expiresAt > ?').get(token, now);
+  if (!session) return null;
+
+  const user = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(session.roleKey);
+  return user ? { user: formatUser(user), token, roleKey: session.roleKey } : null;
+}
+
 // -------------------------------------------------------------
 // Health & Diagnostic Endpoint
 // -------------------------------------------------------------
@@ -76,6 +99,150 @@ app.get('/api/health', (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ status: 'error', message: error.message });
+  }
+});
+
+// -------------------------------------------------------------
+// Authentication & Authorization Endpoints
+// -------------------------------------------------------------
+
+// POST /api/auth/login
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { identifier, roleKey, email, password } = req.body;
+    const searchId = (roleKey || email || identifier || '').trim();
+    const rawPassword = (password || '').trim();
+
+    if (!searchId) {
+      return res.status(400).json({ error: 'Username, role or email is required' });
+    }
+    if (!rawPassword) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    let normalizedKey = searchId;
+    if (normalizedKey === 'workerA') normalizedKey = 'storage_manager';
+    if (normalizedKey === 'admin') normalizedKey = 'director';
+
+    const user = db.prepare(`
+      SELECT * FROM users 
+      WHERE roleKey = ? OR LOWER(email) = LOWER(?) OR LOWER(name) = LOWER(?)
+    `).get(normalizedKey, searchId, searchId);
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const isValid = verifyPassword(rawPassword, user.salt, user.passwordHash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    // Generate 30-day session token
+    const token = crypto.randomBytes(32).toString('hex');
+    const now = new Date();
+    const createdAt = now.toISOString();
+    const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    db.prepare(`
+      INSERT INTO sessions (token, roleKey, createdAt, expiresAt)
+      VALUES (?, ?, ?, ?)
+    `).run(token, user.roleKey, createdAt, expiresAt);
+
+    res.json({
+      success: true,
+      token,
+      user: formatUser(user)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/auth/me (Check current session token)
+app.get('/api/auth/me', (req, res) => {
+  try {
+    const auth = authenticateSession(req);
+    if (!auth) {
+      return res.status(401).json({ error: 'Unauthorized or session expired' });
+    }
+    res.json({
+      success: true,
+      user: auth.user
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/auth/change-password
+app.post('/api/auth/change-password', (req, res) => {
+  try {
+    const auth = authenticateSession(req);
+    const { currentPassword, newPassword, roleKey } = req.body;
+
+    const targetRoleKey = (auth ? auth.roleKey : roleKey) || '';
+    if (!targetRoleKey) {
+      return res.status(400).json({ error: 'User specification is required' });
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(targetRoleKey);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Verify current password
+    const isValid = verifyPassword(currentPassword, user.salt, user.passwordHash);
+    if (!isValid) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash and store new password
+    const { salt: newSalt, hash: newHash } = hashPassword(newPassword);
+    const now = new Date().toISOString();
+    db.prepare('UPDATE users SET passwordHash = ?, salt = ?, updatedAt = ? WHERE roleKey = ?')
+      .run(newHash, newSalt, now, targetRoleKey);
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/auth/logout
+app.post('/api/auth/logout', (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (token) {
+        db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+      }
+    }
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/auth/demo-credentials
+app.get('/api/auth/demo-credentials', (req, res) => {
+  try {
+    const users = db.prepare('SELECT roleKey, name, role, department, email FROM users').all();
+    const credentials = users.map(u => ({
+      ...u,
+      defaultPassword: DEFAULT_PASSWORDS[u.roleKey] || 'school123'
+    }));
+    res.json(credentials);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -440,8 +607,9 @@ app.delete('/api/inventory/:id', (req, res) => {
 app.get('/api/users', (req, res) => {
   try {
     const rows = db.prepare('SELECT * FROM users').all();
+    const cleanRows = rows.map(formatUser);
     const map = {};
-    for (const user of rows) {
+    for (const user of cleanRows) {
       map[user.roleKey] = user;
     }
     // Provide legacy aliases
@@ -450,7 +618,7 @@ app.get('/api/users', (req, res) => {
 
     res.json({
       map,
-      list: rows
+      list: cleanRows
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -466,7 +634,7 @@ app.get('/api/users/:roleKey', (req, res) => {
 
     const row = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(roleKey);
     if (!row) return res.status(404).json({ error: 'User not found' });
-    res.json(row);
+    res.json(formatUser(row));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -505,7 +673,7 @@ app.patch('/api/users/:roleKey', (req, res) => {
     db.prepare(sql).run(values);
 
     const updated = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(roleKey);
-    res.json(updated);
+    res.json(formatUser(updated));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

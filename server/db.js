@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +19,26 @@ const db = new Database(dbPath);
 // Enable WAL mode for high concurrency & better performance
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+
+// Cryptographic Password Hashing & Verification Utilities
+export function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
+  if (!password) throw new Error('Password is required for hashing');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return { salt, hash };
+}
+
+export function verifyPassword(password, salt, storedHash) {
+  if (!password || !salt || !storedHash) return false;
+  try {
+    const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+    const hashBuf = Buffer.from(hash, 'hex');
+    const storedBuf = Buffer.from(storedHash, 'hex');
+    if (hashBuf.length !== storedBuf.length) return false;
+    return crypto.timingSafeEqual(hashBuf, storedBuf);
+  } catch (e) {
+    return false;
+  }
+}
 
 // 1. Initial schema definition
 db.exec(`
@@ -76,9 +97,20 @@ db.exec(`
     email TEXT DEFAULT '',
     phone TEXT DEFAULT '',
     avatar TEXT DEFAULT '',
+    passwordHash TEXT DEFAULT '',
+    salt TEXT DEFAULT '',
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
   );
+
+  -- Sessions Table for Authentication Tokens
+  CREATE TABLE IF NOT EXISTS sessions (
+    token TEXT PRIMARY KEY,
+    roleKey TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    expiresAt TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 
   -- Notifications Table
   CREATE TABLE IF NOT EXISTS notifications (
@@ -94,6 +126,19 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipientName);
   CREATE INDEX IF NOT EXISTS idx_notifications_createdAt ON notifications(createdAt);
 `);
+
+// Migration: Ensure passwordHash & salt columns exist on existing databases
+try {
+  const userColumns = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
+  if (!userColumns.includes('passwordHash')) {
+    db.prepare("ALTER TABLE users ADD COLUMN passwordHash TEXT DEFAULT ''").run();
+  }
+  if (!userColumns.includes('salt')) {
+    db.prepare("ALTER TABLE users ADD COLUMN salt TEXT DEFAULT ''").run();
+  }
+} catch (e) {
+  // Column check warning
+}
 
 // Default initial inventory items
 const defaultInventory = [
@@ -198,6 +243,17 @@ const defaultInventory = [
   }
 ];
 
+// Default passwords for staff roles (memorable, role-based standard credentials)
+export const DEFAULT_PASSWORDS = {
+  teacher: "teacher123",
+  it_support: "it123",
+  cleaning: "clean123",
+  storage_manager: "storage123",
+  facilities_manager: "facilities123",
+  director: "admin123",
+  engineer: "engineer123"
+};
+
 // Default initial users
 const defaultUsers = [
   {
@@ -296,14 +352,18 @@ if (invCount === 0) {
 const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
 if (userCount === 0) {
   const insertUser = db.prepare(`
-    INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, createdAt, updatedAt)
-    VALUES (@roleKey, @id, @name, @role, @department, @email, @phone, @avatar, @createdAt, @updatedAt)
+    INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, passwordHash, salt, createdAt, updatedAt)
+    VALUES (@roleKey, @id, @name, @role, @department, @email, @phone, @avatar, @passwordHash, @salt, @createdAt, @updatedAt)
   `);
   const now = new Date().toISOString();
   const insertManyUsers = db.transaction((users) => {
     for (const user of users) {
+      const rawPassword = DEFAULT_PASSWORDS[user.roleKey] || 'school123';
+      const { salt, hash } = hashPassword(rawPassword);
       insertUser.run({
         ...user,
+        passwordHash: hash,
+        salt,
         createdAt: now,
         updatedAt: now
       });
@@ -312,13 +372,35 @@ if (userCount === 0) {
   insertManyUsers(defaultUsers);
 }
 
+// Auto-migration: Ensure all existing users in the database have passwordHash and salt populated
+try {
+  const usersWithoutPwd = db.prepare("SELECT roleKey FROM users WHERE passwordHash IS NULL OR passwordHash = ''").all();
+  if (usersWithoutPwd.length > 0) {
+    const updatePwd = db.prepare("UPDATE users SET passwordHash = @passwordHash, salt = @salt WHERE roleKey = @roleKey");
+    db.transaction((items) => {
+      for (const u of items) {
+        const rawPassword = DEFAULT_PASSWORDS[u.roleKey] || 'school123';
+        const { salt, hash } = hashPassword(rawPassword);
+        updatePwd.run({
+          roleKey: u.roleKey,
+          passwordHash: hash,
+          salt
+        });
+      }
+    })(usersWithoutPwd);
+  }
+} catch (e) {
+  // Ignore migration update error
+}
+
 // Helper to reset database to default state
 export function resetDatabase() {
   const now = new Date().toISOString();
   db.transaction(() => {
-    // Clear tickets and notifications
+    // Clear tickets, notifications and active sessions
     db.prepare('DELETE FROM tickets').run();
     db.prepare('DELETE FROM notifications').run();
+    db.prepare('DELETE FROM sessions').run();
 
     // Reset inventory to default
     db.prepare('DELETE FROM inventory').run();
@@ -334,15 +416,19 @@ export function resetDatabase() {
       });
     }
 
-    // Reset users to default
+    // Reset users to default with hashed passwords
     db.prepare('DELETE FROM users').run();
     const insertUser = db.prepare(`
-      INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, createdAt, updatedAt)
-      VALUES (@roleKey, @id, @name, @role, @department, @email, @phone, @avatar, @createdAt, @updatedAt)
+      INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, passwordHash, salt, createdAt, updatedAt)
+      VALUES (@roleKey, @id, @name, @role, @department, @email, @phone, @avatar, @passwordHash, @salt, @createdAt, @updatedAt)
     `);
     for (const user of defaultUsers) {
+      const rawPassword = DEFAULT_PASSWORDS[user.roleKey] || 'school123';
+      const { salt, hash } = hashPassword(rawPassword);
       insertUser.run({
         ...user,
+        passwordHash: hash,
+        salt,
         createdAt: now,
         updatedAt: now
       });

@@ -5,7 +5,6 @@ import {
   ShoppingBag, 
   User, 
   Building, 
-  ShieldCheck, 
   Laptop, 
   Sparkles, 
   Truck, 
