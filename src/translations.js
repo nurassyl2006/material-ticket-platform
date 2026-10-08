@@ -30,7 +30,6 @@ export const translations = {
       grounds: "Grounds Maintenance",
       security: "Campus Security",
       admin: "Administration",
-      bi_education: "BI Education Appeals",
       other: "Other Works",
       // Legacy aliases
       it: "IT Helpdesk",
@@ -363,7 +362,6 @@ export const translations = {
       grounds: "Благоустройство территории",
       security: "Вопросы охраны",
       admin: "Администрация",
-      bi_education: "Обращение в BI Education",
       other: "Прочее/Другие работы",
       // Legacy aliases
       it: "IT Helpdesk",
@@ -696,7 +694,6 @@ export const translations = {
       grounds: "Аумақты абаттандыру",
       security: "Күзет мәселелері",
       admin: "Әкімшілік",
-      bi_education: "BI Education-ға жүгіну",
       other: "Басқа жұмыстар",
       // Legacy aliases
       it: "IT Helpdesk",

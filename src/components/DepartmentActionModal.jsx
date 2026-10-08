@@ -1022,8 +1022,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
           </form>
         )}
 
-        {/* 6c. ADMIN / BI EDUCATION / GENERAL WORKFLOW */}
-        {(targetDept === 'admin' || targetDept === 'bi_education' || (targetDept === 'other' && !stockItem)) && (
+        {/* 6c. ADMIN / GENERAL WORKFLOW */}
+        {(targetDept === 'admin' || (targetDept === 'other' && !stockItem)) && (
           <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ background: 'rgba(129, 140, 248, 0.1)', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '12px', borderRadius: '10px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#818cf8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>

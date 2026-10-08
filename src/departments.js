@@ -1,6 +1,6 @@
 /**
  * Core School Operations Departments & Subcategories Specification
- * Synchronized with BI Education and School Operations Helpdesk Standards.
+ * Synchronized with School Operations Helpdesk Standards.
  * Fully localized across English, Russian, and Kazakh to enable seamless
  * communication between English-speaking teachers and Russian/Kazakh-speaking engineers.
  */
@@ -476,26 +476,6 @@ export const DEPARTMENTS = {
       ]
     }
   },
-  "bi_education": {
-    id: "bi_education",
-    key: "bi_education",
-    name: "Обращение в BI Education",
-    emoji: "📩",
-    color: "#ec4899",
-    translations: {
-      en: "BI Education Appeals",
-      ru: "Обращение в BI Education",
-      kk: "BI Education-ға жүгіну"
-    },
-    subcategories: [
-      "Прочее"
-    ],
-    subcategoriesLocalized: {
-      en: ["General BI Education appeal"],
-      ru: ["Прочее"],
-      kk: ["Жалпы BI Education өтініші"]
-    }
-  },
   "other": {
     id: "other",
     key: "other",
@@ -547,7 +527,8 @@ export const DEPARTMENT_ALIASES = {
   "Благоустройство территории": "grounds",
   "Вопросы охраны": "security",
   "Администрация": "admin",
-  "Обращение в BI Education": "bi_education",
+  "Обращение в BI Education": "other",
+  "bi_education": "other",
   "Прочее/Другие работы": "other"
 };
 
