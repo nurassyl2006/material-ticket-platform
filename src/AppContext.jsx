@@ -11,6 +11,10 @@ import {
   updateInventoryQtyInDb,
   fetchUsersFromDb,
   updateUserProfileInDb,
+  createUserInDb,
+  updateUserRoleInDb,
+  resetUserPasswordInDb,
+  deleteUserFromDb,
   fetchNotificationsFromDb,
   createNotificationInDb,
   markNotificationReadInDb,
@@ -18,6 +22,7 @@ import {
   clearNotificationsInDb,
   resetDatabaseInDb,
   loginUserApi,
+  registerUserApi,
   fetchAuthMeApi,
   changePasswordApi,
   logoutUserApi
@@ -79,6 +84,18 @@ export const AppProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem('app_auth') === 'true';
   });
+
+  // Active authenticated user object
+  const [activeUser, setActiveUser] = useState(() => {
+    const saved = localStorage.getItem('app_active_user');
+    if (saved) {
+      try { return JSON.parse(saved); } catch {}
+    }
+    return null;
+  });
+
+  // Full list of all registered staff users
+  const [usersList, setUsersList] = useState([]);
 
   // Inventory state (Goods storage)
   const [inventory, setInventory] = useState(() => {
@@ -178,6 +195,14 @@ export const AppProvider = ({ children }) => {
   }, [authToken]);
 
   useEffect(() => {
+    if (activeUser) {
+      localStorage.setItem('app_active_user', JSON.stringify(activeUser));
+    } else {
+      localStorage.removeItem('app_active_user');
+    }
+  }, [activeUser]);
+
+  useEffect(() => {
     localStorage.setItem('app_inventory_v3', JSON.stringify(inventory));
   }, [inventory]);
 
@@ -226,12 +251,28 @@ export const AppProvider = ({ children }) => {
       }
 
       // 3. Process Users from DB
-      if (usersResult.status === 'fulfilled' && usersResult.value && usersResult.value.map) {
+      if (usersResult.status === 'fulfilled' && usersResult.value) {
         reachedServer = true;
-        setUsers(prev => ({
-          ...prev,
-          ...usersResult.value.map
-        }));
+        if (Array.isArray(usersResult.value.list)) {
+          setUsersList(usersResult.value.list);
+        }
+        if (usersResult.value.map) {
+          setUsers(prev => ({
+            ...prev,
+            ...usersResult.value.map
+          }));
+        }
+        // Keep active logged-in user synchronized if role/details were updated in DB
+        setActiveUser(currentAct => {
+          if (!currentAct) return currentAct;
+          const fresh = (usersResult.value.list || []).find(u => u.id === currentAct.id || u.email === currentAct.email || u.roleKey === currentAct.roleKey);
+          if (fresh && (fresh.role !== currentAct.role || fresh.name !== currentAct.name || fresh.department !== currentAct.department)) {
+            setRole(fresh.role || fresh.roleKey);
+            localStorage.setItem('app_active_user', JSON.stringify(fresh));
+            return fresh;
+          }
+          return currentAct;
+        });
       }
 
       // 4. Process Notifications from DB
@@ -257,7 +298,9 @@ export const AppProvider = ({ children }) => {
       // ignore offline logout errors
     }
     setAuthToken('');
+    setActiveUser(null);
     localStorage.removeItem('app_auth_token');
+    localStorage.removeItem('app_active_user');
     setIsAuthenticated(false);
   }, []);
 
@@ -268,7 +311,8 @@ export const AppProvider = ({ children }) => {
       fetchAuthMeApi()
         .then(res => {
           if (res && res.user) {
-            setRole(res.user.roleKey);
+            setActiveUser(res.user);
+            setRole(res.user.role || res.user.roleKey);
             setIsAuthenticated(true);
           }
         })
@@ -339,38 +383,39 @@ export const AppProvider = ({ children }) => {
 
   const login = async (credentials, optionalPassword) => {
     let identifier = '';
-    let roleKey = '';
     let password = '';
 
     if (typeof credentials === 'object' && credentials !== null) {
-      identifier = credentials.identifier || credentials.email || '';
-      roleKey = credentials.roleKey || '';
+      identifier = credentials.identifier || credentials.email || credentials.roleKey || '';
       password = credentials.password || '';
     } else if (typeof credentials === 'string') {
-      roleKey = credentials;
+      identifier = credentials;
       password = optionalPassword || '';
     }
 
     try {
-      const res = await loginUserApi({ identifier, roleKey, password });
+      const res = await loginUserApi({ identifier, password });
       if (res && res.token && res.user) {
         setAuthToken(res.token);
         localStorage.setItem('app_auth_token', res.token);
-        setRole(res.user.roleKey);
+        setActiveUser(res.user);
+        localStorage.setItem('app_active_user', JSON.stringify(res.user));
+        setRole(res.user.role || res.user.roleKey);
         setUsers(prev => ({
           ...prev,
-          [res.user.roleKey]: {
-            ...(prev[res.user.roleKey] || {}),
+          [res.user.roleKey || res.user.id]: {
+            ...(prev[res.user.roleKey || res.user.id] || {}),
             ...res.user
           }
         }));
         setIsAuthenticated(true);
+        syncWithDb();
         return { success: true, user: res.user };
       }
       throw new Error(res?.error || 'Login failed');
     } catch (err) {
       // Offline fallback: verify against role default passwords if offline or server is unreachable
-      const searchRole = roleKey || identifier || 'teacher';
+      const searchRole = identifier || 'teacher';
       const defaultPwds = {
         teacher: "teacher123",
         it_support: "it123",
@@ -390,20 +435,61 @@ export const AppProvider = ({ children }) => {
       );
 
       if (isNetworkError && password && password === expectedPwd) {
+        const fallbackUser = users[searchRole] || { role: searchRole, name: searchRole, email: `${searchRole}@school.edu` };
+        setActiveUser(fallbackUser);
         setRole(searchRole);
         setIsAuthenticated(true);
-        return { success: true, user: users[searchRole], offline: true };
+        return { success: true, user: fallbackUser, offline: true };
       }
 
       throw err;
     }
   };
 
+  const register = async (userData) => {
+    const res = await registerUserApi(userData);
+    if (res && res.token && res.user) {
+      setAuthToken(res.token);
+      localStorage.setItem('app_auth_token', res.token);
+      setActiveUser(res.user);
+      localStorage.setItem('app_active_user', JSON.stringify(res.user));
+      setRole(res.user.role || res.user.roleKey);
+      setIsAuthenticated(true);
+      syncWithDb();
+      return { success: true, user: res.user, message: res.message };
+    }
+    throw new Error(res?.error || 'Registration failed');
+  };
+
+  const createUser = async (userData) => {
+    const created = await createUserInDb(userData);
+    await syncWithDb();
+    return created;
+  };
+
+  const updateUserRole = async (userId, newRole) => {
+    const updated = await updateUserRoleInDb(userId, newRole);
+    await syncWithDb();
+    return updated;
+  };
+
+  const resetUserPassword = async (userId, newPassword) => {
+    const res = await resetUserPasswordInDb(userId, newPassword);
+    return res;
+  };
+
+  const deleteUser = async (userId) => {
+    const res = await deleteUserFromDb(userId);
+    await syncWithDb();
+    return res;
+  };
+
   const changePassword = async (currentPassword, newPassword) => {
+    const targetKey = activeUser?.id || activeUser?.roleKey || role;
     const res = await changePasswordApi({
       currentPassword,
       newPassword,
-      roleKey: role
+      roleKey: targetKey
     });
     return res;
   };
@@ -411,9 +497,15 @@ export const AppProvider = ({ children }) => {
   const t = translations[lang] || translations.en;
   
   // Resolve current active user profile
-  const currentUser = users[role] || (role === 'workerA' ? users.storage_manager : (role === 'admin' ? users.director : (users[role] || users.teacher)));
+  const currentUser = activeUser || users[role] || (role === 'workerA' ? users.storage_manager : (role === 'admin' ? users.director : (users[role] || users.teacher)));
 
   const updateUserProfile = (updatedProfileData) => {
+    if (currentUser?.id) {
+      const merged = { ...currentUser, ...updatedProfileData };
+      setActiveUser(merged);
+      localStorage.setItem('app_active_user', JSON.stringify(merged));
+      updateUserProfileInDb(currentUser.id, updatedProfileData).catch(() => {});
+    }
     setUsers(prev => ({
       ...prev,
       [role]: {
@@ -421,9 +513,6 @@ export const AppProvider = ({ children }) => {
         ...updatedProfileData
       }
     }));
-
-    // Persist to DB
-    updateUserProfileInDb(role, updatedProfileData).catch(() => {});
   };
 
   // Reset to default clean state
@@ -764,6 +853,12 @@ export const AppProvider = ({ children }) => {
       authToken,
       login,
       logout,
+      register,
+      usersList,
+      createUser,
+      updateUserRole,
+      resetUserPassword,
+      deleteUser,
       changePassword,
       t,
       users,

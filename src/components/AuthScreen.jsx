@@ -1,230 +1,129 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../AppContext';
 import { 
   ShieldCheck, 
-  GraduationCap, 
-  Laptop, 
-  Sparkles, 
-  Package, 
-  Truck, 
-  Wrench, 
-  Crown, 
-  Globe, 
+  Lock, 
+  Mail, 
+  User, 
   ArrowRight, 
+  Globe, 
   CheckCircle2, 
-  Lock,
-  Eye,
-  EyeOff,
+  AlertCircle, 
+  Eye, 
+  EyeOff, 
+  UserPlus, 
+  Building,
   KeyRound,
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  User
+  Info
 } from 'lucide-react';
 
-const ROLE_DEFAULT_PASSWORDS = {
-  teacher: 'teacher123',
-  it_support: 'it123',
-  cleaning: 'clean123',
-  storage_manager: 'storage123',
-  facilities_manager: 'facilities123',
-  director: 'admin123',
-  engineer: 'engineer123'
-};
-
 export const AuthScreen = () => {
-  const { lang, setLang, t, login, users } = useApp();
-  const [selectedRole, setSelectedRole] = useState('teacher');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState('role'); // 'role' | 'direct'
-  const [directEmail, setDirectEmail] = useState('');
-  const [directPassword, setDirectPassword] = useState('');
+  const { lang, setLang, t, login, register } = useApp();
+  
+  const [activeTab, setActiveTab] = useState('signin'); // 'signin' | 'signup'
+  
+  // Sign In Form State
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  
+  // Sign Up Form State
+  const [signUpName, setSignUpName] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpDepartment, setSignUpDepartment] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [signUpConfirmPassword, setSignUpConfirmPassword] = useState('');
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [shake, setShake] = useState(false);
-  const [showDemoDrawer, setShowDemoDrawer] = useState(false);
 
-  const passwordInputRef = useRef(null);
-
-  const roleAccounts = [
-    {
-      id: 'teacher',
-      title: t.roles.teacher,
-      dept: users.teacher?.department || 'Mathematics & STEM',
-      user: users.teacher?.name || t.roles.teacher,
-      email: users.teacher?.email || 'teacher@school.edu',
-      icon: GraduationCap,
-      color: '#3b82f6',
-      badgeBg: 'rgba(59, 130, 246, 0.15)',
-      description: t.auth.teacherDesc,
-      scope: 'Creates tickets across all departments, tracks own requests'
-    },
-    {
-      id: 'it_support',
-      title: t.roles.it_support,
-      dept: users.it_support?.department || 'IT Operations',
-      user: users.it_support?.name || t.roles.it_support,
-      email: users.it_support?.email || 'it.support@school.edu',
-      icon: Laptop,
-      color: '#38bdf8',
-      badgeBg: 'rgba(56, 189, 248, 0.15)',
-      description: t.auth.itDesc,
-      scope: 'Sees & troubleshoots ONLY IT tickets (Wi-Fi, laptops, projectors)'
-    },
-    {
-      id: 'cleaning',
-      title: t.roles.cleaning,
-      dept: users.cleaning?.department || 'Campus Hygiene',
-      user: users.cleaning?.name || t.roles.cleaning,
-      email: users.cleaning?.email || 'cleaning@school.edu',
-      icon: Sparkles,
-      color: '#34d399',
-      badgeBg: 'rgba(52, 211, 153, 0.15)',
-      description: t.auth.cleaningDesc,
-      scope: 'Sees & cleans ONLY cleaning tickets (spills, sanitation)'
-    },
-    {
-      id: 'engineer',
-      title: t.roles.engineer,
-      dept: users.engineer?.department || 'Engineering & Utilities',
-      user: users.engineer?.name || t.roles.engineer,
-      email: users.engineer?.email || 'engineer@school.edu',
-      icon: Wrench,
-      color: '#f97316',
-      badgeBg: 'rgba(249, 115, 22, 0.15)',
-      description: t.auth.engineerDesc,
-      scope: 'Sees & repairs ONLY engineering tickets (lights, AC, electrical)'
-    },
-    {
-      id: 'storage_manager',
-      title: t.roles.storage_manager,
-      dept: users.storage_manager?.department || 'Warehouse & Supplies',
-      user: users.storage_manager?.name || t.roles.storage_manager,
-      email: users.storage_manager?.email || 'storage@school.edu',
-      icon: Package,
-      color: '#fbbf24',
-      badgeBg: 'rgba(251, 191, 36, 0.15)',
-      description: t.auth.storageDesc,
-      scope: 'Storage tickets, warehouse inventory stock & procurement'
-    },
-    {
-      id: 'facilities_manager',
-      title: t.roles.facilities_manager,
-      dept: users.facilities_manager?.department || 'Facilities & Logistics',
-      user: users.facilities_manager?.name || t.roles.facilities_manager,
-      email: users.facilities_manager?.email || 'facilities@school.edu',
-      icon: Truck,
-      color: '#a78bfa',
-      badgeBg: 'rgba(167, 139, 250, 0.15)',
-      description: t.auth.facilitiesDesc,
-      scope: 'Furniture moving, facility repairs & campus inventory'
-    },
-    {
-      id: 'director',
-      title: t.roles.director,
-      dept: users.director?.department || 'School Directorate',
-      user: users.director?.name || t.roles.director,
-      email: users.director?.email || 'director@school.edu',
-      icon: Crown,
-      color: '#e879f9',
-      badgeBg: 'rgba(232, 121, 249, 0.15)',
-      description: t.auth.directorDesc,
-      scope: 'Full administrative access across all school operations & analytics'
-    }
-  ];
-
-  const activeAccount = roleAccounts.find(r => r.id === selectedRole) || roleAccounts[0];
-
-  // Auto focus password input when role changes
-  useEffect(() => {
-    if (activeTab === 'role' && passwordInputRef.current) {
-      passwordInputRef.current.focus();
-    }
-  }, [selectedRole, activeTab]);
-
-  const triggerShake = () => {
-    setShake(true);
-    setTimeout(() => setShake(false), 500);
+  // Quick fill helper for director test login
+  const handleQuickFillDirector = () => {
+    setLoginIdentifier('director@school.edu');
+    setLoginPassword('admin123');
+    setErrorMessage('');
   };
 
-  const handleRoleLogin = async (e) => {
-    if (e) e.preventDefault();
-    if (!password) {
-      setErrorMessage(t.auth.enterPassword || 'Please enter password');
-      triggerShake();
+  const handleSignInSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (!loginIdentifier.trim()) {
+      setErrorMessage(lang === 'ru' ? 'Введите email или логин' : lang === 'kk' ? 'Email немесе логинді енгізіңіз' : 'Please enter your email or username');
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
       return;
     }
 
-    setIsLoading(true);
-    setErrorMessage('');
+    if (!loginPassword) {
+      setErrorMessage(lang === 'ru' ? 'Введите пароль' : lang === 'kk' ? 'Құпия сөзді енгізіңіз' : 'Please enter your password');
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      return;
+    }
 
     try {
+      setIsLoading(true);
       await login({
-        roleKey: selectedRole,
-        password: password
+        identifier: loginIdentifier.trim(),
+        password: loginPassword
       });
+      // Auth state changes in AppContext will unmount AuthScreen automatically
     } catch (err) {
-      const msg = err.message?.toLowerCase().includes('password')
-        ? (t.auth.invalidPassword || 'Incorrect password. Please try again.')
-        : (err.message || 'Authorization failed');
-      setErrorMessage(msg);
-      triggerShake();
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      setErrorMessage(err.message || (lang === 'ru' ? 'Неверный логин или пароль' : lang === 'kk' ? 'Қате логин немесе құпия сөз' : 'Invalid email or password'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDirectLogin = async (e) => {
-    if (e) e.preventDefault();
-    if (!directEmail.trim()) {
-      setErrorMessage('Please enter email or username');
-      triggerShake();
-      return;
-    }
-    if (!directPassword) {
-      setErrorMessage(t.auth.enterPassword || 'Please enter password');
-      triggerShake();
+  const handleSignUpSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (!signUpName.trim()) {
+      setErrorMessage(lang === 'ru' ? 'Введите ваше полное имя' : lang === 'kk' ? 'Толық аты-жөніңізді енгізіңіз' : 'Please enter your full name');
       return;
     }
 
-    setIsLoading(true);
-    setErrorMessage('');
+    if (!signUpEmail.trim()) {
+      setErrorMessage(lang === 'ru' ? 'Введите email или логин' : lang === 'kk' ? 'Email немесе логинді енгізіңіз' : 'Please enter your email or username');
+      return;
+    }
+
+    if (signUpPassword.length < 6) {
+      setErrorMessage(lang === 'ru' ? 'Пароль должен быть не менее 6 символов' : lang === 'kk' ? 'Құпия сөз кемінде 6 таңбадан тұруы керек' : 'Password must be at least 6 characters');
+      return;
+    }
+
+    if (signUpPassword !== signUpConfirmPassword) {
+      setErrorMessage(lang === 'ru' ? 'Пароли не совпадают' : lang === 'kk' ? 'Құпия сөздер сәйкес келмейді' : 'Passwords do not match');
+      return;
+    }
 
     try {
-      await login({
-        identifier: directEmail.trim(),
-        password: directPassword
+      setIsLoading(true);
+      const res = await register({
+        name: signUpName.trim(),
+        email: signUpEmail.trim(),
+        department: signUpDepartment.trim() || 'General Staff',
+        password: signUpPassword
       });
+      if (res?.message) {
+        setSuccessMessage(res.message);
+      }
     } catch (err) {
-      const msg = err.message?.toLowerCase().includes('password')
-        ? (t.auth.invalidPassword || 'Incorrect password. Please try again.')
-        : (err.message || 'Authorization failed');
-      setErrorMessage(msg);
-      triggerShake();
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      setErrorMessage(err.message || 'Registration failed');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fillQuickPassword = (roleKey) => {
-    const pwd = ROLE_DEFAULT_PASSWORDS[roleKey] || 'school123';
-    setPassword(pwd);
-    setErrorMessage('');
-    if (passwordInputRef.current) {
-      passwordInputRef.current.focus();
-    }
-  };
-
-  const selectRoleAndFill = (account) => {
-    setSelectedRole(account.id);
-    setActiveTab('role');
-    const pwd = ROLE_DEFAULT_PASSWORDS[account.id] || 'school123';
-    setPassword(pwd);
-    setErrorMessage('');
-    setShowDemoDrawer(false);
-    if (passwordInputRef.current) {
-      passwordInputRef.current.focus();
     }
   };
 
@@ -232,569 +131,278 @@ export const AuthScreen = () => {
     <div style={{
       minHeight: '100vh',
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
-      padding: '32px 16px 48px',
-      position: 'relative',
-      background: 'radial-gradient(ellipse at 50% 0%, #1e1b4b 0%, #0f172a 70%, #030712 100%)'
+      justifyContent: 'center',
+      padding: '24px 16px',
+      background: 'radial-gradient(ellipse at 50% 15%, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0.95) 75%)',
+      position: 'relative'
     }}>
-      {/* Background ambient glow circles */}
-      <div style={{
-        position: 'fixed',
-        top: '5%',
-        left: '15%',
-        width: '450px',
-        height: '450px',
-        background: 'radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
-      <div style={{
-        position: 'fixed',
-        bottom: '8%',
-        right: '15%',
-        width: '500px',
-        height: '500px',
-        background: 'radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%)',
-        pointerEvents: 'none',
-        zIndex: 0
-      }} />
 
-      {/* Language Selector Top Right */}
+      {/* Top Bar: Brand & Language Toggle */}
       <div style={{
         position: 'absolute',
         top: '20px',
-        right: '20px',
-        zIndex: 10,
+        left: '24px',
+        right: '24px',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        background: 'rgba(30, 41, 59, 0.8)',
-        padding: '6px 14px',
-        borderRadius: '12px',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        backdropFilter: 'blur(12px)',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+        justifyContent: 'space-between',
+        zIndex: 10
       }}>
-        <Globe size={15} color="var(--secondary)" />
-        <select
-          value={lang}
-          onChange={(e) => setLang(e.target.value)}
-          style={{
-            background: 'transparent',
-            color: 'var(--text-main)',
-            border: 'none',
-            fontSize: '13px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            outline: 'none'
-          }}
-        >
-          <option value="kk" style={{ background: '#1e293b' }}>Қазақша (KK)</option>
-          <option value="ru" style={{ background: '#1e293b' }}>Русский (RU)</option>
-          <option value="en" style={{ background: '#1e293b' }}>English (EN)</option>
-        </select>
-      </div>
-
-      <div style={{
-        width: '100%',
-        maxWidth: '960px',
-        zIndex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '24px'
-      }}>
-        {/* Brand header */}
-        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
             background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-            padding: '14px',
-            borderRadius: '18px',
+            padding: '8px',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <ShieldCheck size={20} color="#fff" />
+          </div>
+          <span style={{ fontWeight: '800', fontSize: '16px', color: '#fff', letterSpacing: '-0.3px' }}>
+            EduOps Portal
+          </span>
+        </div>
+
+        {/* Language Switcher */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: 'rgba(30, 41, 59, 0.8)',
+          border: '1px solid var(--border-color)',
+          padding: '6px 12px',
+          borderRadius: '12px'
+        }}>
+          <Globe size={14} color="var(--secondary)" />
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: '700',
+              outline: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="kk">Қаз (KK)</option>
+            <option value="ru">Рус (RU)</option>
+            <option value="en">Eng (EN)</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Main Authentication Card */}
+      <div className={`glass-panel ${shake ? 'shake-animation' : ''}`} style={{
+        width: '100%',
+        maxWidth: '460px',
+        borderRadius: '24px',
+        padding: '36px 32px',
+        background: 'rgba(30, 41, 59, 0.75)',
+        border: '1px solid var(--border-color)',
+        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1)',
+        backdropFilter: 'blur(20px)',
+        marginTop: '40px'
+      }}>
+        
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 30px rgba(99, 102, 241, 0.45)',
-            marginBottom: '12px',
-            animation: 'pulse 3s infinite ease-in-out'
+            margin: '0 auto 14px',
+            boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)'
           }}>
-            <ShieldCheck size={34} color="#ffffff" />
+            <Lock size={26} color="#ffffff" />
           </div>
-
-          <h1 style={{
-            fontSize: '30px',
-            fontWeight: '800',
-            letterSpacing: '-0.5px',
-            background: 'linear-gradient(90deg, #ffffff 0%, #cbd5e1 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            margin: '0 0 6px 0'
-          }}>
-            {t.appName}
-          </h1>
-
-          <p style={{
-            fontSize: '14px',
-            color: 'var(--text-muted)',
-            maxWidth: '560px',
-            margin: 0,
-            lineHeight: 1.5
-          }}>
-            {t.auth.loginTitle || 'School Staff Authorization & Access Control'}
+          <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#fff', margin: '0 0 6px 0' }}>
+            {activeTab === 'signin' 
+              ? (lang === 'ru' ? 'Вход в систему школы' : lang === 'kk' ? 'Мектеп жүйесіне кіру' : 'School Operations Sign In')
+              : (lang === 'ru' ? 'Регистрация сотрудника' : lang === 'kk' ? 'Қызметкерді тіркеу' : 'Create Staff Account')}
+          </h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+            {activeTab === 'signin'
+              ? (lang === 'ru' ? 'Войдите со своим email или логином сотрудника' : lang === 'kk' ? 'Email немесе логин арқылы кіріңіз' : 'Enter your staff credentials to access operations')
+              : (lang === 'ru' ? 'Создайте учетную запись для подачи и отслеживания заявок' : lang === 'kk' ? 'Өтінімдерді беру үшін тіркелгі жасаңыз' : 'Register to submit & monitor campus requests')}
           </p>
         </div>
 
-        {/* Tab Switcher: Role Cards vs Direct Email */}
+        {/* Tab Switcher */}
         <div style={{
-          display: 'flex',
-          background: 'rgba(15, 23, 42, 0.75)',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '6px',
+          background: 'rgba(15, 23, 42, 0.6)',
           padding: '4px',
-          borderRadius: '12px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          gap: '4px'
+          borderRadius: '14px',
+          marginBottom: '24px',
+          border: '1px solid var(--border-color)'
         }}>
           <button
             type="button"
-            onClick={() => { setActiveTab('role'); setErrorMessage(''); }}
+            onClick={() => {
+              setActiveTab('signin');
+              setErrorMessage('');
+              setSuccessMessage('');
+            }}
             style={{
-              padding: '8px 20px',
-              borderRadius: '9px',
+              padding: '9px',
+              borderRadius: '10px',
+              border: 'none',
               fontSize: '13px',
               fontWeight: '700',
-              border: 'none',
               cursor: 'pointer',
-              background: activeTab === 'role' ? 'linear-gradient(135deg, #4f46e5, #06b6d4)' : 'transparent',
-              color: activeTab === 'role' ? '#ffffff' : 'var(--text-muted)',
+              color: activeTab === 'signin' ? '#fff' : 'var(--text-muted)',
+              background: activeTab === 'signin' ? 'var(--primary)' : 'transparent',
+              boxShadow: activeTab === 'signin' ? '0 2px 8px rgba(99, 102, 241, 0.4)' : 'none',
               transition: 'all 0.2s ease'
             }}
           >
-            {t.auth.selectRoleTab || 'Quick Staff Sign-In'}
+            {lang === 'ru' ? 'Вход' : lang === 'kk' ? 'Кіру' : 'Sign In'}
           </button>
           <button
             type="button"
-            onClick={() => { setActiveTab('direct'); setErrorMessage(''); }}
+            onClick={() => {
+              setActiveTab('signup');
+              setErrorMessage('');
+              setSuccessMessage('');
+            }}
             style={{
-              padding: '8px 20px',
-              borderRadius: '9px',
+              padding: '9px',
+              borderRadius: '10px',
+              border: 'none',
               fontSize: '13px',
               fontWeight: '700',
-              border: 'none',
               cursor: 'pointer',
-              background: activeTab === 'direct' ? 'linear-gradient(135deg, #4f46e5, #06b6d4)' : 'transparent',
-              color: activeTab === 'direct' ? '#ffffff' : 'var(--text-muted)',
+              color: activeTab === 'signup' ? '#fff' : 'var(--text-muted)',
+              background: activeTab === 'signup' ? 'var(--primary)' : 'transparent',
+              boxShadow: activeTab === 'signup' ? '0 2px 8px rgba(99, 102, 241, 0.4)' : 'none',
               transition: 'all 0.2s ease'
             }}
           >
-            {t.auth.directLoginTab || 'Email / Direct Login'}
+            {lang === 'ru' ? 'Регистрация' : lang === 'kk' ? 'Тіркелу' : 'Sign Up'}
           </button>
         </div>
 
-        {/* Error message alert */}
+        {/* Feedback Alerts */}
         {errorMessage && (
           <div style={{
-            width: '100%',
-            maxWidth: '560px',
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.45)',
-            color: '#fca5a5',
             padding: '12px 16px',
             borderRadius: '12px',
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            color: '#f87171',
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
             fontSize: '13px',
-            fontWeight: '600',
-            animation: shake ? 'shake 0.4s ease' : 'fadeIn 0.2s ease'
+            marginBottom: '18px'
           }}>
-            <AlertCircle size={18} style={{ flexShrink: 0 }} />
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* TAB 1: Role-Based Sign In */}
-        {activeTab === 'role' && (
-          <>
-            {/* Roles Grid Selection */}
-            <div style={{
-              width: '100%',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '12px'
-            }}>
-              {roleAccounts.map(account => {
-                const Icon = account.icon;
-                const isSelected = selectedRole === account.id;
-
-                return (
-                  <div
-                    key={account.id}
-                    onClick={() => {
-                      setSelectedRole(account.id);
-                      setErrorMessage('');
-                    }}
-                    className="glass-panel"
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: '16px',
-                      cursor: 'pointer',
-                      border: isSelected ? `2px solid ${account.color}` : '1px solid rgba(255, 255, 255, 0.08)',
-                      background: isSelected ? `${account.color}18` : 'rgba(30, 41, 59, 0.5)',
-                      boxShadow: isSelected ? `0 8px 24px ${account.color}30` : 'none',
-                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '10px',
-                      position: 'relative'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        background: account.badgeBg,
-                        border: `1px solid ${account.color}40`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: account.color
-                      }}>
-                        <Icon size={20} />
-                      </div>
-
-                      {isSelected && (
-                        <span style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          background: account.color,
-                          color: '#000',
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '11px',
-                          fontWeight: '800'
-                        }}>
-                          <CheckCircle2 size={12} /> Selected
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 2px 0' }}>
-                        {account.title}
-                      </h3>
-                      <div style={{ fontSize: '12px', color: account.color, fontWeight: '700' }}>
-                        {account.user}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {account.dept}
-                      </div>
-                    </div>
-
-                    <p style={{
-                      fontSize: '11px',
-                      color: '#cbd5e1',
-                      margin: 0,
-                      lineHeight: 1.4,
-                      minHeight: '30px'
-                    }}>
-                      {account.description}
-                    </p>
-
-                    <div style={{
-                      borderTop: '1px solid rgba(255,255,255,0.06)',
-                      paddingTop: '8px',
-                      fontSize: '10px',
-                      color: 'var(--text-muted)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      <Lock size={11} color={account.color} />
-                      <span>{account.scope}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Password Authorization Card */}
-            <form
-              onSubmit={handleRoleLogin}
-              className="glass-panel"
-              style={{
-                width: '100%',
-                padding: '22px 28px',
-                borderRadius: '18px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
-                border: `1.5px solid ${activeAccount.color}60`,
-                boxShadow: `0 12px 36px ${activeAccount.color}20`
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '12px'
-              }}>
-                {/* Active user header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    background: `linear-gradient(135deg, ${activeAccount.color}, #6366f1)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontWeight: '800',
-                    fontSize: '18px',
-                    boxShadow: `0 4px 16px ${activeAccount.color}50`
-                  }}>
-                    {activeAccount.user.charAt(0)}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                      {t.auth.loggedAs} <strong style={{ color: activeAccount.color }}>{activeAccount.title}</strong>
-                    </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#fff' }}>
-                      {activeAccount.user}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                      {activeAccount.email} • {activeAccount.dept}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Demo Fill Pill */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  padding: '6px 12px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
-                }}>
-                  <KeyRound size={13} color={activeAccount.color} />
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {t.auth.demoDefaultPwd || 'Default password:'}{' '}
-                    <code style={{ color: activeAccount.color, fontWeight: '700', background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>
-                      {ROLE_DEFAULT_PASSWORDS[selectedRole] || 'school123'}
-                    </code>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => fillQuickPassword(selectedRole)}
-                    style={{
-                      background: `${activeAccount.color}25`,
-                      color: activeAccount.color,
-                      border: `1px solid ${activeAccount.color}60`,
-                      padding: '3px 9px',
-                      borderRadius: '6px',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {t.auth.quickFill || 'Fill'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Password Input & Submit */}
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'center',
-                flexWrap: 'wrap'
-              }}>
-                <div style={{
-                  flex: 1,
-                  minWidth: '240px',
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}>
-                  <Lock size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', pointerEvents: 'none' }} />
-                  <input
-                    ref={passwordInputRef}
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (errorMessage) setErrorMessage('');
-                    }}
-                    placeholder={t.auth.enterPassword || 'Enter password'}
-                    style={{
-                      width: '100%',
-                      padding: '14px 44px 14px 42px',
-                      borderRadius: '12px',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: errorMessage ? '1.5px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.14)',
-                      color: '#ffffff',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      outline: 'none',
-                      transition: 'border-color 0.2s ease'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      background: 'transparent',
-                      border: 'none',
-                      color: 'var(--text-muted)',
-                      cursor: 'pointer',
-                      padding: '4px'
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  style={{
-                    background: `linear-gradient(135deg, ${activeAccount.color}, #6366f1)`,
-                    color: '#fff',
-                    border: 'none',
-                    padding: '14px 30px',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    fontWeight: '800',
-                    cursor: isLoading ? 'wait' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: `0 4px 20px ${activeAccount.color}60`,
-                    transition: 'transform 0.15s ease, opacity 0.2s',
-                    opacity: isLoading ? 0.7 : 1
-                  }}
-                  onMouseEnter={e => { if (!isLoading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="spinner-border spinner-border-sm" style={{ width: '16px', height: '16px', border: '2px solid #fff', borderRightColor: 'transparent', borderRadius: '50%', animation: 'spin 0.75s linear infinite' }} />
-                      <span>{t.auth.authenticating || 'Verifying...'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>{t.auth.enterPortal}</span>
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </>
+        {successMessage && (
+          <div style={{
+            padding: '12px 16px',
+            borderRadius: '12px',
+            background: 'rgba(16, 185, 129, 0.15)',
+            border: '1px solid rgba(16, 185, 129, 0.4)',
+            color: '#34d399',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '13px',
+            marginBottom: '18px'
+          }}>
+            <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+            <span>{successMessage}</span>
+          </div>
         )}
 
-        {/* TAB 2: Direct Email & Password Sign In */}
-        {activeTab === 'direct' && (
-          <form
-            onSubmit={handleDirectLogin}
-            className="glass-panel"
-            style={{
-              width: '100%',
-              maxWidth: '480px',
-              padding: '30px 28px',
-              borderRadius: '20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '18px',
-              background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              boxShadow: '0 16px 40px rgba(0, 0, 0, 0.4)'
-            }}
-          >
+        {/* SIGN IN FORM */}
+        {activeTab === 'signin' && (
+          <form onSubmit={handleSignInSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', margin: '0 0 4px 0' }}>
-                {t.auth.signIn || 'Sign In to EduOps'}
-              </h2>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
-                Enter your school email (e.g., teacher@school.edu) and password
-              </p>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                {t.auth.emailOrUsername || 'Email or Username'}
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
+                {lang === 'ru' ? 'Электронная почта или логин' : lang === 'kk' ? 'Электронды пошта немесе логин' : 'Email or Staff Username'}
               </label>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <User size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', pointerEvents: 'none' }} />
+              <div style={{ position: 'relative' }}>
+                <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
-                  value={directEmail}
-                  onChange={(e) => {
-                    setDirectEmail(e.target.value);
-                    if (errorMessage) setErrorMessage('');
-                  }}
-                  placeholder="e.g., teacher@school.edu"
+                  autoComplete="username"
+                  required
+                  placeholder="e.g. director@school.edu"
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '12px 14px 12px 42px',
-                    borderRadius: '10px',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
-                    color: '#ffffff',
+                    padding: '12px 14px 12px 38px',
+                    borderRadius: '12px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid var(--border-color)',
+                    color: '#fff',
                     fontSize: '14px',
-                    outline: 'none'
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease'
                   }}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                {t.auth.password || 'Password'}
-              </label>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Lock size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', pointerEvents: 'none' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>
+                  {lang === 'ru' ? 'Пароль' : lang === 'kk' ? 'Құпия сөз' : 'Password'}
+                </label>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <Lock size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={directPassword}
-                  onChange={(e) => {
-                    setDirectPassword(e.target.value);
-                    if (errorMessage) setErrorMessage('');
-                  }}
-                  placeholder={t.auth.enterPassword || 'Enter your password'}
+                  type={showLoginPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  placeholder="••••••••"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '12px 44px 12px 42px',
-                    borderRadius: '10px',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: errorMessage ? '1.5px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.12)',
-                    color: '#ffffff',
+                    padding: '12px 40px 12px 38px',
+                    borderRadius: '12px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid var(--border-color)',
+                    color: '#fff',
                     fontSize: '14px',
-                    outline: 'none'
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease'
                   }}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowLoginPassword(p => !p)}
                   style={{
                     position: 'absolute',
                     right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
                     background: 'transparent',
                     border: 'none',
                     color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    padding: '4px'
+                    cursor: 'pointer'
                   }}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
@@ -803,114 +411,243 @@ export const AuthScreen = () => {
               type="submit"
               disabled={isLoading}
               style={{
-                background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
-                color: '#fff',
-                border: 'none',
-                padding: '14px',
+                marginTop: '8px',
+                padding: '13px',
                 borderRadius: '12px',
+                background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
+                border: 'none',
+                color: '#fff',
                 fontSize: '14px',
-                fontWeight: '800',
-                cursor: isLoading ? 'wait' : 'pointer',
+                fontWeight: '700',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 20px rgba(79, 70, 229, 0.4)',
-                marginTop: '6px'
+                cursor: isLoading ? 'wait' : 'pointer',
+                boxShadow: '0 4px 16px rgba(99, 102, 241, 0.4)',
+                transition: 'transform 0.15s ease'
               }}
             >
-              {isLoading ? (t.auth.authenticating || 'Verifying...') : (t.auth.signIn || 'Sign In')}
+              <span>{isLoading ? 'Authenticating...' : (lang === 'ru' ? 'Войти в портал' : lang === 'kk' ? 'Порталға кіру' : 'Sign In to Portal')}</span>
+              <ArrowRight size={16} />
+            </button>
+
+            {/* Quick Demo Helper */}
+            <div style={{
+              marginTop: '12px',
+              padding: '12px',
+              borderRadius: '12px',
+              background: 'rgba(15, 23, 42, 0.5)',
+              border: '1px dashed var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px'
+            }}>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: '700', color: '#818cf8' }}>
+                  👑 Director Account:
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  director@school.edu / admin123
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleQuickFillDirector}
+                style={{
+                  padding: '5px 10px',
+                  borderRadius: '8px',
+                  background: 'rgba(99, 102, 241, 0.2)',
+                  border: '1px solid rgba(99, 102, 241, 0.4)',
+                  color: '#818cf8',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  cursor: 'pointer'
+                }}
+              >
+                Auto-fill
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* SIGN UP FORM */}
+        {activeTab === 'signup' && (
+          <form onSubmit={handleSignUpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
+                {lang === 'ru' ? 'Полное имя (ФИО)' : lang === 'kk' ? 'Толық аты-жөніңіз' : 'Full Name *'}
+              </label>
+              <div style={{ position: 'relative' }}>
+                <User size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Aigul Nurlan"
+                  value={signUpName}
+                  onChange={(e) => setSignUpName(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 14px 11px 38px',
+                    borderRadius: '12px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid var(--border-color)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
+                {lang === 'ru' ? 'Электронная почта или логин' : lang === 'kk' ? 'Электронды пошта немесе логин' : 'Email or Staff Username *'}
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. aigul@school.edu"
+                  value={signUpEmail}
+                  onChange={(e) => setSignUpEmail(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 14px 11px 38px',
+                    borderRadius: '12px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid var(--border-color)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
+                {lang === 'ru' ? 'Кафедра / Отдел' : lang === 'kk' ? 'Бөлім / Кафедра' : 'Department'}
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Building size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <input
+                  type="text"
+                  placeholder="e.g. Mathematics, Science, Languages"
+                  value={signUpDepartment}
+                  onChange={(e) => setSignUpDepartment(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 14px 11px 38px',
+                    borderRadius: '12px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid var(--border-color)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
+                  {lang === 'ru' ? 'Пароль' : lang === 'kk' ? 'Құпия сөз' : 'Password *'}
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="min. 6 chars"
+                  value={signUpPassword}
+                  onChange={(e) => setSignUpPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px',
+                    borderRadius: '12px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid var(--border-color)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
+                  {lang === 'ru' ? 'Повторите' : lang === 'kk' ? 'Қайталаңыз' : 'Confirm *'}
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Repeat pwd"
+                  value={signUpConfirmPassword}
+                  onChange={(e) => setSignUpConfirmPassword(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '11px 12px',
+                    borderRadius: '12px',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    border: '1px solid var(--border-color)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Note on Role Assignment */}
+            <div style={{
+              padding: '10px 12px',
+              borderRadius: '10px',
+              background: 'rgba(99, 102, 241, 0.1)',
+              border: '1px solid rgba(99, 102, 241, 0.25)',
+              display: 'flex',
+              gap: '8px',
+              fontSize: '11px',
+              color: '#818cf8',
+              lineHeight: 1.4
+            }}>
+              <Info size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <span>
+                {lang === 'ru' 
+                  ? 'Новые аккаунты регистрируются с ролью «Учитель / Персонал». Специальные роли (Инженер, IT, Склад, АХЧ, Директор) назначаются директором в панели управления.' 
+                  : lang === 'kk' 
+                  ? 'Жаңа тіркелгілер «Мұғалім / Қызметкер» ретінде тіркеледі. Арнайы рөлдерді (Инженер, IT, Қойма, АХЧ, Директор) директор тағайындайды.' 
+                  : 'New accounts start with standard Staff/Teacher access. Elevated operational roles (Engineer, IT, Storage, Facilities, Director) are assigned by the School Directorate.'}
+              </span>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                marginTop: '6px',
+                padding: '13px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+                border: 'none',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: isLoading ? 'wait' : 'pointer',
+                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)'
+              }}
+            >
+              <span>{isLoading ? 'Creating account...' : (lang === 'ru' ? 'Зарегистрироваться' : lang === 'kk' ? 'Тіркелу' : 'Create Staff Account')}</span>
+              <UserPlus size={16} />
             </button>
           </form>
         )}
 
-        {/* Expandable Demo Credentials Reference Drawer */}
-        <div style={{
-          width: '100%',
-          maxWidth: '840px',
-          background: 'rgba(15, 23, 42, 0.65)',
-          borderRadius: '14px',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          overflow: 'hidden'
-        }}>
-          <button
-            type="button"
-            onClick={() => setShowDemoDrawer(!showDemoDrawer)}
-            style={{
-              width: '100%',
-              padding: '12px 18px',
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              fontSize: '12px',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <KeyRound size={14} color="#38bdf8" />
-              <span>{t.auth.demoCredentials || 'Quick Reference: All Staff Demo Credentials'}</span>
-            </div>
-            {showDemoDrawer ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
-
-          {showDemoDrawer && (
-            <div style={{
-              padding: '14px 18px',
-              borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '10px'
-            }}>
-              {roleAccounts.map(acc => (
-                <div
-                  key={acc.id}
-                  onClick={() => selectRoleAndFill(acc)}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    background: 'rgba(30, 41, 59, 0.6)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(51, 65, 85, 0.7)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(30, 41, 59, 0.6)'}
-                >
-                  <div>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: acc.color }}>
-                      {acc.title}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      Password: <code style={{ color: '#fff' }}>{ROLE_DEFAULT_PASSWORDS[acc.id]}</code>
-                    </div>
-                  </div>
-                  <span style={{
-                    fontSize: '10px',
-                    fontWeight: '700',
-                    color: '#38bdf8',
-                    background: 'rgba(56, 189, 248, 0.12)',
-                    padding: '3px 8px',
-                    borderRadius: '6px'
-                  }}>
-                    Select
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Security & RBAC notice */}
-        <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)' }}>
-          🔒 Passwords encrypted with Scrypt & Salt. Role-Based Access Control (RBAC) enforced across tickets & inventory.
-        </div>
       </div>
     </div>
   );

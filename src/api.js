@@ -137,6 +137,7 @@ export async function deleteInventoryItemFromDb(id) {
 }
 
 // -------------------------------------------------------------
+// -------------------------------------------------------------
 // Users API
 // -------------------------------------------------------------
 export async function fetchUsersFromDb() {
@@ -147,10 +148,37 @@ export async function fetchUserByRole(roleKey) {
   return request(`/users/${roleKey}`);
 }
 
-export async function updateUserProfileInDb(roleKey, updates) {
-  return request(`/users/${roleKey}`, {
+export async function updateUserProfileInDb(id, updates) {
+  return request(`/users/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(updates)
+  });
+}
+
+export async function createUserInDb(userData) {
+  return request('/users', {
+    method: 'POST',
+    body: JSON.stringify(userData)
+  });
+}
+
+export async function updateUserRoleInDb(id, role) {
+  return request(`/users/${id}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role })
+  });
+}
+
+export async function resetUserPasswordInDb(id, newPassword) {
+  return request(`/users/${id}/reset-password`, {
+    method: 'POST',
+    body: JSON.stringify({ newPassword })
+  });
+}
+
+export async function deleteUserFromDb(id) {
+  return request(`/users/${id}`, {
+    method: 'DELETE'
   });
 }
 
@@ -205,6 +233,13 @@ export async function loginUserApi(credentials) {
   });
 }
 
+export async function registerUserApi(userData) {
+  return request('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(userData)
+  });
+}
+
 export async function fetchAuthMeApi() {
   return request('/auth/me');
 }
@@ -225,4 +260,5 @@ export async function logoutUserApi() {
 export async function fetchDemoCredentialsApi() {
   return request('/auth/demo-credentials');
 }
+
 

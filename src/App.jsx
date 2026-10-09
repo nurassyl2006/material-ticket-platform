@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar';
 import { Dashboard } from './components/Dashboard';
 import { TicketList } from './components/TicketList';
 import { InventoryManager } from './components/InventoryManager';
+import { UserManagement } from './components/UserManagement';
 import { TicketModal } from './components/TicketModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import './index.css';
@@ -55,6 +56,7 @@ function MainApp() {
           />
         )}
         {activeTab === 'inventory' && <InventoryManager />}
+        {activeTab === 'users' && <UserManagement />}
       </main>
 
       <TicketModal 

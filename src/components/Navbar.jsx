@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut, Bell, Database } from 'lucide-react';
+import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut, Bell, Database, Users } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 
 export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket, onSelectTicket }) => {
@@ -97,6 +97,28 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
               >
                 <Package size={15} />
                 {t.nav.inventory}
+              </button>
+            )}
+
+            {(role === 'director' || role === 'admin') && (
+              <button
+                onClick={() => setActiveTab('users')}
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: activeTab === 'users' ? '#ffffff' : 'var(--text-muted)',
+                  background: activeTab === 'users' ? 'var(--primary)' : 'transparent',
+                  boxShadow: activeTab === 'users' ? '0 4px 12px rgba(99, 102, 241, 0.4)' : 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <Users size={15} />
+                {t.nav?.users || 'Staff & Roles'}
               </button>
             )}
 
@@ -380,6 +402,16 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
           >
             <Package size={18} />
             <span>{t.nav.inventory}</span>
+          </button>
+        )}
+
+        {(role === 'director' || role === 'admin') && (
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
+          >
+            <Users size={18} />
+            <span>{t.nav?.users || 'Staff'}</span>
           </button>
         )}
 

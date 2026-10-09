@@ -74,9 +74,10 @@ function authenticateSession(req) {
   const session = db.prepare('SELECT * FROM sessions WHERE token = ? AND expiresAt > ?').get(token, now);
   if (!session) return null;
 
-  const user = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(session.roleKey);
-  return user ? { user: formatUser(user), token, roleKey: session.roleKey } : null;
+  const user = db.prepare('SELECT * FROM users WHERE roleKey = ? OR id = ?').get(session.roleKey, session.roleKey);
+  return user ? { user: formatUser(user), token, roleKey: user.roleKey, role: user.role, userId: user.id } : null;
 }
+
 
 // -------------------------------------------------------------
 // Health & Diagnostic Endpoint
@@ -106,15 +107,75 @@ app.get('/api/health', (req, res) => {
 // Authentication & Authorization Endpoints
 // -------------------------------------------------------------
 
+// POST /api/auth/register (Standard registration - assigns default role 'teacher')
+app.post('/api/auth/register', (req, res) => {
+  try {
+    const { name, email, department, password } = req.body;
+    const cleanName = (name || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const rawPassword = (password || '').trim();
+
+    if (!cleanName) {
+      return res.status(400).json({ error: 'Full name is required' });
+    }
+    if (!cleanEmail) {
+      return res.status(400).json({ error: 'Email or username is required' });
+    }
+    if (!rawPassword || rawPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    const existing = db.prepare(`
+      SELECT id FROM users 
+      WHERE LOWER(email) = ? OR LOWER(name) = ? OR LOWER(roleKey) = ?
+    `).get(cleanEmail, cleanName.toLowerCase(), cleanEmail);
+
+    if (existing) {
+      return res.status(400).json({ error: 'An account with this email or name already exists' });
+    }
+
+    const id = `usr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const roleKey = id;
+    const defaultRole = 'teacher';
+    const now = new Date().toISOString();
+    const { salt, hash } = hashPassword(rawPassword);
+
+    db.prepare(`
+      INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, passwordHash, salt, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, '', '', ?, ?, ?, ?)
+    `).run(roleKey, id, cleanName, defaultRole, (department || 'General Staff').trim(), cleanEmail, hash, salt, now, now);
+
+    // Auto-login session
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    db.prepare(`
+      INSERT INTO sessions (token, roleKey, createdAt, expiresAt)
+      VALUES (?, ?, ?, ?)
+    `).run(token, roleKey, now, expiresAt);
+
+    const created = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+
+    res.status(201).json({
+      success: true,
+      token,
+      user: formatUser(created),
+      message: 'Registration successful! Assigned role: Teacher. Elevated permissions are managed by the Directorate.'
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST /api/auth/login
 app.post('/api/auth/login', (req, res) => {
   try {
     const { identifier, roleKey, email, password } = req.body;
-    const searchId = (roleKey || email || identifier || '').trim();
+    const searchId = (email || identifier || roleKey || '').trim();
     const rawPassword = (password || '').trim();
 
     if (!searchId) {
-      return res.status(400).json({ error: 'Username, role or email is required' });
+      return res.status(400).json({ error: 'Email or username is required' });
     }
     if (!rawPassword) {
       return res.status(400).json({ error: 'Password is required' });
@@ -126,16 +187,16 @@ app.post('/api/auth/login', (req, res) => {
 
     const user = db.prepare(`
       SELECT * FROM users 
-      WHERE roleKey = ? OR LOWER(email) = LOWER(?) OR LOWER(name) = LOWER(?)
-    `).get(normalizedKey, searchId, searchId);
+      WHERE roleKey = ? OR id = ? OR LOWER(email) = LOWER(?) OR LOWER(name) = LOWER(?)
+    `).get(normalizedKey, searchId, searchId, searchId);
 
     if (!user) {
-      return res.status(401).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'User not found. Check your email or username.' });
     }
 
     const isValid = verifyPassword(rawPassword, user.salt, user.passwordHash);
     if (!isValid) {
-      return res.status(401).json({ error: 'Invalid password' });
+      return res.status(401).json({ error: 'Invalid password. Please check your credentials.' });
     }
 
     // Generate 30-day session token
@@ -603,14 +664,15 @@ app.delete('/api/inventory/:id', (req, res) => {
 // Users API Endpoints
 // -------------------------------------------------------------
 
-// GET all users (returns map keyed by roleKey for direct compatibility, plus array list)
+// GET all users (returns map keyed by roleKey and id, plus array list)
 app.get('/api/users', (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM users').all();
+    const rows = db.prepare('SELECT * FROM users ORDER BY createdAt ASC').all();
     const cleanRows = rows.map(formatUser);
     const map = {};
     for (const user of cleanRows) {
       map[user.roleKey] = user;
+      map[user.id] = user;
     }
     // Provide legacy aliases
     if (map.storage_manager) map.workerA = map.storage_manager;
@@ -625,14 +687,14 @@ app.get('/api/users', (req, res) => {
   }
 });
 
-// GET user by roleKey
-app.get('/api/users/:roleKey', (req, res) => {
+// GET user by id or roleKey
+app.get('/api/users/:id', (req, res) => {
   try {
-    let { roleKey } = req.params;
-    if (roleKey === 'workerA') roleKey = 'storage_manager';
-    if (roleKey === 'admin') roleKey = 'director';
+    let { id } = req.params;
+    if (id === 'workerA') id = 'storage_manager';
+    if (id === 'admin') id = 'director';
 
-    const row = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(roleKey);
+    const row = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
     if (!row) return res.status(404).json({ error: 'User not found' });
     res.json(formatUser(row));
   } catch (error) {
@@ -640,21 +702,169 @@ app.get('/api/users/:roleKey', (req, res) => {
   }
 });
 
-// PATCH update user profile
-app.patch('/api/users/:roleKey', (req, res) => {
+// POST create new user (Director provisioned)
+app.post('/api/users', (req, res) => {
   try {
-    let { roleKey } = req.params;
-    if (roleKey === 'workerA') roleKey = 'storage_manager';
-    if (roleKey === 'admin') roleKey = 'director';
+    const auth = authenticateSession(req);
+    if (auth && auth.user.role !== 'director' && auth.user.role !== 'admin' && auth.roleKey !== 'director') {
+      return res.status(403).json({ error: 'Only the Director can create users' });
+    }
 
-    const existing = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(roleKey);
+    const { name, email, role = 'teacher', department = '', phone = '', password = 'school123' } = req.body;
+    const cleanName = (name || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const rawPassword = (password || '').trim() || 'school123';
+
+    if (!cleanName) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    if (!cleanEmail) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const existing = db.prepare('SELECT id FROM users WHERE LOWER(email) = ? OR LOWER(name) = ?').get(cleanEmail, cleanName.toLowerCase());
+    if (existing) {
+      return res.status(400).json({ error: 'User with this email or name already exists' });
+    }
+
+    const id = `usr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const roleKey = id;
+    const now = new Date().toISOString();
+    const { salt, hash } = hashPassword(rawPassword);
+
+    db.prepare(`
+      INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, passwordHash, salt, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?)
+    `).run(roleKey, id, cleanName, role, (department || '').trim(), cleanEmail, (phone || '').trim(), hash, salt, now, now);
+
+    const created = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    res.status(201).json(formatUser(created));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH change user role (Director only)
+app.patch('/api/users/:id/role', (req, res) => {
+  try {
+    const auth = authenticateSession(req);
+    if (auth && auth.user.role !== 'director' && auth.user.role !== 'admin' && auth.roleKey !== 'director') {
+      return res.status(403).json({ error: 'Only the Director can change user roles' });
+    }
+
+    const { id } = req.params;
+    const { role: newRole } = req.body;
+    if (!newRole) {
+      return res.status(400).json({ error: 'Role is required' });
+    }
+
+    const validRoles = ['director', 'facilities_manager', 'storage_manager', 'engineer', 'it_support', 'cleaning', 'teacher'];
+    if (!validRoles.includes(newRole)) {
+      return res.status(400).json({ error: `Invalid role. Allowed roles: ${validRoles.join(', ')}` });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const now = new Date().toISOString();
+    db.prepare('UPDATE users SET role = ?, updatedAt = ? WHERE id = ? OR roleKey = ?').run(newRole, now, user.id, user.roleKey);
+
+    // Create system notification for that user
+    try {
+      db.prepare(`
+        INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
+        VALUES (?, ?, '', ?, ?, 'info', 0, ?)
+      `).run(
+        `notif-${Date.now()}`,
+        user.name,
+        'Role Updated',
+        `Your system role was changed to "${newRole}" by the Director.`,
+        now
+      );
+    } catch {}
+
+    const updated = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(user.id, user.roleKey);
+    res.json(formatUser(updated));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST reset user password (Director only)
+app.post('/api/users/:id/reset-password', (req, res) => {
+  try {
+    const auth = authenticateSession(req);
+    if (auth && auth.user.role !== 'director' && auth.user.role !== 'admin' && auth.roleKey !== 'director') {
+      return res.status(403).json({ error: 'Only the Director can reset passwords' });
+    }
+
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { salt, hash } = hashPassword(newPassword);
+    const now = new Date().toISOString();
+    db.prepare('UPDATE users SET passwordHash = ?, salt = ?, updatedAt = ? WHERE id = ? OR roleKey = ?')
+      .run(hash, salt, now, user.id, user.roleKey);
+
+    res.json({ success: true, message: `Password for ${user.name} has been reset.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE user (Director only)
+app.delete('/api/users/:id', (req, res) => {
+  try {
+    const auth = authenticateSession(req);
+    if (auth && auth.user.role !== 'director' && auth.user.role !== 'admin' && auth.roleKey !== 'director') {
+      return res.status(403).json({ error: 'Only the Director can delete users' });
+    }
+
+    const { id } = req.params;
+    const user = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Safety: Cannot delete director roleKey if it's the main director
+    if (user.roleKey === 'director' && user.role === 'director') {
+      return res.status(400).json({ error: 'Cannot delete the main Director account' });
+    }
+
+    db.prepare('DELETE FROM sessions WHERE roleKey = ? OR roleKey = ?').run(user.roleKey, user.id);
+    db.prepare('DELETE FROM users WHERE id = ? OR roleKey = ?').run(user.id, user.roleKey);
+
+    res.json({ success: true, id: user.id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH update user profile
+app.patch('/api/users/:id', (req, res) => {
+  try {
+    let { id } = req.params;
+    if (id === 'workerA') id = 'storage_manager';
+    if (id === 'admin') id = 'director';
+
+    const existing = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
     if (!existing) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     const updates = req.body;
     const now = new Date().toISOString();
-    const allowed = ['name', 'department', 'email', 'phone', 'avatar'];
+    const allowed = ['name', 'department', 'email', 'phone', 'avatar', 'role'];
     const fieldsToSet = [];
     const values = {};
 
@@ -665,14 +875,18 @@ app.patch('/api/users/:roleKey', (req, res) => {
       }
     }
 
+    if (fieldsToSet.length === 0) {
+      return res.json(formatUser(existing));
+    }
+
     fieldsToSet.push('updatedAt = @updatedAt');
     values.updatedAt = now;
-    values.roleKey = roleKey;
+    values.targetId = existing.id;
 
-    const sql = `UPDATE users SET ${fieldsToSet.join(', ')} WHERE roleKey = @roleKey`;
+    const sql = `UPDATE users SET ${fieldsToSet.join(', ')} WHERE id = @targetId OR roleKey = @targetId`;
     db.prepare(sql).run(values);
 
-    const updated = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(roleKey);
+    const updated = db.prepare('SELECT * FROM users WHERE id = ?').get(existing.id);
     res.json(formatUser(updated));
   } catch (error) {
     res.status(500).json({ error: error.message });

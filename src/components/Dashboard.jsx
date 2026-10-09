@@ -17,7 +17,8 @@ import {
   DollarSign,
   TrendingUp,
   Flame,
-  CheckCircle
+  CheckCircle,
+  Users
 } from 'lucide-react';
 import { TicketModal } from './TicketModal';
 import { DEPARTMENTS, resolveDepartment } from '../departments';
@@ -99,7 +100,28 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            {(role === 'director' || role === 'admin') && (
+              <button
+                onClick={() => setActiveTab('users')}
+                style={{
+                  background: 'rgba(99, 102, 241, 0.2)',
+                  color: '#818cf8',
+                  border: '1px solid rgba(99, 102, 241, 0.4)',
+                  padding: '10px 16px',
+                  borderRadius: '12px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Users size={16} /> {t.nav?.users || 'Staff & Roles'}
+              </button>
+            )}
+
             <button
               onClick={() => openNewRequestForDept('engineering')}
               style={{

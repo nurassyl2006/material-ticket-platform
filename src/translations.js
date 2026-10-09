@@ -52,6 +52,7 @@ export const translations = {
       tickets: "All Requests",
       myTickets: "My Requests",
       profile: "My Profile",
+      users: "Staff & Roles",
       stats: "Executive View"
     },
     profile: {
@@ -384,6 +385,7 @@ export const translations = {
       tickets: "Все заявки",
       myTickets: "Мои заявки",
       profile: "Мой профиль",
+      users: "Персонал и Роли",
       stats: "Обзор директора"
     },
     profile: {
@@ -716,6 +718,7 @@ export const translations = {
       tickets: "Барлық өтінімдер",
       myTickets: "Менің өтінімдерім",
       profile: "Менің профилім",
+      users: "Қызметкерлер мен Рөлдер",
       stats: "Директор шолуы"
     },
     profile: {
