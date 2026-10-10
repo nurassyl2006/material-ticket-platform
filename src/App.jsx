@@ -8,6 +8,7 @@ import { InventoryManager } from './components/InventoryManager';
 import { UserManagement } from './components/UserManagement';
 import { TicketModal } from './components/TicketModal';
 import { UserProfileModal } from './components/UserProfileModal';
+import { DeviceToastAlert } from './components/DeviceToastAlert';
 import './index.css';
 
 function MainApp() {
@@ -32,6 +33,13 @@ function MainApp() {
     setTargetTicketId(ticketId);
   };
 
+  React.useEffect(() => {
+    window.__onSelectTicketGlobal = handleSelectTicketFromNotification;
+    return () => {
+      window.__onSelectTicketGlobal = null;
+    };
+  }, []);
+
   return (
     <div style={{ minHeight: '100vh', paddingBottom: '70px' }}>
       <Navbar 
@@ -41,6 +49,7 @@ function MainApp() {
         onOpenNewTicket={() => handleOpenNewTicket('engineering')}
         onSelectTicket={handleSelectTicketFromNotification}
       />
+      <DeviceToastAlert onSelectTicket={handleSelectTicketFromNotification} />
       
       <main style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px' }}>
         {activeTab === 'dashboard' && (

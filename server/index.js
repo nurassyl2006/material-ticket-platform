@@ -78,6 +78,50 @@ function authenticateSession(req) {
   return user ? { user: formatUser(user), token, roleKey: user.roleKey, role: user.role, userId: user.id } : null;
 }
 
+// Settings helper functions
+function getSetting(key) {
+  try {
+    const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key);
+    return row ? row.value : null;
+  } catch {
+    return null;
+  }
+}
+
+function setSetting(key, value) {
+  try {
+    db.prepare(`
+      INSERT INTO settings (key, value) VALUES (?, ?)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value
+    `).run(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Telegram Alert Dispatcher (sends instant alerts directly to staff/director smartphones)
+async function sendTelegramAlert(textHtml) {
+  try {
+    const token = getSetting('telegram_bot_token') || process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = getSetting('telegram_chat_id') || process.env.TELEGRAM_CHAT_ID;
+    if (!token || !chatId) return false;
+
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: textHtml,
+        parse_mode: 'HTML'
+      })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Telegram notification error:', err.message);
+    return false;
+  }
+}
 
 // -------------------------------------------------------------
 // Health & Diagnostic Endpoint
@@ -381,6 +425,40 @@ app.post('/api/tickets', (req, res) => {
     `);
 
     stmt.run(newTicket);
+
+    // Auto-create notification for staff and directors
+    const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const targetDept = newTicket.department === 'it' ? 'IT Specialist'
+      : newTicket.department === 'cleaning' ? 'Cleaning Staff'
+      : newTicket.department === 'facilities' ? 'Facilities Manager'
+      : newTicket.department === 'storage' ? 'Storage Manager'
+      : newTicket.department === 'engineering' ? 'Maintenance Engineer'
+      : 'All';
+
+    db.prepare(`
+      INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, 0, ?)
+    `).run(
+      notifId,
+      targetDept,
+      id,
+      `New Request: ${newTicket.itemTitle}`,
+      `${newTicket.teacherName || 'Teacher'} requested "${newTicket.itemTitle}" (Room ${newTicket.roomNumber || 'General'})`,
+      'pending',
+      now
+    );
+
+    // Dispatch Telegram push alert if configured
+    sendTelegramAlert(
+      `🔔 <b>New Request in EduOps</b>\n` +
+      `<b>Item:</b> ${newTicket.itemTitle}\n` +
+      `<b>Location:</b> Room ${newTicket.roomNumber || 'General'}\n` +
+      `<b>Teacher:</b> ${newTicket.teacherName || 'Staff'}\n` +
+      `<b>Urgency:</b> ${newTicket.urgency || 'medium'}\n` +
+      `<b>Dept:</b> ${targetDept}\n` +
+      (newTicket.description ? `<b>Details:</b> ${newTicket.description}\n` : '')
+    ).catch(() => {});
+
     const createdRow = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.status(201).json(formatTicket(createdRow));
   } catch (error) {
@@ -429,6 +507,34 @@ app.patch('/api/tickets/:id', (req, res) => {
 
     const sql = `UPDATE tickets SET ${fieldsToSet.join(', ')} WHERE id = @id`;
     db.prepare(sql).run(values);
+
+    // If ticket status changed, record notification and send push
+    if (updates.status && updates.status !== existing.status) {
+      const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const statusTitle = `Request Status: ${updates.status.toUpperCase()}`;
+      const statusMsg = `Ticket "${existing.itemTitle}" status updated to ${updates.status} by ${updates.assignedWorker || 'staff'}.`;
+
+      db.prepare(`
+        INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, 0, ?)
+      `).run(
+        notifId,
+        existing.teacherName || 'All',
+        id,
+        statusTitle,
+        statusMsg,
+        updates.status,
+        now
+      );
+
+      sendTelegramAlert(
+        `📌 <b>Status Updated in EduOps</b>\n` +
+        `<b>Item:</b> ${existing.itemTitle}\n` +
+        `<b>New Status:</b> ${updates.status.toUpperCase()}\n` +
+        `<b>Staff:</b> ${updates.assignedWorker || 'Specialist'}\n` +
+        (updates.notes ? `<b>Notes:</b> ${updates.notes}\n` : '')
+      ).catch(() => {});
+    }
 
     const updatedRow = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updatedRow));
@@ -965,6 +1071,61 @@ app.delete('/api/notifications', (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// -------------------------------------------------------------
+// Telegram Push Notifications Configuration Endpoints
+// -------------------------------------------------------------
+
+// GET Telegram integration status
+app.get('/api/notifications/telegram', (req, res) => {
+  try {
+    const token = getSetting('telegram_bot_token') || process.env.TELEGRAM_BOT_TOKEN || '';
+    const chatId = getSetting('telegram_chat_id') || process.env.TELEGRAM_CHAT_ID || '';
+    res.json({
+      configured: Boolean(token && chatId),
+      chatId: chatId,
+      botTokenMasked: token ? `${token.substring(0, 6)}...${token.slice(-4)}` : ''
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST update Telegram configuration
+app.post('/api/notifications/telegram', (req, res) => {
+  try {
+    const { botToken, chatId } = req.body;
+    if (botToken !== undefined) setSetting('telegram_bot_token', botToken.trim());
+    if (chatId !== undefined) setSetting('telegram_chat_id', chatId.trim());
+    res.json({
+      success: true,
+      configured: Boolean((botToken || getSetting('telegram_bot_token')) && (chatId || getSetting('telegram_chat_id')))
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST dispatch test Telegram alert
+app.post('/api/notifications/telegram/test', async (req, res) => {
+  try {
+    const sent = await sendTelegramAlert(
+      `🔔 <b>EduOps Test Alert</b>\n` +
+      `Your device is successfully connected to the EduOps Facilities Platform!\n` +
+      `You will receive real-time updates for school requests and maintenance directly on this device.`
+    );
+    if (sent) {
+      res.json({ success: true, message: 'Test alert delivered to Telegram!' });
+    } else {
+      res.status(400).json({
+        error: 'Failed to send Telegram message. Please check your Bot Token and Chat ID.'
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // -------------------------------------------------------------
 // Translation API Endpoint (Assists Engineers & Teachers)

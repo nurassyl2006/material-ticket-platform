@@ -33,6 +33,14 @@ import {
   detectLanguage,
   TRANSLATOR_LANGUAGES
 } from './services/translator';
+import {
+  playNotificationSound,
+  vibrateDevice,
+  isNotificationSupported,
+  getNotificationPermission,
+  requestDeviceNotificationPermission,
+  sendDeviceNotification
+} from './services/deviceNotifications';
 
 const AppContext = createContext();
 
@@ -96,6 +104,18 @@ export const AppProvider = ({ children }) => {
 
   // Full list of all registered staff users
   const [usersList, setUsersList] = useState([]);
+
+  // Native Device Push Notifications state & tracking
+  const [devicePermission, setDevicePermission] = useState(() => getNotificationPermission());
+  const seenNotifIdsRef = React.useRef(new Set());
+  const isInitialNotifLoadRef = React.useRef(true);
+
+  // Register service worker on mount for native background push & click actions
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }, []);
 
   // Inventory state (Goods storage)
   const [inventory, setInventory] = useState(() => {
@@ -278,7 +298,46 @@ export const AppProvider = ({ children }) => {
       // 4. Process Notifications from DB
       if (notifsResult.status === 'fulfilled' && Array.isArray(notifsResult.value)) {
         reachedServer = true;
-        setNotifications(notifsResult.value);
+        const incomingNotifs = notifsResult.value;
+        setNotifications(incomingNotifs);
+
+        if (isInitialNotifLoadRef.current) {
+          for (const n of incomingNotifs) {
+            seenNotifIdsRef.current.add(n.id);
+          }
+          isInitialNotifLoadRef.current = false;
+        } else {
+          // Detect brand new notifications and trigger native device alert
+          for (const n of incomingNotifs) {
+            if (!seenNotifIdsRef.current.has(n.id)) {
+              seenNotifIdsRef.current.add(n.id);
+
+              const myName = (activeUser?.name || users[role]?.name || '').toLowerCase();
+              const recip = (n.recipientName || '').toLowerCase();
+              const isForMe =
+                role === 'director' ||
+                role === 'admin' ||
+                recip === 'all' ||
+                (myName && recip.includes(myName)) ||
+                (myName && myName.includes(recip)) ||
+                (role === 'teacher' && recip.includes('teacher')) ||
+                (role === 'storage_manager' && (recip.includes('storage') || recip.includes('warehouse'))) ||
+                (role === 'facilities_manager' && (recip.includes('facilities') || recip.includes('deputy') || recip.includes('carpentry'))) ||
+                (role === 'it_specialist' && recip.includes('it')) ||
+                (role === 'cleaning' && recip.includes('clean')) ||
+                (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || recip.includes('ac')));
+
+              if (isForMe && !n.read) {
+                sendDeviceNotification({
+                  title: n.title || 'EduOps Request Update',
+                  message: n.message || '',
+                  ticketId: n.ticketId,
+                  tag: n.id
+                });
+              }
+            }
+          }
+        }
       }
 
       if (reachedServer) {
@@ -361,9 +420,30 @@ export const AppProvider = ({ children }) => {
       createdAt: new Date().toISOString()
     };
     setNotifications(prev => [newNotif, ...prev]);
+    seenNotifIdsRef.current.add(newNotif.id);
+
+    // Send native device push notification + sound chime
+    sendDeviceNotification({
+      title,
+      message,
+      ticketId,
+      tag: newNotif.id
+    });
 
     // Save to DB in background
     createNotificationInDb(newNotif).catch(() => {});
+  };
+
+  const enableDeviceNotifications = async () => {
+    const perm = await requestDeviceNotificationPermission();
+    setDevicePermission(perm);
+    if (perm === 'granted') {
+      sendDeviceNotification({
+        title: '🔔 Device Alerts Active',
+        message: 'You will receive instant alerts on this device for request updates!'
+      });
+    }
+    return perm;
   };
 
   const markNotificationAsRead = (id) => {
@@ -561,6 +641,22 @@ export const AppProvider = ({ children }) => {
 
     setTickets(prev => [newTicket, ...prev]);
 
+    // Automatically trigger notification for staff and directors
+    const targetDept = newTicket.department === 'it' ? 'IT Specialist'
+      : newTicket.department === 'cleaning' ? 'Cleaning Staff'
+      : newTicket.department === 'facilities' ? 'Facilities Manager'
+      : newTicket.department === 'storage' ? 'Storage Manager'
+      : newTicket.department === 'engineering' ? 'Maintenance Engineer'
+      : 'All';
+
+    addNotification(
+      targetDept,
+      newTicket.id,
+      `New Request: ${newTicket.itemTitle}`,
+      `${newTicket.teacherName} requested "${newTicket.itemTitle}" (${newTicket.roomNumber || 'General'})`,
+      'pending'
+    );
+
     // Persist ticket in DB
     createTicketInDb(newTicket).catch(() => {});
 
@@ -570,16 +666,30 @@ export const AppProvider = ({ children }) => {
   // Generic status updater
   const updateTicket = (ticketId, updates) => {
     const updatedAt = new Date().toISOString();
+    let updatedTicket = null;
+
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
-        return {
+        updatedTicket = {
           ...ticket,
           ...updates,
           updatedAt
         };
+        return updatedTicket;
       }
       return ticket;
     }));
+
+    // If status changed, notify teacher and director
+    if (updates && updates.status && updatedTicket) {
+      addNotification(
+        updatedTicket.teacherName || 'All',
+        ticketId,
+        `Request Status: ${updates.status.toUpperCase()}`,
+        `Ticket "${updatedTicket.itemTitle}" has been updated to ${updates.status}.`,
+        updates.status
+      );
+    }
 
     // Persist in DB
     updateTicketInDb(ticketId, { ...updates, updatedAt }).catch(() => {});
@@ -877,6 +987,11 @@ export const AppProvider = ({ children }) => {
       markNotificationAsRead,
       markAllNotificationsAsRead,
       clearNotifications,
+      // Device Native Push & Sound Suite
+      devicePermission,
+      enableDeviceNotifications,
+      sendDeviceNotification,
+      playNotificationSound,
       addTicket,
       updateTicket,
       startTicketWork,

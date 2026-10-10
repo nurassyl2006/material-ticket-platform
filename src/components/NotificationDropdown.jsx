@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useApp } from '../AppContext';
 import { 
   Bell, 
@@ -10,14 +10,36 @@ import {
   CheckCircle2, 
   Wrench, 
   Sparkles, 
-  Laptop,
-  Truck,
-  X
+  Laptop, 
+  Truck, 
+  X, 
+  Smartphone, 
+  Volume2, 
+  VolumeX, 
+  Send,
+  MessageCircle
 } from 'lucide-react';
+import { TelegramNotificationModal } from './TelegramNotificationModal';
 
 export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
-  const { t, notifications, unreadCount, markNotificationAsRead, markAllNotificationsAsRead, clearNotifications } = useApp();
+  const { 
+    t, 
+    lang,
+    notifications, 
+    unreadCount, 
+    markNotificationAsRead, 
+    markAllNotificationsAsRead, 
+    clearNotifications,
+    devicePermission,
+    enableDeviceNotifications,
+    sendDeviceNotification,
+    playNotificationSound
+  } = useApp();
+
   const dropdownRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('app_notification_sound_muted') === 'true');
+  const [testSent, setTestSent] = useState(false);
+  const [showTelegramModal, setShowTelegramModal] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -32,6 +54,27 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
+
+  const toggleSound = () => {
+    setIsMuted(prev => {
+      const next = !prev;
+      localStorage.setItem('app_notification_sound_muted', String(next));
+      if (!next) {
+        playNotificationSound();
+      }
+      return next;
+    });
+  };
+
+  const handleTestNotification = async () => {
+    setTestSent(true);
+    await sendDeviceNotification({
+      title: '🔔 EduOps Test Alert',
+      message: 'Device push notifications and audio alerts are working properly!',
+      tag: 'test-alert'
+    });
+    setTimeout(() => setTestSent(false), 2000);
+  };
 
   if (!isOpen) return null;
 
@@ -58,18 +101,18 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
         position: 'absolute',
         top: 'calc(100% + 10px)',
         right: '0',
-        width: '360px',
+        width: '380px',
         maxWidth: '92vw',
-        maxHeight: '480px',
+        maxHeight: '520px',
         display: 'flex',
         flexDirection: 'column',
         zIndex: 1000,
-        boxShadow: '0 12px 36px rgba(0, 0, 0, 0.5)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        borderRadius: '16px',
+        boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.15)',
+        border: '1px solid rgba(255, 255, 255, 0.14)',
+        borderRadius: '18px',
         overflow: 'hidden',
         backdropFilter: 'blur(20px)',
-        background: 'rgba(15, 23, 42, 0.95)'
+        background: 'rgba(15, 23, 42, 0.96)'
       }}
     >
       {/* Header */}
@@ -99,6 +142,24 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Mute / Unmute Chime */}
+          <button
+            type="button"
+            onClick={toggleSound}
+            title={isMuted ? 'Unmute alert sound' : 'Mute alert sound'}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: isMuted ? 'var(--text-muted)' : '#818cf8',
+              cursor: 'pointer',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+          </button>
+
           {unreadCount > 0 && (
             <button
               onClick={markAllNotificationsAsRead}
@@ -118,6 +179,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               <CheckCheck size={13} /> {t.notifications?.markAllRead || 'Mark all read'}
             </button>
           )}
+
           <button
             onClick={onClose}
             style={{
@@ -133,6 +195,122 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
             <X size={16} />
           </button>
         </div>
+      </div>
+
+      {/* Device Notifications Enable Banner */}
+      <div style={{
+        padding: '10px 16px',
+        background: devicePermission === 'granted' 
+          ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)' 
+          : 'linear-gradient(90deg, rgba(99, 102, 241, 0.16) 0%, rgba(168, 85, 247, 0.12) 100%)',
+        borderBottom: '1px solid var(--border-color)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '10px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Smartphone size={15} color={devicePermission === 'granted' ? '#34d399' : '#818cf8'} />
+          <div style={{ fontSize: '11px', lineHeight: 1.2 }}>
+            <div style={{ fontWeight: '700', color: '#fff' }}>
+              {devicePermission === 'granted'
+                ? (lang === 'ru' ? 'Уведомления на устройстве активны' : lang === 'kk' ? 'Құрылғы хабарландырулары белсенді' : 'Device Push Active')
+                : (lang === 'ru' ? 'Уведомления на устройство' : lang === 'kk' ? 'Құрылғыға хабарландырулар' : 'Device Push Alerts')}
+            </div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+              {devicePermission === 'granted'
+                ? (lang === 'ru' ? 'Получайте пуш-алерты даже в фоне' : lang === 'kk' ? 'Фондық режимде де пуш келеді' : 'Popups & sounds delivered to this device')
+                : (lang === 'ru' ? 'Включите пуши для телефона и ПК' : lang === 'kk' ? 'Телефон мен компьютерге пуш қосыңыз' : 'Allow notifications for phone & laptop')}
+            </div>
+          </div>
+        </div>
+
+        {devicePermission === 'granted' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={handleTestNotification}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '8px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#34d399',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <Send size={11} />
+              <span>{testSent ? 'Sent!' : 'Test'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowTelegramModal(true)}
+              title="Configure Telegram Phone Alerts"
+              style={{
+                padding: '4px 8px',
+                borderRadius: '8px',
+                background: 'rgba(2, 132, 199, 0.2)',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                color: '#38bdf8',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+            >
+              <MessageCircle size={12} />
+              <span>TG</span>
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={() => enableDeviceNotifications()}
+              style={{
+                padding: '5px 10px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #6366f1, #3b82f6)',
+                border: 'none',
+                color: '#fff',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)'
+              }}
+            >
+              {lang === 'ru' ? 'Включить' : lang === 'kk' ? 'Қосу' : 'Enable'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowTelegramModal(true)}
+              title="Configure Telegram Phone Alerts"
+              style={{
+                padding: '5px 8px',
+                borderRadius: '8px',
+                background: 'rgba(2, 132, 199, 0.2)',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                color: '#38bdf8',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '3px'
+              }}
+            >
+              <MessageCircle size={12} />
+              <span>TG</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Notifications List */}
@@ -245,6 +423,13 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
           </button>
         </div>
       )}
+
+      {/* Telegram Mobile Alerts Modal */}
+      <TelegramNotificationModal
+        isOpen={showTelegramModal}
+        onClose={() => setShowTelegramModal(false)}
+        lang={lang}
+      />
     </div>
   );
 };

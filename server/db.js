@@ -125,6 +125,12 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON notifications(recipientName);
   CREATE INDEX IF NOT EXISTS idx_notifications_createdAt ON notifications(createdAt);
+
+  -- Key-Value Settings Table
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
 
 // Migration: Ensure passwordHash & salt columns exist on existing databases

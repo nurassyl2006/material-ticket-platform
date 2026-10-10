@@ -261,4 +261,22 @@ export async function fetchDemoCredentialsApi() {
   return request('/auth/demo-credentials');
 }
 
+// -------------------------------------------------------------
+// Telegram Push Alerts API
+// -------------------------------------------------------------
+export async function getTelegramConfigApi() {
+  return request('/notifications/telegram');
+}
 
+export async function saveTelegramConfigApi(config) {
+  return request('/notifications/telegram', {
+    method: 'POST',
+    body: JSON.stringify(config)
+  });
+}
+
+export async function sendTelegramTestApi() {
+  return request('/notifications/telegram/test', {
+    method: 'POST'
+  });
+}
