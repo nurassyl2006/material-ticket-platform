@@ -3,15 +3,46 @@
  * Provides seamless CRUD for Tickets, Goods Inventory, Users, and Notifications.
  */
 
-// API Base URL: supports configurable VITE_API_URL or defaults to Vite /api proxy
-const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') + '/api';
+// Dynamic API Base URL resolver: checks user-configured custom server URL, VITE_API_URL, or defaults to '/api'
+export function getApiBaseUrl() {
+  if (typeof window !== 'undefined') {
+    const custom = localStorage.getItem('app_custom_api_url');
+    if (custom && custom.trim()) {
+      const clean = custom.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
+      return `${clean}/api`;
+    }
+  }
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim();
+  if (envUrl) {
+    const clean = envUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    return `${clean}/api`;
+  }
+  return '/api';
+}
+
+export function getCurrentApiServerUrl() {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('app_custom_api_url') || import.meta.env.VITE_API_URL || '';
+}
+
+export function setCustomApiServerUrl(url) {
+  if (typeof window === 'undefined') return;
+  const cleaned = (url || '').trim();
+  if (!cleaned) {
+    localStorage.removeItem('app_custom_api_url');
+  } else {
+    const normalized = cleaned.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    localStorage.setItem('app_custom_api_url', normalized);
+  }
+}
 
 async function request(endpoint, options = {}) {
   const controller = new AbortController();
   const timeoutMs = options.timeoutMs || 8000;
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  const url = `${API_BASE}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const apiBase = getApiBaseUrl();
+  const url = `${apiBase}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const defaultHeaders = {
     'Accept': 'application/json'
@@ -60,7 +91,24 @@ async function request(endpoint, options = {}) {
 // -------------------------------------------------------------
 // Health / DB Status
 // -------------------------------------------------------------
-export async function checkDbHealth() {
+export async function checkDbHealth(customServerUrl = null) {
+  if (customServerUrl && typeof customServerUrl === 'string' && customServerUrl.trim()) {
+    const clean = customServerUrl.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
+    const targetUrl = `${clean}/api/health`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    try {
+      const res = await fetch(targetUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP ${res.status}`);
+      }
+      return await res.json();
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
+    }
+  }
   return request('/health');
 }
 

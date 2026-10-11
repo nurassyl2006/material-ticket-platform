@@ -351,6 +351,32 @@ export const translations = {
       engineerHelpNotice: "Automatic translation between English-speaking teachers and Russian/Kazakh-speaking engineers",
       originalText: "Original Request",
       translatedText: "Translated Request"
+    },
+    serverStatus: {
+      title: "Server & SQLite Database Status",
+      subtitle: "Verify database synchronization and connect to the school's server remotely",
+      connected: "Connected to School SQLite DB",
+      offline: "Offline Mode (Local Browser Storage)",
+      syncing: "Syncing with Database...",
+      verifyNow: "Verify Connection Now",
+      verifying: "Checking...",
+      ping: "Ping",
+      ticketsInDb: "Tickets in DB",
+      inventoryInDb: "Inventory Items",
+      usersInDb: "System Users",
+      dbFilePath: "Database File: server/data/platform.db",
+      remoteSectionTitle: "Connect to School Server Remotely",
+      remoteSectionSubtitle: "Connect from home, mobile, or GitHub Pages without being at school",
+      serverUrlLabel: "School Server Address / Tunnel URL",
+      serverUrlPlaceholder: "https://your-tunnel.trycloudflare.com or https://school-api.edu",
+      useDefault: "Use Localhost / Default",
+      testBtn: "Test Connection",
+      saveBtn: "Save & Connect",
+      guideTitle: "How to connect from outside the school:",
+      guideStep1: "1. On the school server computer, run: npm run tunnel",
+      guideStep2: "2. Copy the generated public HTTPS URL (e.g. https://xxx.trycloudflare.com)",
+      guideStep3: "3. Paste that URL above in this window and click Save & Connect",
+      guideStep4: "4. Your live app will instantly synchronize with the school's central SQLite database!"
     }
   },
 
@@ -706,6 +732,32 @@ export const translations = {
       engineerHelpNotice: "Автоматический перевод между учителями (English) и инженерами (Русский / Қазақша)",
       originalText: "Оригинал заявки",
       translatedText: "Переведенная заявка"
+    },
+    serverStatus: {
+      title: "Статус Сервера и Базы Данных SQLite",
+      subtitle: "Проверка синхронизации с базой данных и удаленное подключение к серверу школы",
+      connected: "Подключено к базе данных школы (SQLite)",
+      offline: "Офлайн-режим (Локальная память браузера)",
+      syncing: "Синхронизация с сервером...",
+      verifyNow: "Проверить соединение",
+      verifying: "Проверка...",
+      ping: "Пинг",
+      ticketsInDb: "Заявок в БД",
+      inventoryInDb: "Товаров на складе",
+      usersInDb: "Пользователей в БД",
+      dbFilePath: "Файл базы данных: server/data/platform.db",
+      remoteSectionTitle: "Удаленное подключение к школьному серверу",
+      remoteSectionSubtitle: "Подключайтесь из дома, с телефона или через GitHub Pages без нахождения в школе",
+      serverUrlLabel: "Адрес школьного сервера / Туннель",
+      serverUrlPlaceholder: "https://your-tunnel.trycloudflare.com или https://school-api.edu",
+      useDefault: "По умолчанию / Localhost",
+      testBtn: "Проверить связь",
+      saveBtn: "Сохранить и подключиться",
+      guideTitle: "Как подключиться не находясь в школе:",
+      guideStep1: "1. На школьном компьютере выполните команду: npm run tunnel",
+      guideStep2: "2. Скопируйте созданный защищенный HTTPS адрес (например https://xxx.trycloudflare.com)",
+      guideStep3: "3. Вставьте этот адрес в поле выше и нажмите Сохранить и подключиться",
+      guideStep4: "4. Все заявки со всех устройств будут сохраняться в центральную SQLite базу школы!"
     }
   },
 
@@ -1061,6 +1113,32 @@ export const translations = {
       engineerHelpNotice: "Мұғалімдер (English) мен инженерлер (Қазақша / Орысша) арасындағы автоматты аударма",
       originalText: "Өтінімнің түпнұсқасы",
       translatedText: "Аударылған өтінім"
+    },
+    serverStatus: {
+      title: "Сервер және SQLite Деректер Қорының Күйі",
+      subtitle: "Деректер қорымен синхрондауды тексеру және мектеп серверіне қашықтан қосылу",
+      connected: "Мектептің SQLite деректер қорына қосылған",
+      offline: "Офлайн режимі (Браузердің жергілікті жады)",
+      syncing: "Сервермен байланысуда...",
+      verifyNow: "Байланысты тексеру",
+      verifying: "Тексерілуде...",
+      ping: "Пинг",
+      ticketsInDb: "Қордағы өтінімдер",
+      inventoryInDb: "Қоймадағы тауарлар",
+      usersInDb: "Тіркелген қолданушылар",
+      dbFilePath: "Деректер қоры файлы: server/data/platform.db",
+      remoteSectionTitle: "Мектеп серверіне қашықтан қосылу",
+      remoteSectionSubtitle: "Мектепте болмай-ақ үйден, телефоннан немесе GitHub Pages арқылы қосылу",
+      serverUrlLabel: "Мектеп серверінің мекенжайы / Туннель",
+      serverUrlPlaceholder: "https://your-tunnel.trycloudflare.com немесе https://school-api.edu",
+      useDefault: "Бастапқы күй / Localhost",
+      testBtn: "Байланысты тексеру",
+      saveBtn: "Сақтау және қосылу",
+      guideTitle: "Мектепте болмай қалай қосылуға болады:",
+      guideStep1: "1. Мектептегі сервер компьютерінде команданы орындаңыз: npm run tunnel",
+      guideStep2: "2. Шыққан қорғалған HTTPS сілтемені көшіріп алыңыз (мысалы https://xxx.trycloudflare.com)",
+      guideStep3: "3. Бұл сілтемені жоғарыдағы өріске қойып, Сақтау және қосылу түймесін басыңыз",
+      guideStep4: "4. Барлық өтінімдер мектептің орталық SQLite қорына лезде жазылады!"
     }
   }
 };

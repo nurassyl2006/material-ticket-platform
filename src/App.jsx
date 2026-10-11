@@ -9,6 +9,7 @@ import { UserManagement } from './components/UserManagement';
 import { TicketModal } from './components/TicketModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { DeviceToastAlert } from './components/DeviceToastAlert';
+import ServerStatusModal from './components/ServerStatusModal';
 import { ShieldCheck, LogIn, UserPlus, Compass, Users } from 'lucide-react';
 import './index.css';
 
@@ -19,6 +20,7 @@ function MainApp() {
   const [newTicketDept, setNewTicketDept] = useState('engineering');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [targetTicketId, setTargetTicketId] = useState(null);
+  const [isServerModalOpen, setIsServerModalOpen] = useState(false);
 
   // Authentication Modal Windows State (Login Window & Registration Window)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -61,6 +63,7 @@ function MainApp() {
         onSelectTicket={handleSelectTicketFromNotification}
         onOpenLogin={handleOpenLogin}
         onOpenRegister={handleOpenRegister}
+        onOpenServerModal={() => setIsServerModalOpen(true)}
       />
       <DeviceToastAlert onSelectTicket={handleSelectTicketFromNotification} />
 
@@ -298,6 +301,12 @@ function MainApp() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authModalMode}
+      />
+
+      {/* Server & Database Diagnostics / Remote Connection Modal */}
+      <ServerStatusModal
+        isOpen={isServerModalOpen}
+        onClose={() => setIsServerModalOpen(false)}
       />
     </div>
   );

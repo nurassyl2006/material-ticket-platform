@@ -27,7 +27,8 @@ export const Navbar = ({
   onOpenNewTicket, 
   onSelectTicket,
   onOpenLogin,
-  onOpenRegister
+  onOpenRegister,
+  onOpenServerModal
 }) => {
   const { 
     lang, 
@@ -451,13 +452,13 @@ export const Navbar = ({
 
             {/* Database & Multi-Device Sync Indicator */}
             <div
-              onClick={syncWithCloud}
+              onClick={onOpenServerModal || syncWithCloud}
               title={
                 cloudStatus === 'syncing'
-                  ? 'Syncing with SQLite database...'
+                  ? 'Syncing with SQLite database... Click to inspect connection'
                   : cloudStatus === 'offline'
-                  ? 'Offline mode: using local cache (click to retry database connection)'
-                  : 'SQLite Database Connected & Synced (click to refresh)'
+                  ? 'Offline mode: using local cache (Click to connect to school server)'
+                  : 'SQLite Database Connected & Synced (Click to view database diagnostics)'
               }
               style={{
                 display: 'flex',
