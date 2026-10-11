@@ -79,13 +79,28 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('app_translator_target_lang', val);
   }, []);
 
-  // Role state with legacy mapping
-  const [role, setRole] = useState(() => {
-    const saved = localStorage.getItem('app_role');
-    if (saved === 'workerA') return 'storage_manager';
-    if (saved === 'admin') return 'director';
-    return saved || 'teacher';
+  // Role state with legacy mapping and guest/parent unregistered defaults
+  const [role, setRoleState] = useState(() => {
+    const isAuth = localStorage.getItem('app_auth') === 'true';
+    if (isAuth) {
+      const saved = localStorage.getItem('app_role');
+      if (saved === 'workerA') return 'storage_manager';
+      if (saved === 'admin') return 'director';
+      return saved || 'teacher';
+    }
+    const unreg = localStorage.getItem('app_unregistered_role');
+    return unreg === 'parent' ? 'parent' : 'guest';
   });
+
+  const setRole = useCallback((newRole) => {
+    setRoleState(newRole);
+    const isAuth = localStorage.getItem('app_auth') === 'true';
+    if (!isAuth) {
+      localStorage.setItem('app_unregistered_role', newRole);
+    } else {
+      localStorage.setItem('app_role', newRole);
+    }
+  }, []);
 
   // Authentication session state
   const [authToken, setAuthToken] = useState(() => localStorage.getItem('app_auth_token') || '');
@@ -360,7 +375,10 @@ export const AppProvider = ({ children }) => {
     setActiveUser(null);
     localStorage.removeItem('app_auth_token');
     localStorage.removeItem('app_active_user');
+    localStorage.setItem('app_auth', 'false');
     setIsAuthenticated(false);
+    const fallbackRole = localStorage.getItem('app_unregistered_role') === 'parent' ? 'parent' : 'guest';
+    setRoleState(fallbackRole);
   }, []);
 
   // Validate active auth token with database on initial mount
@@ -577,7 +595,28 @@ export const AppProvider = ({ children }) => {
   const t = translations[lang] || translations.en;
   
   // Resolve current active user profile
-  const currentUser = activeUser || users[role] || (role === 'workerA' ? users.storage_manager : (role === 'admin' ? users.director : (users[role] || users.teacher)));
+  const currentUser = React.useMemo(() => {
+    if (isAuthenticated) {
+      return activeUser || users[role] || (role === 'workerA' ? users.storage_manager : (role === 'admin' ? users.director : (users[role] || users.teacher)));
+    }
+    const isParent = role === 'parent';
+    return {
+      id: isParent ? 'parent-session' : 'guest-session',
+      name: isParent 
+        ? (lang === 'ru' ? 'Родитель' : lang === 'kk' ? 'Ата-ана' : 'Parent')
+        : (lang === 'ru' ? 'Гость' : lang === 'kk' ? 'Қонақ' : 'Guest'),
+      role: role,
+      department: isParent 
+        ? (lang === 'ru' ? 'Родительский комитет' : lang === 'kk' ? 'Ата-аналар қауымдастығы' : 'Parent / Family')
+        : (lang === 'ru' ? 'Посетитель' : lang === 'kk' ? 'Келуші' : 'Campus Visitor'),
+      email: '',
+      phone: '',
+      avatar: '',
+      isUnregistered: true,
+      isGuest: !isParent,
+      isParent: isParent
+    };
+  }, [isAuthenticated, activeUser, users, role, lang]);
 
   const updateUserProfile = (updatedProfileData) => {
     if (currentUser?.id) {
@@ -614,6 +653,9 @@ export const AppProvider = ({ children }) => {
 
   // Ticket Management
   const addTicket = (ticketData) => {
+    const authorName = ticketData.senderName || currentUser.name || (role === 'parent' ? 'Parent' : (role === 'guest' ? 'Guest' : (t.roles[role] || 'Teacher')));
+    const authorPhone = ticketData.senderPhone || currentUser.phone || '';
+
     const newTicket = {
       id: `TCK-${Math.floor(1000 + Math.random() * 9000)}`,
       department: ticketData.department || 'other',
@@ -628,8 +670,8 @@ export const AppProvider = ({ children }) => {
       description: ticketData.description || '',
       photos: ticketData.photos || [],
       completionPhotos: [],
-      teacherName: currentUser.name || t.roles[role] || 'Teacher',
-      teacherPhone: currentUser.phone || '',
+      teacherName: authorName,
+      teacherPhone: authorPhone,
       status: 'pending',
       assignedWorker: null,
       assignedRole: null,
@@ -940,6 +982,12 @@ export const AppProvider = ({ children }) => {
   const userNotifications = React.useMemo(() => {
     if (!currentUser?.name) return [];
     if (role === 'director' || role === 'admin') return notifications;
+    if (role === 'guest' || role === 'parent') {
+      return notifications.filter(n => {
+        const recip = (n.recipientName || '').toLowerCase();
+        return recip === 'all' || recip.includes('guest') || recip.includes('parent') || (n.title && n.title.toLowerCase().includes(role));
+      });
+    }
     const myName = currentUser.name.toLowerCase();
     return notifications.filter(n => 
       n.recipientName && (

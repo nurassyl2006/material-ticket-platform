@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../AppContext';
-import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, Sparkles } from 'lucide-react';
+import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, Sparkles, User, Users } from 'lucide-react';
 import { CampusLocationSelector } from './CampusLocationSelector';
 import { DEPARTMENTS, resolveDepartment, getSubcategories } from '../departments';
 import { translateText } from '../services/translator';
 
 export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk' }) => {
-  const { t, addTicket, inventory, currentUser, lang } = useApp();
+  const { t, addTicket, inventory, currentUser, lang, role, isAuthenticated } = useApp();
 
   const [department, setDepartment] = useState(() => resolveDepartment(initialDepartment).id);
   const [formData, setFormData] = useState({
@@ -20,7 +20,10 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     description: '',
     fromRoom: '',
     toRoom: '',
-    furnitureItems: ''
+    furnitureItems: '',
+    guestName: '',
+    guestPhone: '',
+    studentClass: ''
   });
   const [photos, setPhotos] = useState([]);
   const [translatedPreview, setTranslatedPreview] = useState(null);
@@ -103,6 +106,21 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     e.preventDefault();
     if (!formData.itemTitle || !formData.itemTitle.trim()) return;
 
+    const isUnreg = !isAuthenticated || role === 'guest' || role === 'parent';
+    let author = currentUser?.name || 'Staff';
+    let authorPhone = currentUser?.phone || '';
+
+    if (isUnreg) {
+      const gName = (formData.guestName || '').trim() || (role === 'parent' ? (lang === 'ru' ? 'Родитель' : lang === 'kk' ? 'Ата-ана' : 'Parent') : (lang === 'ru' ? 'Гость' : lang === 'kk' ? 'Қонақ' : 'Guest'));
+      authorPhone = (formData.guestPhone || '').trim();
+      if (role === 'parent') {
+        const student = (formData.studentClass || '').trim();
+        author = student ? `${gName} [Parent • ${student}]` : `${gName} [Parent]`;
+      } else {
+        author = `${gName} [Guest / Visitor]`;
+      }
+    }
+
     const targetRoom = (formData.roomNumber && formData.roomNumber.trim()) || (formData.toRoom && formData.toRoom.trim()) || 'Block A (Main) • 1st Floor • Room 101';
 
     const moveDetails = (department === 'facilities' || department === 'carpentry' || department === 'event_prep') && (formData.fromRoom || formData.toRoom || formData.furnitureItems) ? {
@@ -118,7 +136,9 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
       department,
       roomNumber: targetRoom,
       moveDetails,
-      photos
+      photos,
+      senderName: author,
+      senderPhone: authorPhone
     });
 
     onClose();
@@ -133,7 +153,10 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
       description: '',
       fromRoom: '',
       toRoom: '',
-      furnitureItems: ''
+      furnitureItems: '',
+      guestName: '',
+      guestPhone: '',
+      studentClass: ''
     });
     setPhotos([]);
   };
@@ -164,7 +187,11 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>{t.tickets.createTitle}</h2>
               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                Sender: <strong style={{ color: '#fff' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})
+                {role === 'parent' 
+                  ? (lang === 'ru' ? 'Подача заявки: Родитель' : lang === 'kk' ? 'Өтінім беруші: Ата-ана' : 'Submitting as: School Parent')
+                  : role === 'guest'
+                  ? (lang === 'ru' ? 'Подача заявки: Гость школы' : lang === 'kk' ? 'Өтінім беруші: Мектеп қонағы' : 'Submitting as: Campus Guest')
+                  : <>Sender: <strong style={{ color: '#fff' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
               </span>
             </div>
           </div>
@@ -217,6 +244,79 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
             })}
           </div>
         </div>
+
+        {/* Sender Details for Unregistered Guest / Parent */}
+        {(!isAuthenticated || role === 'guest' || role === 'parent') && (
+          <div style={{
+            background: role === 'parent' ? 'rgba(168, 85, 247, 0.1)' : 'rgba(6, 182, 212, 0.1)',
+            border: `1px solid ${role === 'parent' ? 'rgba(168, 85, 247, 0.3)' : 'rgba(6, 182, 212, 0.3)'}`,
+            borderRadius: '14px',
+            padding: '14px',
+            marginBottom: '16px'
+          }}>
+            <div style={{ 
+              fontSize: '12px', 
+              fontWeight: '800', 
+              color: role === 'parent' ? '#c084fc' : '#38bdf8', 
+              marginBottom: '10px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px' 
+            }}>
+              {role === 'parent' ? <Users size={15} /> : <User size={15} />}
+              <span>
+                {role === 'parent' 
+                  ? (lang === 'ru' ? 'Контакты родителя и ученика' : lang === 'kk' ? 'Ата-ана мен оқушының байланыс деректері' : 'Parent & Student Contact Details')
+                  : (lang === 'ru' ? 'Контактные данные посетителя' : lang === 'kk' ? 'Келушінің байланыс деректері' : 'Visitor Contact Details')}
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  {lang === 'ru' ? 'Ваше имя (ФИО) *' : lang === 'kk' ? 'Аты-жөніңіз *' : 'Your Full Name *'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder={lang === 'ru' ? 'Айгуль Нурлан' : 'e.g. Aigul Nurlan'}
+                  value={formData.guestName}
+                  onChange={e => setFormData(p => ({ ...p, guestName: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  {lang === 'ru' ? 'Телефон для связи *' : lang === 'kk' ? 'Байланыс телефоны *' : 'Contact Phone *'}
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="+7 (___) ___-__-__"
+                  value={formData.guestPhone}
+                  onChange={e => setFormData(p => ({ ...p, guestPhone: e.target.value }))}
+                  style={inputStyle}
+                />
+              </div>
+
+              {role === 'parent' && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                    {lang === 'ru' ? 'Имя ученика и класс (напр. Алихан 4Б)' : lang === 'kk' ? 'Оқушының аты және сыныбы (мыс. Әлихан 4Б)' : 'Student Name & Class (e.g. Alikhan 4B)'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={lang === 'ru' ? 'напр. Данияр 7А' : 'e.g. Daniyar 7A'}
+                    value={formData.studentClass}
+                    onChange={e => setFormData(p => ({ ...p, studentClass: e.target.value }))}
+                    style={inputStyle}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Step 2: Select Subcategory / Problem */}
         {activeDeptObj && activeDeptObj.subcategories && (

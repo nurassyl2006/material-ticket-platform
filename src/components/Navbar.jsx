@@ -1,10 +1,48 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import { Globe, UserCheck, Package, ClipboardList, LayoutDashboard, User, PlusCircle, RotateCcw, LogOut, Bell, Database, Users } from 'lucide-react';
+import { 
+  Globe, 
+  UserCheck, 
+  Package, 
+  ClipboardList, 
+  LayoutDashboard, 
+  User, 
+  PlusCircle, 
+  RotateCcw, 
+  LogOut, 
+  Bell, 
+  Database, 
+  Users, 
+  Lock, 
+  UserPlus, 
+  Compass,
+  LogIn
+} from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 
-export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket, onSelectTicket }) => {
-  const { lang, setLang, role, setRole, t, currentUser, resetDemoData, logout, unreadCount, cloudStatus, syncWithCloud } = useApp();
+export const Navbar = ({ 
+  activeTab, 
+  setActiveTab, 
+  onOpenProfile, 
+  onOpenNewTicket, 
+  onSelectTicket,
+  onOpenLogin,
+  onOpenRegister
+}) => {
+  const { 
+    lang, 
+    setLang, 
+    role, 
+    setRole, 
+    t, 
+    currentUser, 
+    resetDemoData, 
+    logout, 
+    unreadCount, 
+    cloudStatus, 
+    syncWithCloud, 
+    isAuthenticated 
+  } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
@@ -221,82 +259,195 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
               />
             </div>
 
-            {/* Active User Badge & Logout */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(99, 102, 241, 0.12)', padding: '5px 10px', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
-              <UserCheck size={15} color="var(--primary)" />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff', lineHeight: 1.2 }}>
-                  {currentUser?.name || t.roles[role]}
-                </span>
-                <span style={{ fontSize: '10px', color: '#818cf8', fontWeight: '600', lineHeight: 1 }}>
-                  {t.roles[role]}
-                </span>
-              </div>
-            </div>
+            {/* Authenticated User Badge & Logout OR Guest/Parent Role Selector & Sign In/Register */}
+            {isAuthenticated ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(99, 102, 241, 0.12)', padding: '5px 10px', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
+                  <UserCheck size={15} color="var(--primary)" />
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff', lineHeight: 1.2 }}>
+                      {currentUser?.name || t.roles[role]}
+                    </span>
+                    <span style={{ fontSize: '10px', color: '#818cf8', fontWeight: '600', lineHeight: 1 }}>
+                      {t.roles[role]}
+                    </span>
+                  </div>
+                </div>
 
-            {/* Logout / Switch Role Button */}
-            <button
-              onClick={() => logout()}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(239, 68, 68, 0.12)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                padding: '6px 12px',
-                borderRadius: '10px',
-                color: '#f87171',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              title={t.auth.logout}
-            >
-              <LogOut size={13} />
-              <span className="logout-btn-text">{t.auth.logout}</span>
-            </button>
+                {/* Logout Button */}
+                <button
+                  onClick={() => logout()}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    padding: '6px 12px',
+                    borderRadius: '10px',
+                    color: '#f87171',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  title={t.auth.logout}
+                >
+                  <LogOut size={13} />
+                  <span className="logout-btn-text">{t.auth.logout}</span>
+                </button>
 
-            {/* Profile Button */}
-            <button
-              onClick={onOpenProfile}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid var(--border-color)',
-                padding: '5px 10px',
-                borderRadius: '10px',
-                color: 'var(--text-main)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              title={t.nav.profile}
-            >
-              <div style={{
-                width: '22px',
-                height: '22px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '11px',
-                fontWeight: '700',
-                color: '#fff',
-                overflow: 'hidden'
-              }}>
-                {currentUser?.avatar ? (
-                  <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  currentUser?.name ? currentUser.name.charAt(0) : 'U'
-                )}
-              </div>
-              <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600' }}>
-                {currentUser?.name ? currentUser.name.split(' ')[0] : t.nav.profile}
-              </span>
-            </button>
+                {/* Profile Button */}
+                <button
+                  onClick={onOpenProfile}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid var(--border-color)',
+                    padding: '5px 10px',
+                    borderRadius: '10px',
+                    color: 'var(--text-main)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  title={t.nav.profile}
+                >
+                  <div style={{
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: '#fff',
+                    overflow: 'hidden'
+                  }}>
+                    {currentUser?.avatar ? (
+                      <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      currentUser?.name ? currentUser.name.charAt(0) : 'U'
+                    )}
+                  </div>
+                  <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600' }}>
+                    {currentUser?.name ? currentUser.name.split(' ')[0] : t.nav.profile}
+                  </span>
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Guest / Parent Unregistered Selector */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  padding: '3px',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border-color)',
+                  gap: '2px'
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => setRole('guest')}
+                    title="Count as Campus Guest / Visitor"
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      color: role === 'guest' ? '#fff' : 'var(--text-muted)',
+                      background: role === 'guest' ? 'rgba(6, 182, 212, 0.35)' : 'transparent',
+                      boxShadow: role === 'guest' ? '0 1px 4px rgba(6, 182, 212, 0.3)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Compass size={13} color={role === 'guest' ? '#38bdf8' : 'currentColor'} />
+                    <span>{t.auth?.guestTag || 'Guest'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('parent')}
+                    title="Count as School Parent"
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      color: role === 'parent' ? '#fff' : 'var(--text-muted)',
+                      background: role === 'parent' ? 'rgba(168, 85, 247, 0.35)' : 'transparent',
+                      boxShadow: role === 'parent' ? '0 1px 4px rgba(168, 85, 247, 0.3)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <Users size={13} color={role === 'parent' ? '#c084fc' : 'currentColor'} />
+                    <span>{t.auth?.parentTag || 'Parent'}</span>
+                  </button>
+                </div>
+
+                {/* Sign In Button (opens Login Window) */}
+                <button
+                  type="button"
+                  onClick={onOpenLogin}
+                  title={t.auth?.loginWindow || 'Sign In'}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(99, 102, 241, 0.18)',
+                    border: '1px solid rgba(99, 102, 241, 0.4)',
+                    padding: '6px 12px',
+                    borderRadius: '10px',
+                    color: '#818cf8',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <LogIn size={13} />
+                  <span>{t.auth?.signIn || 'Sign In'}</span>
+                </button>
+
+                {/* Register Button (opens Registration Window) */}
+                <button
+                  type="button"
+                  onClick={onOpenRegister}
+                  title={t.auth?.registerWindow || 'Register'}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '10px',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <UserPlus size={13} />
+                  <span>{t.auth?.registerWindow || 'Register'}</span>
+                </button>
+              </>
+            )}
 
             {/* Database & Multi-Device Sync Indicator */}
             <div
@@ -424,13 +575,24 @@ export const Navbar = ({ activeTab, setActiveTab, onOpenProfile, onOpenNewTicket
           <span>{t.nav.newTicket}</span>
         </button>
 
-        <button
-          onClick={onOpenProfile}
-          className="mobile-nav-item"
-        >
-          <User size={18} />
-          <span>{t.nav.profile}</span>
-        </button>
+        {isAuthenticated ? (
+          <button
+            onClick={onOpenProfile}
+            className="mobile-nav-item"
+          >
+            <User size={18} />
+            <span>{t.nav.profile}</span>
+          </button>
+        ) : (
+          <button
+            onClick={onOpenLogin}
+            className="mobile-nav-item"
+            style={{ color: '#818cf8' }}
+          >
+            <LogIn size={18} />
+            <span>{t.auth?.signIn || 'Sign In'}</span>
+          </button>
+        )}
       </nav>
     </>
   );

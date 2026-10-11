@@ -420,19 +420,54 @@ export const TicketCard = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-muted)' }}>
           {renderLocationBadge(ticket.roomNumber)}
 
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <User size={13} color="var(--text-muted)" /> {ticket.teacherName}
-            {cleanPhone && (
-              <span style={{ display: 'inline-flex', gap: '4px', marginLeft: '4px' }}>
-                <a href={`tel:${cleanPhone}`} title={t.profile.call} style={{ color: 'var(--accent-emerald)', padding: '2px', display: 'flex', alignItems: 'center' }}>
-                  <PhoneCall size={12} />
-                </a>
-                <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" title={t.profile.whatsapp} style={{ color: '#4ade80', padding: '2px', display: 'flex', alignItems: 'center' }}>
-                  <MessageSquare size={12} />
-                </a>
+          {(() => {
+            const lowerName = (ticket.teacherName || '').toLowerCase();
+            const isParentTicket = lowerName.includes('parent') || lowerName.includes('родитель') || lowerName.includes('ата-ана');
+            const isGuestTicket = lowerName.includes('guest') || lowerName.includes('гость') || lowerName.includes('қонақ');
+
+            return (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {isParentTicket ? (
+                  <span style={{
+                    background: 'rgba(168, 85, 247, 0.2)',
+                    color: '#c084fc',
+                    border: '1px solid rgba(168, 85, 247, 0.4)',
+                    padding: '1px 6px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: '700'
+                  }}>
+                    👨‍👩‍👧 {t.auth?.parentTag || 'Parent'}
+                  </span>
+                ) : isGuestTicket ? (
+                  <span style={{
+                    background: 'rgba(6, 182, 212, 0.2)',
+                    color: '#38bdf8',
+                    border: '1px solid rgba(6, 182, 212, 0.4)',
+                    padding: '1px 6px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: '700'
+                  }}>
+                    👤 {t.auth?.guestTag || 'Guest'}
+                  </span>
+                ) : (
+                  <User size={13} color="var(--text-muted)" />
+                )}
+                <span>{ticket.teacherName}</span>
+                {cleanPhone && (
+                  <span style={{ display: 'inline-flex', gap: '4px', marginLeft: '2px' }}>
+                    <a href={`tel:${cleanPhone}`} title={t.profile?.call || 'Call'} style={{ color: 'var(--accent-emerald)', padding: '2px', display: 'flex', alignItems: 'center' }}>
+                      <PhoneCall size={12} />
+                    </a>
+                    <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" title={t.profile?.whatsapp || 'WhatsApp'} style={{ color: '#4ade80', padding: '2px', display: 'flex', alignItems: 'center' }}>
+                      <MessageSquare size={12} />
+                    </a>
+                  </span>
+                )}
               </span>
-            )}
-          </span>
+            );
+          })()}
 
           <span>{t.tickets.createdAt}: {new Date(ticket.createdAt).toLocaleDateString()}</span>
         </div>

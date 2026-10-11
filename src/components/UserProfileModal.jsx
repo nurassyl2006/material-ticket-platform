@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const UserProfileModal = ({ isOpen, onClose }) => {
-  const { currentUser, updateUserProfile, t, logout, role, changePassword } = useApp();
+  const { currentUser, updateUserProfile, t, logout, role, changePassword, isAuthenticated } = useApp();
   const [activeTab, setActiveTab] = useState('details'); // 'details' | 'security'
   
   const [formData, setFormData] = useState({
@@ -160,58 +160,60 @@ export const UserProfileModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Tab Selector: Profile vs Security */}
-        <div style={{
-          display: 'flex',
-          background: 'rgba(15, 23, 42, 0.6)',
-          padding: '4px',
-          borderRadius: '10px',
-          marginBottom: '16px',
-          border: '1px solid var(--border-color)',
-          gap: '4px'
-        }}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('details')}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '700',
-              border: 'none',
-              cursor: 'pointer',
-              background: activeTab === 'details' ? 'var(--primary)' : 'transparent',
-              color: activeTab === 'details' ? '#ffffff' : 'var(--text-muted)',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {t.profile.title || 'Profile Details'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('security')}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '700',
-              border: 'none',
-              cursor: 'pointer',
-              background: activeTab === 'security' ? 'var(--primary)' : 'transparent',
-              color: activeTab === 'security' ? '#ffffff' : 'var(--text-muted)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <KeyRound size={13} />
-            {t.auth.securityTab || 'Security & Password'}
-          </button>
-        </div>
+        {/* Tab Selector: Profile vs Security (only for authenticated staff) */}
+        {isAuthenticated && (
+          <div style={{
+            display: 'flex',
+            background: 'rgba(15, 23, 42, 0.6)',
+            padding: '4px',
+            borderRadius: '10px',
+            marginBottom: '16px',
+            border: '1px solid var(--border-color)',
+            gap: '4px'
+          }}>
+            <button
+              type="button"
+              onClick={() => setActiveTab('details')}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: activeTab === 'details' ? 'var(--primary)' : 'transparent',
+                color: activeTab === 'details' ? '#ffffff' : 'var(--text-muted)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {t.profile.title || 'Profile Details'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('security')}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                background: activeTab === 'security' ? 'var(--primary)' : 'transparent',
+                color: activeTab === 'security' ? '#ffffff' : 'var(--text-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <KeyRound size={13} />
+              {t.auth.securityTab || 'Security & Password'}
+            </button>
+          </div>
+        )}
 
         {/* TAB 1: Profile Details */}
         {activeTab === 'details' && (

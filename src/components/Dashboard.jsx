@@ -97,6 +97,8 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               {role === 'storage_manager' && t.dashboard.storageSummary}
               {role === 'engineer' && t.dashboard.engineerSummary}
               {role === 'teacher' && t.dashboard.teacherSummary}
+              {role === 'guest' && (t.dashboard.guestSummary || 'Welcome to our school campus portal! You can submit visitor requests, report facility issues, and follow up with school administration.')}
+              {role === 'parent' && (t.dashboard.parentSummary || 'Welcome to the Parent Portal! Submit classroom, facilities, and maintenance inquiries for your children’s school.')}
             </p>
           </div>
 

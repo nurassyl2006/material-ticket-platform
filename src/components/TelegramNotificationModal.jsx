@@ -10,12 +10,6 @@ export const TelegramNotificationModal = ({ isOpen, onClose, lang = 'en' }) => {
   const [testing, setTesting] = useState(false);
   const [statusMsg, setStatusMsg] = useState(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadConfig();
-    }
-  }, [isOpen]);
-
   const loadConfig = async () => {
     try {
       setLoading(true);
@@ -24,12 +18,18 @@ export const TelegramNotificationModal = ({ isOpen, onClose, lang = 'en' }) => {
         setIsConfigured(Boolean(res.configured));
         if (res.chatId) setChatId(res.chatId);
       }
-    } catch (err) {
+    } catch {
       // ignore
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadConfig();
+    }
+  }, [isOpen]);
 
   const handleSave = async (e) => {
     e.preventDefault();
