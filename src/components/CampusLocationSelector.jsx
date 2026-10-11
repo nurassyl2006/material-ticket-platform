@@ -160,19 +160,19 @@ export const CampusLocationSelector = ({
 
   return (
     <div style={{
-      background: 'rgba(15, 23, 42, 0.45)',
-      border: '1px solid var(--border-color)',
-      borderRadius: '12px',
-      padding: '14px',
+      background: '#242424',
+      border: '1px solid #383838',
+      borderRadius: '4px',
+      padding: '12px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '12px'
+      gap: '10px'
     }}>
       {/* Header with Mode Toggle */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <MapPin size={16} color="var(--primary)" />
-          <label style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>
+          <MapPin size={15} color="#0f6cbd" />
+          <label style={{ fontSize: '12px', fontWeight: '600', color: '#f3f2f1' }}>
             {t?.tickets?.locationTitle || 'School Campus Location (Block, Floor & Area)'} *
           </label>
         </div>
@@ -181,12 +181,12 @@ export const CampusLocationSelector = ({
           type="button"
           onClick={() => setMode(m => m === 'structured' ? 'freeform' : 'structured')}
           style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '6px',
+            background: '#1f1f1f',
+            border: '1px solid #383838',
+            borderRadius: '3px',
             padding: '3px 8px',
             fontSize: '11px',
-            color: 'var(--text-muted)',
+            color: '#adadad',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -210,48 +210,50 @@ export const CampusLocationSelector = ({
             onChange={e => onChange && onChange(e.target.value)}
             style={{
               width: '100%',
-              background: 'rgba(15, 23, 42, 0.7)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '8px',
-              padding: '10px 12px',
-              color: '#fff',
-              fontSize: '13px'
+              background: '#1f1f1f',
+              border: '1px solid #383838',
+              borderRadius: '4px',
+              padding: '8px 10px',
+              color: '#ffffff',
+              fontSize: '13px',
+              outline: 'none',
+              boxSizing: 'border-box'
             }}
           />
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* 1. Area Type Chips (Classroom, Corridor, Restroom, etc.) */}
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '10px', color: '#8a8a8a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               1. {t?.tickets?.areaType || 'Area Type'}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '5px' }}>
               {Object.keys(areaTypeIcons).map(typeKey => {
                 const Icon = areaTypeIcons[typeKey];
                 const isSelected = areaType === typeKey;
-                const activeColor = areaTypeColors[typeKey] || 'var(--primary)';
+                const activeColor = areaTypeColors[typeKey] || '#0f6cbd';
                 return (
                   <button
                     key={typeKey}
                     type="button"
                     onClick={() => handleUpdate(block, floor, typeKey, '', customRoom)}
                     style={{
-                      background: isSelected ? `${activeColor}22` : 'rgba(30, 41, 59, 0.5)',
-                      border: `1px solid ${isSelected ? activeColor : 'rgba(255,255,255,0.08)'}`,
-                      borderRadius: '8px',
-                      padding: '7px 10px',
-                      color: isSelected ? '#fff' : 'var(--text-muted)',
+                      background: isSelected ? '#333333' : '#1f1f1f',
+                      border: `1px solid ${isSelected ? activeColor : '#383838'}`,
+                      borderRadius: '3px',
+                      padding: '5px 8px',
+                      color: isSelected ? '#ffffff' : '#adadad',
                       fontSize: '11px',
-                      fontWeight: isSelected ? '700' : '500',
+                      fontWeight: isSelected ? '600' : '400',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
                       cursor: 'pointer',
-                      transition: 'all 0.15s ease'
+                      transition: 'all 0.12s ease'
                     }}
                   >
-                    <Icon size={14} color={isSelected ? activeColor : 'var(--text-muted)'} />
+                    <Icon size={13} color={isSelected ? activeColor : '#8a8a8a'} />
                     <span>{t?.tickets?.areaTypes?.[typeKey] || typeKey}</span>
                   </button>
                 );
@@ -260,10 +262,10 @@ export const CampusLocationSelector = ({
           </div>
 
           {/* 2. Block / Building & Floor Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {/* Block / Wing */}
             <div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <div style={{ fontSize: '10px', color: '#8a8a8a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 2. {t?.tickets?.block || 'Building / Block'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -275,13 +277,13 @@ export const CampusLocationSelector = ({
                       type="button"
                       onClick={() => handleUpdate(bKey, floor, areaType, specificSpot, customRoom)}
                       style={{
-                        background: isSelected ? 'rgba(56, 189, 248, 0.2)' : 'rgba(30, 41, 59, 0.5)',
-                        border: `1px solid ${isSelected ? '#38bdf8' : 'rgba(255,255,255,0.08)'}`,
-                        borderRadius: '6px',
-                        padding: '5px 8px',
-                        color: isSelected ? '#38bdf8' : 'var(--text-muted)',
+                        background: isSelected ? '#333333' : '#1f1f1f',
+                        border: `1px solid ${isSelected ? '#0f6cbd' : '#383838'}`,
+                        borderRadius: '3px',
+                        padding: '4px 7px',
+                        color: isSelected ? '#ffffff' : '#adadad',
                         fontSize: '11px',
-                        fontWeight: isSelected ? '700' : 'normal',
+                        fontWeight: isSelected ? '600' : '400',
                         cursor: 'pointer'
                       }}
                     >
@@ -294,7 +296,7 @@ export const CampusLocationSelector = ({
 
             {/* Floor */}
             <div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <div style={{ fontSize: '10px', color: '#8a8a8a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 3. {t?.tickets?.floor || 'Floor'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -306,13 +308,13 @@ export const CampusLocationSelector = ({
                       type="button"
                       onClick={() => handleUpdate(block, fKey, areaType, specificSpot, customRoom)}
                       style={{
-                        background: isSelected ? 'rgba(167, 139, 250, 0.2)' : 'rgba(30, 41, 59, 0.5)',
-                        border: `1px solid ${isSelected ? '#a78bfa' : 'rgba(255,255,255,0.08)'}`,
-                        borderRadius: '6px',
-                        padding: '5px 8px',
-                        color: isSelected ? '#a78bfa' : 'var(--text-muted)',
+                        background: isSelected ? '#333333' : '#1f1f1f',
+                        border: `1px solid ${isSelected ? '#5b5fc7' : '#383838'}`,
+                        borderRadius: '3px',
+                        padding: '4px 7px',
+                        color: isSelected ? '#ffffff' : '#adadad',
                         fontSize: '11px',
-                        fontWeight: isSelected ? '700' : 'normal',
+                        fontWeight: isSelected ? '600' : '400',
                         cursor: 'pointer'
                       }}
                     >
@@ -326,12 +328,12 @@ export const CampusLocationSelector = ({
 
           {/* 3. Specific Spot / Room Details */}
           <div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '10px', color: '#8a8a8a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               4. {t?.tickets?.specificLocation || 'Room # or Specific Section'}
             </div>
 
             {spots.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '6px' }}>
                 {spots.map(spotName => {
                   const isSelected = specificSpot === spotName;
                   return (
@@ -343,13 +345,13 @@ export const CampusLocationSelector = ({
                         handleUpdate(block, floor, areaType, nextSpot, '');
                       }}
                       style={{
-                        background: isSelected ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${isSelected ? '#34d399' : 'rgba(255,255,255,0.1)'}`,
-                        borderRadius: '6px',
-                        padding: '4px 9px',
-                        color: isSelected ? '#34d399' : '#cbd5e1',
+                        background: isSelected ? 'rgba(16, 124, 65, 0.2)' : '#1f1f1f',
+                        border: `1px solid ${isSelected ? '#107c41' : '#383838'}`,
+                        borderRadius: '3px',
+                        padding: '3px 7px',
+                        color: isSelected ? '#62c789' : '#adadad',
                         fontSize: '11px',
-                        fontWeight: isSelected ? '700' : 'normal',
+                        fontWeight: isSelected ? '600' : '400',
                         cursor: 'pointer'
                       }}
                     >
@@ -378,34 +380,36 @@ export const CampusLocationSelector = ({
               }}
               style={{
                 width: '100%',
-                background: 'rgba(15, 23, 42, 0.7)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '8px',
-                padding: '8px 10px',
-                color: '#fff',
-                fontSize: '12px'
+                background: '#1f1f1f',
+                border: '1px solid #383838',
+                borderRadius: '4px',
+                padding: '7px 10px',
+                color: '#ffffff',
+                fontSize: '12px',
+                outline: 'none',
+                boxSizing: 'border-box'
               }}
             />
           </div>
 
           {/* 4. Live Composed Preview Badge */}
           <div style={{
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1px dashed rgba(52, 211, 153, 0.4)',
-            borderRadius: '8px',
-            padding: '8px 12px',
+            background: '#1a271f',
+            border: '1px solid #107c41',
+            borderRadius: '3px',
+            padding: '6px 10px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '8px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>{t?.tickets?.locationPreview || 'Selected Location'}:</span>
-              <strong style={{ color: '#34d399' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
+              <span style={{ color: '#8a8a8a' }}>{t?.tickets?.locationPreview || 'Selected Location'}:</span>
+              <strong style={{ color: '#62c789' }}>
                 {value || constructLocationString(block, floor, areaType, specificSpot, customRoom)}
               </strong>
             </div>
-            <Sparkles size={14} color="#34d399" />
+            <Sparkles size={13} color="#62c789" />
           </div>
         </div>
       )}

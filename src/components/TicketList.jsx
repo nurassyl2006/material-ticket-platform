@@ -120,38 +120,38 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     switch (status) {
       case 'pending':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(245, 158, 11, 0.2)', color: 'var(--warning)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
-            <Clock size={13} /> {t.tickets.status.pending}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#2d2314', border: '1px solid #573a11', color: '#f59e0b', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+            <Clock size={12} /> {t.tickets.status.pending}
           </span>
         );
       case 'in_progress':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
-            <Clock size={13} /> {t.tickets.status.in_progress}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#142436', border: '1px solid #154e7d', color: '#70b5f9', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+            <Clock size={12} /> {t.tickets.status.in_progress}
           </span>
         );
       case 'issued':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
-            <CheckCircle2 size={13} /> {t.tickets.status.issued}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#122a1c', border: '1px solid #136136', color: '#62c789', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+            <CheckCircle2 size={12} /> {t.tickets.status.issued}
           </span>
         );
       case 'purchasing':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
-            <ShoppingBag size={13} /> {t.tickets.status.purchasing}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#231f2d', border: '1px solid #3d3154', color: '#c4b5fd', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+            <ShoppingBag size={12} /> {t.tickets.status.purchasing}
           </span>
         );
       case 'completed':
       case 'delivered':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(147, 51, 234, 0.2)', color: '#c084fc', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
-            <CheckCircle size={13} /> {t.tickets.status.completed}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#122a1c', border: '1px solid #136136', color: '#62c789', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+            <CheckCircle size={12} /> {t.tickets.status.completed}
           </span>
         );
       default:
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(148, 163, 184, 0.2)', color: '#94a3b8', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#252525', border: '1px solid #383838', color: '#adadad', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
             {status}
           </span>
         );
@@ -163,31 +163,31 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     const subcat = typeof ticket === 'object' ? ticket?.subcategory : null;
     const d = resolveDepartment(rawDept);
     return (
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
         <span style={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: '4px',
-          background: `${d.color}20`,
-          color: '#fff',
-          border: `1px solid ${d.color}45`,
-          padding: '3px 8px',
-          borderRadius: '8px',
+          background: '#202020',
+          color: '#f3f2f1',
+          border: '1px solid #383838',
+          padding: '2px 6px',
+          borderRadius: '3px',
           fontSize: '11px',
-          fontWeight: '700'
+          fontWeight: '600'
         }}>
           <span>{d.emoji}</span>
           <span>{d.translations?.[lang] || d.name}</span>
         </span>
         {subcat && (
           <span style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            color: '#e2e8f0',
-            padding: '2px 7px',
-            borderRadius: '6px',
+            background: '#252525',
+            border: '1px solid #383838',
+            color: '#adadad',
+            padding: '2px 6px',
+            borderRadius: '3px',
             fontSize: '11px',
-            fontWeight: '600'
+            fontWeight: '500'
           }}>
             {subcat}
           </span>
@@ -198,14 +198,14 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
   const getUrgencyBadge = (urgency) => {
     const map = {
-      low: { bg: 'rgba(148, 163, 184, 0.2)', color: '#94a3b8' },
-      medium: { bg: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa' },
-      high: { bg: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24' },
-      critical: { bg: 'rgba(239, 68, 68, 0.25)', color: '#f87171' }
+      low: { bg: '#252525', border: '#383838', color: '#adadad' },
+      medium: { bg: '#142436', border: '#154e7d', color: '#70b5f9' },
+      high: { bg: '#2d2314', border: '#573a11', color: '#f59e0b' },
+      critical: { bg: '#331518', border: '#63181d', color: '#f87171' }
     };
     const style = map[urgency] || map.low;
     return (
-      <span style={{ background: style.bg, color: style.color, padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
+      <span style={{ background: style.bg, border: `1px solid ${style.border}`, color: style.color, padding: '2px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
         {t.tickets.urgencies[urgency] || urgency}
       </span>
     );
@@ -318,27 +318,28 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             {role === 'teacher' ? (t.nav.myTickets || 'My Requests') : t.tickets.title}
           </h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              Showing {filteredTickets.length} of {authorizedTickets.length} authorized requests
+            <span style={{ fontSize: '12px', color: '#adadad' }}>
+              Showing {filteredTickets.length} of {authorizedTickets.length} requests
             </span>
             <span style={{
               fontSize: '11px',
-              padding: '2px 8px',
-              borderRadius: '8px',
-              background: 'rgba(99, 102, 241, 0.15)',
-              color: '#818cf8',
-              fontWeight: '700'
+              padding: '2px 6px',
+              borderRadius: '3px',
+              background: '#252525',
+              border: '1px solid #383838',
+              color: '#adadad',
+              fontWeight: '600'
             }}>
               🔒 {t.auth.scopeLabel} {role === 'teacher' ? t.auth.onlyMyTickets : (role === 'it_support' ? t.auth.onlyIT : (role === 'cleaning' ? t.auth.onlyCleaning : (role === 'engineer' ? t.auth.onlyEngineering : (role === 'storage_manager' ? t.auth.onlyStorage : (role === 'facilities_manager' ? t.auth.onlyFacilities : t.auth.allOperations)))))}
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: '100%', maxWidth: 'max-content' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: '100%', maxWidth: 'max-content' }}>
           
           {/* Search */}
           <div style={{ position: 'relative', minWidth: '220px', flex: '1' }}>
-            <Search size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+            <Search size={14} color="#adadad" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="text"
               placeholder={t.tickets.searchPlaceholder}
@@ -346,36 +347,38 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               onChange={e => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                background: 'rgba(30, 41, 59, 0.6)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '10px',
-                padding: '8px 12px 8px 34px',
-                color: '#fff',
-                fontSize: '12px'
+                background: '#202020',
+                border: '1px solid #383838',
+                borderRadius: '4px',
+                padding: '6px 12px 6px 30px',
+                color: '#f3f2f1',
+                fontSize: '12px',
+                height: '32px'
               }}
             />
           </div>
 
           {/* Status Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(30, 41, 59, 0.6)', padding: '6px 10px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-            <Filter size={15} color="var(--text-muted)" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#202020', padding: '0 8px', borderRadius: '4px', border: '1px solid #383838', height: '32px' }}>
+            <Filter size={14} color="#adadad" />
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
               style={{
                 background: 'transparent',
-                color: '#fff',
+                color: '#f3f2f1',
                 border: 'none',
                 fontSize: '12px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                outline: 'none'
               }}
             >
-              <option value="all" style={{ background: '#1e293b' }}>{t.tickets.filterAll}</option>
-              <option value="pending" style={{ background: '#1e293b' }}>{t.tickets.status.pending}</option>
-              <option value="in_progress" style={{ background: '#1e293b' }}>{t.tickets.status.in_progress}</option>
-              <option value="issued" style={{ background: '#1e293b' }}>{t.tickets.status.issued}</option>
-              <option value="purchasing" style={{ background: '#1e293b' }}>{t.tickets.status.purchasing}</option>
-              <option value="completed" style={{ background: '#1e293b' }}>{t.tickets.status.completed}</option>
+              <option value="all" style={{ background: '#252525' }}>{t.tickets.filterAll}</option>
+              <option value="pending" style={{ background: '#252525' }}>{t.tickets.status.pending}</option>
+              <option value="in_progress" style={{ background: '#252525' }}>{t.tickets.status.in_progress}</option>
+              <option value="issued" style={{ background: '#252525' }}>{t.tickets.status.issued}</option>
+              <option value="purchasing" style={{ background: '#252525' }}>{t.tickets.status.purchasing}</option>
+              <option value="completed" style={{ background: '#252525' }}>{t.tickets.status.completed}</option>
             </select>
           </div>
 
@@ -383,12 +386,12 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            background: autoTranslateTickets ? 'rgba(56, 189, 248, 0.12)' : 'rgba(30, 41, 59, 0.6)',
-            border: autoTranslateTickets ? '1px solid rgba(56, 189, 248, 0.4)' : '1px solid var(--border-color)',
-            padding: '4px 8px',
-            borderRadius: '10px',
-            transition: 'all 0.2s ease'
+            gap: '6px',
+            background: '#202020',
+            border: autoTranslateTickets ? '1px solid #0f6cbd' : '1px solid #383838',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            height: '32px'
           }}>
             <button
               type="button"
@@ -396,72 +399,72 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: autoTranslateTickets ? '#38bdf8' : 'var(--text-muted)',
+                color: autoTranslateTickets ? '#70b5f9' : '#adadad',
                 fontSize: '12px',
-                fontWeight: '700',
+                fontWeight: '600',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '5px'
+                gap: '4px'
               }}
               title={t.translator?.autoTranslateHelp || 'Auto-translates English teacher requests to Russian/Kazakh'}
             >
-              <Globe size={14} color={autoTranslateTickets ? '#38bdf8' : 'var(--text-muted)'} />
-              <span>{autoTranslateTickets ? (t.translator?.autoTranslateOn || 'Auto-Translate: ON') : (t.translator?.autoTranslateOff || 'Auto-Translate: OFF')}</span>
+              <Globe size={13} color={autoTranslateTickets ? '#0f6cbd' : '#adadad'} />
+              <span>{autoTranslateTickets ? 'Auto-Translate: ON' : 'Auto-Translate: OFF'}</span>
             </button>
 
-            {/* Target language pill selector */}
-            <div style={{ display: 'flex', gap: '2px', background: 'rgba(15, 23, 42, 0.7)', borderRadius: '6px', padding: '2px' }}>
+            {/* Target language selector */}
+            <div style={{ display: 'flex', gap: '2px', background: '#252525', borderRadius: '2px', padding: '1px' }}>
               <button
                 type="button"
                 onClick={() => setTranslatorTargetLang('ru')}
                 style={{
-                  background: translatorTargetLang === 'ru' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
-                  border: translatorTargetLang === 'ru' ? '1px solid #38bdf8' : 'none',
-                  color: translatorTargetLang === 'ru' ? '#fff' : 'var(--text-muted)',
-                  borderRadius: '4px',
+                  background: translatorTargetLang === 'ru' ? '#0f6cbd' : 'transparent',
+                  border: 'none',
+                  color: translatorTargetLang === 'ru' ? '#fff' : '#adadad',
+                  borderRadius: '2px',
                   padding: '2px 5px',
                   fontSize: '10px',
-                  fontWeight: '700',
+                  fontWeight: '600',
                   cursor: 'pointer'
                 }}
                 title="Translate to Russian"
               >
-                🇷🇺 RU
+                RU
               </button>
               <button
                 type="button"
                 onClick={() => setTranslatorTargetLang('kk')}
                 style={{
-                  background: translatorTargetLang === 'kk' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
-                  border: translatorTargetLang === 'kk' ? '1px solid #38bdf8' : 'none',
-                  color: translatorTargetLang === 'kk' ? '#fff' : 'var(--text-muted)',
-                  borderRadius: '4px',
+                  background: translatorTargetLang === 'kk' ? '#0f6cbd' : 'transparent',
+                  border: 'none',
+                  color: translatorTargetLang === 'kk' ? '#fff' : '#adadad',
+                  borderRadius: '2px',
                   padding: '2px 5px',
                   fontSize: '10px',
-                  fontWeight: '700',
+                  fontWeight: '600',
                   cursor: 'pointer'
                 }}
                 title="Translate to Kazakh"
               >
-                🇰🇿 KK
+                KK
               </button>
               <button
                 type="button"
                 onClick={() => setTranslatorTargetLang('en')}
                 style={{
-                  background: translatorTargetLang === 'en' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
-                  border: translatorTargetLang === 'en' ? '1px solid #38bdf8' : 'none',
-                  color: translatorTargetLang === 'en' ? '#fff' : 'var(--text-muted)',
-                  borderRadius: '4px',
+                  background: translatorTargetLang === 'en' ? '#0f6cbd' : 'transparent',
+                  border: 'none',
+                  color: translatorTargetLang === 'en' ? '#fff' : '#adadad',
+                  borderRadius: '2px',
                   padding: '2px 5px',
                   fontSize: '10px',
-                  fontWeight: '700',
+                  fontWeight: '600',
                   cursor: 'pointer'
                 }}
-                title="Translate to English"
+                title="Keep Original English"
               >
-                🇬🇧 EN
+                EN
               </button>
             </div>
           </div>
@@ -471,21 +474,22 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             <button
               onClick={onOpenNewTicket}
               style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                color: '#fff',
-                padding: '8px 14px',
-                borderRadius: '10px',
-                fontSize: '13px',
-                fontWeight: '700',
+                background: '#0f6cbd',
+                color: '#ffffff',
+                padding: '6px 14px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: '600',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                boxShadow: 'var(--shadow-glow)',
+                border: '1px solid #115ea3',
                 cursor: 'pointer',
-                border: 'none'
+                boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                transition: 'background 0.15s ease'
               }}
             >
-              <Plus size={16} /> {t.nav.newTicket}
+              <Plus size={15} /> {t.nav.newTicket}
             </button>
           )}
 
@@ -493,7 +497,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
       </div>
 
       {/* Department Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
               {departments.map(dept => {
                 const isActive = deptFilter === dept.id;
                 const count = getDeptCount(dept.id);
@@ -502,29 +506,30 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                     key={dept.id}
                     onClick={() => setDeptFilter(dept.id)}
                     style={{
-                      padding: '6px 12px',
-                      borderRadius: '10px',
+                      padding: '4px 10px',
+                      borderRadius: '4px',
                       fontSize: '12px',
-                      fontWeight: '700',
+                      fontWeight: isActive ? '600' : '400',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
                       whiteSpace: 'nowrap',
-                      border: isActive ? `1px solid ${dept.color}` : '1px solid var(--border-color)',
-                      background: isActive ? `${dept.color}25` : 'rgba(30, 41, 59, 0.5)',
-                      color: isActive ? '#fff' : 'var(--text-muted)',
+                      border: isActive ? `1px solid ${dept.color}` : '1px solid #383838',
+                      background: isActive ? '#333333' : '#242424',
+                      color: isActive ? '#ffffff' : '#adadad',
                       cursor: 'pointer',
-                      transition: 'all 0.15s ease'
+                      transition: 'all 0.12s ease'
                     }}
                   >
-                    <span style={{ fontSize: '14px', lineHeight: 1 }}>{dept.emoji}</span>
+                    <span style={{ fontSize: '13px', lineHeight: 1 }}>{dept.emoji}</span>
                     {dept.label}
                     <span style={{ 
-                      background: isActive ? dept.color : 'rgba(255,255,255,0.1)', 
-                      color: isActive ? '#000' : '#fff', 
-                      padding: '1px 6px', 
-                      borderRadius: '10px', 
-                      fontSize: '10px' 
+                      background: isActive ? '#0f6cbd' : '#333333', 
+                      color: '#ffffff', 
+                      padding: '1px 5px', 
+                      borderRadius: '3px', 
+                      fontSize: '10px',
+                      fontWeight: '600' 
                     }}>
                       {count}
                     </span>
@@ -535,15 +540,15 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
       {/* Location Area Quick-Filters */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', padding: '2px 0' }}>
-        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginRight: '4px' }}>
-          <MapPin size={12} color="var(--primary)" />
+        <span style={{ fontSize: '11px', color: '#8a8a8a', display: 'flex', alignItems: 'center', gap: '4px', marginRight: '4px' }}>
+          <MapPin size={12} color="#0f6cbd" />
           {t?.tickets?.areaType || 'Location'}:
         </span>
         {[
           { id: 'all', label: t?.tickets?.locationFilters?.all || 'All Areas', icon: MapPin },
-          { id: 'restroom', label: t?.tickets?.locationFilters?.restrooms || 'Restrooms', icon: Droplets, color: '#a78bfa' },
-          { id: 'corridor', label: t?.tickets?.locationFilters?.corridors || 'Corridors', icon: Footprints, color: '#34d399' },
-          { id: 'classroom', label: t?.tickets?.locationFilters?.classrooms || 'Classrooms', icon: DoorOpen, color: '#60a5fa' }
+          { id: 'restroom', label: t?.tickets?.locationFilters?.restrooms || 'Restrooms', icon: Droplets, color: '#5b5fc7' },
+          { id: 'corridor', label: t?.tickets?.locationFilters?.corridors || 'Corridors', icon: Footprints, color: '#107c41' },
+          { id: 'classroom', label: t?.tickets?.locationFilters?.classrooms || 'Classrooms', icon: DoorOpen, color: '#0f6cbd' }
         ].map(locItem => {
           const isSelected = locationFilter === locItem.id;
           const LocIcon = locItem.icon;
@@ -552,21 +557,21 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               key={locItem.id}
               onClick={() => setLocationFilter(locItem.id)}
               style={{
-                padding: '4px 10px',
-                borderRadius: '8px',
+                padding: '3px 8px',
+                borderRadius: '3px',
                 fontSize: '11px',
-                fontWeight: isSelected ? '700' : '500',
+                fontWeight: isSelected ? '600' : '400',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                border: isSelected ? `1px solid ${locItem.color || 'var(--primary)'}` : '1px solid rgba(255,255,255,0.08)',
-                background: isSelected ? (locItem.color ? `${locItem.color}25` : 'rgba(99, 102, 241, 0.25)') : 'rgba(15, 23, 42, 0.4)',
-                color: isSelected ? '#fff' : 'var(--text-muted)',
+                border: isSelected ? '1px solid #0f6cbd' : '1px solid #383838',
+                background: isSelected ? 'rgba(15, 108, 189, 0.2)' : '#242424',
+                color: isSelected ? '#ffffff' : '#adadad',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease'
+                transition: 'all 0.12s ease'
               }}
             >
-              <LocIcon size={12} color={isSelected ? (locItem.color || 'var(--primary)') : 'var(--text-muted)'} />
+              <LocIcon size={12} color={isSelected ? '#0f6cbd' : '#8a8a8a'} />
               {locItem.label}
             </button>
           );

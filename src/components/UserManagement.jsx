@@ -307,47 +307,47 @@ export const UserManagement = () => {
       
       {/* Header Banner */}
       <div className="glass-panel" style={{
-        padding: '24px',
-        borderRadius: '20px',
-        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)',
-        border: '1px solid var(--border-color)',
+        padding: '16px 20px',
+        borderRadius: '4px',
+        background: '#242424',
+        border: '1px solid #383838',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '16px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+            width: '38px',
+            height: '38px',
+            borderRadius: '4px',
+            background: '#0f6cbd',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 20px rgba(99, 102, 241, 0.35)'
+            boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
           }}>
-            <ShieldCheck size={28} color="#ffffff" />
+            <ShieldCheck size={22} color="#ffffff" />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '22px', fontWeight: '800', margin: 0, color: '#fff' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: '#f3f2f1' }}>
                 {lang === 'ru' ? 'Управление персоналом и ролями' : lang === 'kk' ? 'Қызметкерлер мен рөлдерді басқару' : 'Staff & Role Management'}
               </h1>
               <span style={{
-                background: 'rgba(99, 102, 241, 0.2)',
-                color: '#818cf8',
-                border: '1px solid rgba(99, 102, 241, 0.4)',
+                background: 'rgba(15, 108, 189, 0.2)',
+                color: '#70b5f9',
+                border: '1px solid #0f6cbd',
                 padding: '2px 8px',
-                borderRadius: '6px',
+                borderRadius: '3px',
                 fontSize: '11px',
-                fontWeight: '700'
+                fontWeight: '600'
               }}>
                 Director Only
               </span>
             </div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#adadad' }}>
               {lang === 'ru' 
                 ? 'Назначайте роли, контролируйте права доступа отделов и создавайте аккаунты сотрудников школы.' 
                 : lang === 'kk' 
@@ -357,47 +357,32 @@ export const UserManagement = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={() => syncWithDb()}
+            className="fluent-btn-secondary"
             style={{
-              padding: '10px 14px',
-              borderRadius: '12px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-main)',
-              fontSize: '13px',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer'
+              padding: '6px 12px',
+              borderRadius: '3px',
+              fontSize: '12px'
             }}
             title="Refresh Users from Database"
           >
-            <RefreshCw size={15} />
-            {lang === 'ru' ? 'Обновить' : lang === 'kk' ? 'Жаңарту' : 'Refresh'}
+            <RefreshCw size={13} />
+            <span>{lang === 'ru' ? 'Обновить' : lang === 'kk' ? 'Жаңарту' : 'Refresh'}</span>
           </button>
 
           <button
             onClick={() => setIsAddModalOpen(true)}
+            className="fluent-btn-primary"
             style={{
-              padding: '10px 18px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
-              border: 'none',
-              color: '#ffffff',
-              fontSize: '13px',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)'
+              padding: '6px 14px',
+              borderRadius: '4px',
+              fontSize: '12px'
             }}
           >
-            <UserPlus size={16} />
-            {lang === 'ru' ? 'Добавить сотрудника' : lang === 'kk' ? 'Қызметкер қосу' : 'Add Staff Member'}
+            <UserPlus size={15} />
+            <span>{lang === 'ru' ? 'Добавить сотрудника' : lang === 'kk' ? 'Қызметкер қосу' : 'Add Staff Member'}</span>
           </button>
         </div>
       </div>
@@ -406,7 +391,7 @@ export const UserManagement = () => {
       {actionSuccess && (
         <div style={{
           padding: '12px 18px',
-          borderRadius: '12px',
+          borderRadius: '4px',
           background: 'rgba(16, 185, 129, 0.15)',
           border: '1px solid rgba(16, 185, 129, 0.4)',
           color: '#34d399',
@@ -424,7 +409,7 @@ export const UserManagement = () => {
       {actionError && (
         <div style={{
           padding: '12px 18px',
-          borderRadius: '12px',
+          borderRadius: '4px',
           background: 'rgba(239, 68, 68, 0.15)',
           border: '1px solid rgba(239, 68, 68, 0.4)',
           color: '#f87171',
@@ -531,7 +516,7 @@ export const UserManagement = () => {
             style={{
               width: '100%',
               padding: '10px 14px 10px 36px',
-              borderRadius: '12px',
+              borderRadius: '4px',
               background: 'rgba(15, 23, 42, 0.6)',
               border: '1px solid var(--border-color)',
               color: '#fff',
@@ -549,7 +534,7 @@ export const UserManagement = () => {
             onChange={(e) => setRoleFilter(e.target.value)}
             style={{
               padding: '10px 14px',
-              borderRadius: '12px',
+              borderRadius: '4px',
               background: 'rgba(15, 23, 42, 0.6)',
               border: '1px solid var(--border-color)',
               color: '#fff',
@@ -788,8 +773,8 @@ export const UserManagement = () => {
                 <div style={{
                   width: '40px',
                   height: '40px',
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #6366f1, #3b82f6)',
+                  borderRadius: '4px',
+                  background: '#0f6cbd',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -833,7 +818,7 @@ export const UserManagement = () => {
                   style={{
                     width: '100%',
                     padding: '10px 14px',
-                    borderRadius: '12px',
+                    borderRadius: '4px',
                     background: 'rgba(15, 23, 42, 0.6)',
                     border: '1px solid var(--border-color)',
                     color: '#fff',
@@ -856,7 +841,7 @@ export const UserManagement = () => {
                   style={{
                     width: '100%',
                     padding: '10px 14px',
-                    borderRadius: '12px',
+                    borderRadius: '4px',
                     background: 'rgba(15, 23, 42, 0.6)',
                     border: '1px solid var(--border-color)',
                     color: '#fff',
@@ -877,7 +862,7 @@ export const UserManagement = () => {
                     style={{
                       width: '100%',
                       padding: '10px 14px',
-                      borderRadius: '12px',
+                      borderRadius: '4px',
                       background: 'rgba(15, 23, 42, 0.8)',
                       border: '1px solid var(--border-color)',
                       color: '#fff',
@@ -908,7 +893,7 @@ export const UserManagement = () => {
                     style={{
                       width: '100%',
                       padding: '10px 14px',
-                      borderRadius: '12px',
+                      borderRadius: '4px',
                       background: 'rgba(15, 23, 42, 0.6)',
                       border: '1px solid var(--border-color)',
                       color: '#fff',
@@ -932,7 +917,7 @@ export const UserManagement = () => {
                   style={{
                     width: '100%',
                     padding: '10px 14px',
-                    borderRadius: '12px',
+                    borderRadius: '4px',
                     background: 'rgba(15, 23, 42, 0.6)',
                     border: '1px solid var(--border-color)',
                     color: '#fff',
@@ -948,7 +933,7 @@ export const UserManagement = () => {
                   onClick={() => setIsAddModalOpen(false)}
                   style={{
                     padding: '10px 16px',
-                    borderRadius: '12px',
+                    borderRadius: '4px',
                     background: 'transparent',
                     border: '1px solid var(--border-color)',
                     color: 'var(--text-muted)',
@@ -965,8 +950,8 @@ export const UserManagement = () => {
                   disabled={loadingAction === 'create'}
                   style={{
                     padding: '10px 20px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
+                    borderRadius: '4px',
+                    background: '#0f6cbd',
                     border: 'none',
                     color: '#ffffff',
                     fontSize: '13px',
@@ -1038,7 +1023,7 @@ export const UserManagement = () => {
                   style={{
                     width: '100%',
                     padding: '10px 40px 10px 14px',
-                    borderRadius: '12px',
+                    borderRadius: '4px',
                     background: 'rgba(15, 23, 42, 0.6)',
                     border: '1px solid var(--border-color)',
                     color: '#fff',
@@ -1087,7 +1072,7 @@ export const UserManagement = () => {
                   style={{
                     padding: '8px 18px',
                     borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    background: '#0f6cbd',
                     border: 'none',
                     color: '#fff',
                     fontSize: '13px',

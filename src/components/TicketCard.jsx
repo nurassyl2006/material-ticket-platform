@@ -151,26 +151,30 @@ export const TicketCard = ({
     <div 
       className="glass-panel"
       style={{
-        padding: '16px 20px',
+        padding: '14px 18px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
-        borderLeft: `4px solid ${
-          targetDept === 'it' ? '#38bdf8' :
-          targetDept === 'cleaning' ? '#34d399' :
-          targetDept === 'facilities' ? '#a78bfa' :
-          targetDept === 'security' ? '#f87171' : '#fbbf24'
+        gap: '10px',
+        background: '#292929',
+        border: '1px solid #383838',
+        borderRadius: '4px',
+        borderLeft: `3px solid ${
+          targetDept === 'it' ? '#0f6cbd' :
+          targetDept === 'cleaning' ? '#107c41' :
+          targetDept === 'facilities' ? '#5b5fc7' :
+          targetDept === 'security' ? '#d13438' : '#d83b01'
         }`,
-        position: 'relative'
+        position: 'relative',
+        boxShadow: 'var(--shadow-depth-2)'
       }}
     >
       {/* Top Row: Department, Title, Urgency, Status & Translation Switcher */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, minWidth: '240px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '240px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {getDepartmentBadge(ticket)}
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>#{ticket.id}</span>
+            <span style={{ fontSize: '11px', color: '#797775', fontWeight: '600' }}>#{ticket.id}</span>
             {getUrgencyBadge(ticket.urgency)}
 
             {/* Translation Badge & Toggle */}
@@ -179,13 +183,13 @@ export const TicketCard = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: 'rgba(56, 189, 248, 0.15)',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-                color: '#38bdf8',
-                padding: '2px 7px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '700'
+                background: '#142436',
+                border: '1px solid #154e7d',
+                color: '#70b5f9',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontSize: '10px',
+                fontWeight: '600'
               }}>
                 <Globe size={11} /> {t.translator?.translatedTo || 'Translated to'} {currentLangLabel}
               </span>
@@ -196,11 +200,11 @@ export const TicketCard = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '4px',
-                background: 'rgba(245, 158, 11, 0.15)',
-                color: '#fbbf24',
-                padding: '2px 7px',
-                borderRadius: '6px',
-                fontSize: '11px',
+                background: '#2d2314',
+                color: '#f59e0b',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontSize: '10px',
                 fontWeight: '600'
               }}>
                 <Sparkles size={11} className="animate-spin" /> {t.translator?.translating || 'Translating...'}
@@ -210,14 +214,14 @@ export const TicketCard = ({
 
           {/* Ticket Title */}
           <div>
-            <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', margin: 0, lineHeight: 1.3 }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#f3f2f1', margin: 0, lineHeight: 1.3 }}>
               {displayTitle}
               {ticket.quantity ? ` (${ticket.quantity} ${ticket.unit})` : ''}
             </h3>
 
             {/* Show Original English underneath if translated and requested */}
             {isShowingTranslation && showOriginal && ticket.itemTitle && (
-              <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', marginTop: '3px' }}>
+              <div style={{ fontSize: '12px', color: '#adadad', fontStyle: 'italic', marginTop: '2px' }}>
                 Original: "{ticket.itemTitle}"
               </div>
             )}
@@ -225,8 +229,8 @@ export const TicketCard = ({
         </div>
 
         {/* Status Badge & Translation Quick Controls */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {getStatusBadge(ticket.status)}
           </div>
 
@@ -234,62 +238,62 @@ export const TicketCard = ({
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            background: 'rgba(15, 23, 42, 0.7)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '8px',
-            padding: '2px',
-            gap: '2px'
+            background: '#202020',
+            border: '1px solid #383838',
+            borderRadius: '3px',
+            padding: '1px',
+            gap: '1px'
           }}>
             <button
               type="button"
               title="Перевести на русский"
               onClick={() => handleTranslateTo('ru')}
               style={{
-                background: activeLang === 'ru' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
-                border: activeLang === 'ru' ? '1px solid #38bdf8' : 'none',
-                color: activeLang === 'ru' ? '#fff' : 'var(--text-muted)',
-                borderRadius: '6px',
-                padding: '2px 6px',
+                background: activeLang === 'ru' ? '#0f6cbd' : 'transparent',
+                border: 'none',
+                color: activeLang === 'ru' ? '#fff' : '#adadad',
+                borderRadius: '2px',
+                padding: '2px 5px',
                 fontSize: '10px',
-                fontWeight: '700',
+                fontWeight: '600',
                 cursor: 'pointer'
               }}
             >
-              🇷🇺 RU
+              RU
             </button>
             <button
               type="button"
               title="Қазақшаға аудару"
               onClick={() => handleTranslateTo('kk')}
               style={{
-                background: activeLang === 'kk' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
-                border: activeLang === 'kk' ? '1px solid #38bdf8' : 'none',
-                color: activeLang === 'kk' ? '#fff' : 'var(--text-muted)',
-                borderRadius: '6px',
-                padding: '2px 6px',
+                background: activeLang === 'kk' ? '#0f6cbd' : 'transparent',
+                border: 'none',
+                color: activeLang === 'kk' ? '#fff' : '#adadad',
+                borderRadius: '2px',
+                padding: '2px 5px',
                 fontSize: '10px',
-                fontWeight: '700',
+                fontWeight: '600',
                 cursor: 'pointer'
               }}
             >
-              🇰🇿 KK
+              KK
             </button>
             <button
               type="button"
               title="Original text"
               onClick={() => handleTranslateTo('orig')}
               style={{
-                background: activeLang === 'orig' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                border: activeLang === 'orig' ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
-                color: activeLang === 'orig' ? '#fff' : 'var(--text-muted)',
-                borderRadius: '6px',
-                padding: '2px 6px',
+                background: activeLang === 'orig' ? '#333333' : 'transparent',
+                border: 'none',
+                color: activeLang === 'orig' ? '#fff' : '#adadad',
+                borderRadius: '2px',
+                padding: '2px 5px',
                 fontSize: '10px',
-                fontWeight: '700',
+                fontWeight: '600',
                 cursor: 'pointer'
               }}
             >
-              🇬🇧 Orig
+              EN
             </button>
 
             {isShowingTranslation && (
@@ -300,16 +304,14 @@ export const TicketCard = ({
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: showOriginal ? '#38bdf8' : 'var(--text-muted)',
-                  borderRadius: '6px',
-                  padding: '2px 5px',
+                  color: showOriginal ? '#0f6cbd' : '#797775',
+                  padding: '2px 4px',
                   fontSize: '10px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center'
+                  fontWeight: '600',
+                  cursor: 'pointer'
                 }}
               >
-                <RotateCcw size={10} />
+                {showOriginal ? 'Hide' : 'Orig'}
               </button>
             )}
           </div>
@@ -317,69 +319,75 @@ export const TicketCard = ({
 
       </div>
 
-      {/* Facilities Furniture Moving Info Banner (if present) */}
+      {/* Description */}
+      {displayDesc && (
+        <p style={{ fontSize: '13px', color: '#adadad', margin: 0, lineHeight: 1.45 }}>
+          {displayDesc}
+        </p>
+      )}
+
+      {/* Relocation Logistics info (Fluent style) */}
       {ticket.moveDetails && (
         <div style={{
-          background: 'rgba(167, 139, 250, 0.1)',
-          border: '1px dashed rgba(167, 139, 250, 0.4)',
-          padding: '8px 12px',
-          borderRadius: '8px',
+          background: '#242424',
+          border: '1px solid #383838',
+          borderLeft: '3px solid #5b5fc7',
+          padding: '6px 10px',
+          borderRadius: '3px',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
-          fontSize: '12px',
-          color: '#e2e8f0',
+          gap: '8px',
+          fontSize: '11px',
+          color: '#d1d1d1',
           flexWrap: 'wrap'
         }}>
-          <Truck size={16} color="#a78bfa" />
-          <span><strong>Relocation:</strong> {ticket.moveDetails.fromRoom} ➔ <strong style={{ color: '#a78bfa' }}>{ticket.moveDetails.toRoom}</strong></span>
-          {ticket.moveDetails.items && <span style={{ color: 'var(--text-muted)' }}>({ticket.moveDetails.items})</span>}
+          <Truck size={14} color="#5b5fc7" />
+          <span><strong>Relocation:</strong> {ticket.moveDetails.fromRoom} ➔ <strong style={{ color: '#8b8fe8' }}>{ticket.moveDetails.toRoom}</strong></span>
+          {ticket.moveDetails.items && <span style={{ color: '#8a8a8a' }}>({ticket.moveDetails.items})</span>}
         </div>
       )}
 
-      {/* Description */}
-      {(displayDesc || (showOriginal && ticket.description)) && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {displayDesc && (
-            <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0, lineHeight: 1.4 }}>
-              {displayDesc}
-            </p>
-          )}
-          {isShowingTranslation && showOriginal && ticket.description && ticket.description !== displayDesc && (
-            <div style={{
-              fontSize: '12px',
-              color: '#94a3b8',
-              fontStyle: 'italic',
-              background: 'rgba(15, 23, 42, 0.4)',
-              borderLeft: '2px solid rgba(56, 189, 248, 0.5)',
-              padding: '4px 8px',
-              borderRadius: '4px'
-            }}>
-              Original English: "{ticket.description}"
-            </div>
+      {/* Materials / Purchase info (Fluent style) */}
+      {ticket.requiredMaterials && (
+        <div style={{
+          background: '#242424',
+          border: '1px solid #383838',
+          borderLeft: '3px solid #c19c00',
+          padding: '6px 10px',
+          borderRadius: '3px',
+          fontSize: '11px',
+          color: '#d1d1d1'
+        }}>
+          <span style={{ color: '#e0b500', fontWeight: '600' }}>📦 Materials: </span>
+          <span>{ticket.requiredMaterials}</span>
+          {ticket.estimatedCost && (
+            <span style={{ color: '#e0b500', marginLeft: '6px', fontWeight: '600' }}>
+              (₸{ticket.estimatedCost.toLocaleString()})
+            </span>
           )}
         </div>
       )}
 
-      {/* Attached Request Photos */}
+      {/* Photos Preview (if any) */}
       {ticket.photos && ticket.photos.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>📸 Photos ({ticket.photos.length}):</div>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
-            {ticket.photos.map((imgSrc, idx) => (
-              <img 
-                key={idx} 
-                src={imgSrc} 
-                alt={`ticket-photo-${idx}`}
-                onClick={() => window.open(imgSrc, '_blank')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          <div style={{ fontSize: '10px', color: '#8a8a8a', fontWeight: '600', textTransform: 'uppercase' }}>
+            Attachments ({ticket.photos.length})
+          </div>
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
+            {ticket.photos.map((photo, i) => (
+              <img
+                key={i}
+                src={photo}
+                alt="attachment"
+                onClick={() => window.open(photo, '_blank')}
                 style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '8px',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '3px',
                   objectFit: 'cover',
-                  border: '1px solid var(--border-color)',
-                  cursor: 'pointer',
-                  flexShrink: 0
+                  border: '1px solid #383838',
+                  cursor: 'pointer'
                 }}
               />
             ))}
@@ -387,25 +395,26 @@ export const TicketCard = ({
         </div>
       )}
 
-      {/* Completion Photos */}
+      {/* Completion Photos Proof (Fluent style) */}
       {ticket.completionPhotos && ticket.completionPhotos.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div style={{ fontSize: '11px', color: '#34d399', fontWeight: '600' }}>✅ Completed Work Proof:</div>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
-            {ticket.completionPhotos.map((imgSrc, idx) => (
-              <img 
-                key={idx} 
-                src={imgSrc} 
-                alt={`completion-photo-${idx}`}
-                onClick={() => window.open(imgSrc, '_blank')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+          <div style={{ fontSize: '10px', color: '#107c41', fontWeight: '600', textTransform: 'uppercase' }}>
+            Completion Proof ({ticket.completionPhotos.length})
+          </div>
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
+            {ticket.completionPhotos.map((photo, i) => (
+              <img
+                key={i}
+                src={photo}
+                alt="proof"
+                onClick={() => window.open(photo, '_blank')}
                 style={{
-                  width: '56px',
-                  height: '56px',
-                  borderRadius: '8px',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '3px',
                   objectFit: 'cover',
-                  border: '1px solid #34d399',
-                  cursor: 'pointer',
-                  flexShrink: 0
+                  border: '1px solid #107c41',
+                  cursor: 'pointer'
                 }}
               />
             ))}
@@ -414,10 +423,10 @@ export const TicketCard = ({
       )}
 
       {/* Bottom Row: Metadata & Action Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '10px', marginTop: '4px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderTop: '1px solid #383838', paddingTop: '8px', marginTop: '2px' }}>
         
         {/* Left: Room, Requesting Teacher, Date */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--text-muted)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '11px', color: '#adadad' }}>
           {renderLocationBadge(ticket.roomNumber)}
 
           {(() => {
@@ -429,38 +438,38 @@ export const TicketCard = ({
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {isParentTicket ? (
                   <span style={{
-                    background: 'rgba(168, 85, 247, 0.2)',
-                    color: '#c084fc',
-                    border: '1px solid rgba(168, 85, 247, 0.4)',
-                    padding: '1px 6px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: '700'
+                    background: '#231f2d',
+                    color: '#c4b5fd',
+                    border: '1px solid #3d3154',
+                    padding: '1px 5px',
+                    borderRadius: '2px',
+                    fontSize: '10px',
+                    fontWeight: '600'
                   }}>
                     👨‍👩‍👧 {t.auth?.parentTag || 'Parent'}
                   </span>
                 ) : isGuestTicket ? (
                   <span style={{
-                    background: 'rgba(6, 182, 212, 0.2)',
-                    color: '#38bdf8',
-                    border: '1px solid rgba(6, 182, 212, 0.4)',
-                    padding: '1px 6px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    fontWeight: '700'
+                    background: '#142436',
+                    color: '#70b5f9',
+                    border: '1px solid #154e7d',
+                    padding: '1px 5px',
+                    borderRadius: '2px',
+                    fontSize: '10px',
+                    fontWeight: '600'
                   }}>
                     👤 {t.auth?.guestTag || 'Guest'}
                   </span>
                 ) : (
-                  <User size={13} color="var(--text-muted)" />
+                  <User size={12} color="#adadad" />
                 )}
                 <span>{ticket.teacherName}</span>
                 {cleanPhone && (
                   <span style={{ display: 'inline-flex', gap: '4px', marginLeft: '2px' }}>
-                    <a href={`tel:${cleanPhone}`} title={t.profile?.call || 'Call'} style={{ color: 'var(--accent-emerald)', padding: '2px', display: 'flex', alignItems: 'center' }}>
+                    <a href={`tel:${cleanPhone}`} title={t.profile?.call || 'Call'} style={{ color: '#107c41', padding: '1px', display: 'flex', alignItems: 'center' }}>
                       <PhoneCall size={12} />
                     </a>
-                    <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" title={t.profile?.whatsapp || 'WhatsApp'} style={{ color: '#4ade80', padding: '2px', display: 'flex', alignItems: 'center' }}>
+                    <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" title={t.profile?.whatsapp || 'WhatsApp'} style={{ color: '#62c789', padding: '1px', display: 'flex', alignItems: 'center' }}>
                       <MessageSquare size={12} />
                     </a>
                   </span>
@@ -472,59 +481,36 @@ export const TicketCard = ({
           <span>{t.tickets.createdAt}: {new Date(ticket.createdAt).toLocaleDateString()}</span>
         </div>
 
-        {/* Right: Handler details & Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        {/* Right: Handled by & Action Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           
-          {/* Handled by info */}
           {ticket.assignedWorker && (
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'rgba(15, 23, 42, 0.6)', padding: '4px 8px', borderRadius: '6px' }}>
-              Assigned: <strong style={{ color: '#e2e8f0' }}>{ticket.assignedWorker}</strong>
+            <div style={{ fontSize: '11px', color: '#adadad', background: '#202020', border: '1px solid #383838', padding: '3px 6px', borderRadius: '3px' }}>
+              Assigned: <strong style={{ color: '#f3f2f1' }}>{ticket.assignedWorker}</strong>
               {ticket.purchaseCost ? ` (Cost: ₸${ticket.purchaseCost.toLocaleString()})` : ''}
             </div>
           )}
 
-          {/* Department Processing Button */}
+          {/* Department Processing Button (Fluent Primary) */}
           {canProcessTicket(ticket) && !isCompleted && (
             <button
               onClick={() => onSelectTicket(ticket)}
-              style={{
-                background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                color: '#fff',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 2px 8px rgba(6, 182, 212, 0.3)'
-              }}
+              className="fluent-btn-primary"
+              style={{ height: '28px', padding: '0 12px', fontSize: '12px' }}
             >
               {getProcessButtonLabel(ticket)}
             </button>
           )}
 
-          {/* Mark Completed Button */}
+          {/* Mark Completed Button (Fluent Success) */}
           {canProcessTicket(ticket) && !isCompleted && ticket.status !== 'pending' && (
             <button
               onClick={() => onCompleteTicket(ticket.id)}
-              style={{
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: 'var(--success)',
-                border: '1px solid var(--success)',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
+              className="fluent-btn-primary"
+              style={{ height: '28px', padding: '0 12px', fontSize: '12px', background: '#107c41' }}
             >
-              <CheckCircle2 size={13} /> {t.tickets.markComplete}
+              <CheckCircle2 size={13} />
+              <span>{t.tickets.markComplete}</span>
             </button>
           )}
 
@@ -534,7 +520,7 @@ export const TicketCard = ({
 
       {/* Handler Notes Banner (if any) */}
       {displayNotes && (
-        <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', background: 'rgba(15, 23, 42, 0.4)', padding: '6px 10px', borderRadius: '6px' }}>
+        <div style={{ fontSize: '11px', color: '#adadad', fontStyle: 'italic', background: '#202020', border: '1px solid #383838', padding: '6px 10px', borderRadius: '3px' }}>
           Note: "{displayNotes}"
         </div>
       )}
@@ -542,3 +528,5 @@ export const TicketCard = ({
     </div>
   );
 };
+
+export default TicketCard;

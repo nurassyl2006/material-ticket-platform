@@ -183,10 +183,10 @@ export default function ServerStatusModal({ isOpen, onClose }) {
           maxWidth: '680px',
           maxHeight: '90vh',
           overflowY: 'auto',
-          background: 'linear-gradient(180deg, #0f172a 0%, #090d16 100%)',
-          borderRadius: '18px',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 35px rgba(56, 189, 248, 0.1)',
+          background: '#242424',
+          borderRadius: '6px',
+          border: '1px solid #383838',
+          boxShadow: '0 16px 36px rgba(0, 0, 0, 0.5)',
           display: 'flex',
           flexDirection: 'column'
         }}
@@ -195,31 +195,29 @@ export default function ServerStatusModal({ isOpen, onClose }) {
         {/* Header */}
         <div
           style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            padding: '16px 20px',
+            borderBottom: '1px solid #383838',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'rgba(255, 255, 255, 0.02)'
+            background: '#202020'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '12px',
-                background: isConnected
-                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3))'
-                  : 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.3))',
-                border: `1px solid ${isConnected ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
+                width: '36px',
+                height: '36px',
+                borderRadius: '4px',
+                background: isConnected ? 'rgba(16, 124, 65, 0.15)' : 'rgba(216, 59, 1, 0.15)',
+                border: `1px solid ${isConnected ? '#107c41' : '#d83b01'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: isConnected ? '#34d399' : '#fbbf24'
+                color: isConnected ? '#62c789' : '#ff8a75'
               }}
             >
-              <Database size={22} />
+              <Database size={18} />
             </div>
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#f8fafc', margin: 0 }}>
@@ -459,17 +457,12 @@ export default function ServerStatusModal({ isOpen, onClose }) {
                 <button
                   onClick={handleSaveUrl}
                   disabled={isVerifying}
+                  className="fluent-btn-primary"
                   style={{
-                    padding: '10px 18px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #0284c7, #2563eb)',
-                    border: 'none',
-                    color: '#ffffff',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
                     fontSize: '12px',
-                    fontWeight: '800',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)',
-                    transition: 'all 0.2s ease'
+                    cursor: isVerifying ? 'wait' : 'pointer'
                   }}
                 >
                   {trans.saveBtn}

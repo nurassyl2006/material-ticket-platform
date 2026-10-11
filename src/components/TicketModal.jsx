@@ -163,49 +163,48 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
   const inputStyle = {
     width: '100%',
-    background: 'rgba(15, 23, 42, 0.6)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '10px',
-    padding: '10px 12px',
-    color: '#fff',
-    fontSize: '13px'
+    background: '#1f1f1f',
+    border: '1px solid #383838',
+    borderRadius: '4px',
+    padding: '8px 10px',
+    color: '#ffffff',
+    fontSize: '13px',
+    outline: 'none',
+    boxSizing: 'border-box'
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000, padding: '0' }}>
-      <div className="glass-panel animate-fade-in ticket-modal-sheet" style={{ width: '100%', maxWidth: '640px', padding: '24px', maxHeight: '94vh', overflowY: 'auto', borderRadius: '24px 24px 0 0', margin: '0 auto' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '640px', padding: '20px 24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '6px', margin: '0 auto', background: '#292929', border: '1px solid #383838', boxShadow: '0 16px 36px rgba(0,0,0,0.4)' }}>
         
-        {/* Drag handle for mobile */}
-        <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', margin: '0 auto 16px' }} />
-
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #383838', paddingBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: 'rgba(99, 102, 241, 0.2)', padding: '8px', borderRadius: '10px' }}>
-              <PlusCircle size={22} color="var(--primary)" />
+            <div style={{ background: 'rgba(15, 108, 189, 0.15)', padding: '6px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
+              <PlusCircle size={20} color="#0f6cbd" />
             </div>
             <div>
-              <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>{t.tickets.createTitle}</h2>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#f3f2f1' }}>{t.tickets.createTitle}</h2>
+              <span style={{ fontSize: '11px', color: '#adadad' }}>
                 {role === 'parent' 
                   ? (lang === 'ru' ? 'Подача заявки: Родитель' : lang === 'kk' ? 'Өтінім беруші: Ата-ана' : 'Submitting as: School Parent')
                   : role === 'guest'
                   ? (lang === 'ru' ? 'Подача заявки: Гость школы' : lang === 'kk' ? 'Өтінім беруші: Мектеп қонағы' : 'Submitting as: Campus Guest')
-                  : <>Sender: <strong style={{ color: '#fff' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
+                  : <>Sender: <strong style={{ color: '#f3f2f1' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
               </span>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px', borderRadius: '10px' }}>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#adadad', cursor: 'pointer', padding: '6px', borderRadius: '3px', display: 'flex', alignItems: 'center' }}>
             <X size={18} />
           </button>
         </div>
 
         {/* Step 1: Select Department */}
-        <div style={{ marginBottom: '18px' }}>
-          <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ fontSize: '11px', fontWeight: '600', color: '#adadad', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {t.tickets.selectDepartment} *
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' }}>
             {departmentList.map(dept => {
               const isSelected = department === dept.id;
               const deptTitle = dept.translations?.[lang] || dept.name;
@@ -222,21 +221,21 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                     }));
                   }}
                   style={{
-                    padding: '10px 8px',
-                    borderRadius: '12px',
-                    border: isSelected ? `2px solid ${dept.color}` : '1px solid var(--border-color)',
-                    background: isSelected ? `${dept.color}25` : 'rgba(30, 41, 59, 0.5)',
+                    padding: '8px 6px',
+                    borderRadius: '4px',
+                    border: isSelected ? `1px solid ${dept.color}` : '1px solid #383838',
+                    background: isSelected ? '#333333' : '#242424',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     gap: '4px',
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease',
+                    transition: 'all 0.12s ease',
                     textAlign: 'center'
                   }}
                 >
-                  <span style={{ fontSize: '22px', lineHeight: 1 }}>{dept.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '500', color: isSelected ? '#fff' : 'var(--text-muted)', lineHeight: 1.2 }}>
+                  <span style={{ fontSize: '18px', lineHeight: 1 }}>{dept.emoji}</span>
+                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '600' : '400', color: isSelected ? '#ffffff' : '#adadad', lineHeight: 1.2 }}>
                     {deptTitle}
                   </span>
                 </button>
@@ -244,26 +243,26 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
             })}
           </div>
         </div>
-
         {/* Sender Details for Unregistered Guest / Parent */}
         {(!isAuthenticated || role === 'guest' || role === 'parent') && (
           <div style={{
-            background: role === 'parent' ? 'rgba(168, 85, 247, 0.1)' : 'rgba(6, 182, 212, 0.1)',
-            border: `1px solid ${role === 'parent' ? 'rgba(168, 85, 247, 0.3)' : 'rgba(6, 182, 212, 0.3)'}`,
-            borderRadius: '14px',
-            padding: '14px',
+            background: '#242424',
+            border: '1px solid #383838',
+            borderLeft: role === 'parent' ? '3px solid #5b5fc7' : '3px solid #0f6cbd',
+            borderRadius: '4px',
+            padding: '12px',
             marginBottom: '16px'
           }}>
             <div style={{ 
               fontSize: '12px', 
-              fontWeight: '800', 
-              color: role === 'parent' ? '#c084fc' : '#38bdf8', 
+              fontWeight: '600', 
+              color: role === 'parent' ? '#c4b5fd' : '#70b5f9', 
               marginBottom: '10px', 
               display: 'flex', 
               alignItems: 'center', 
               gap: '6px' 
             }}>
-              {role === 'parent' ? <Users size={15} /> : <User size={15} />}
+              {role === 'parent' ? <Users size={14} /> : <User size={14} />}
               <span>
                 {role === 'parent' 
                   ? (lang === 'ru' ? 'Контакты родителя и ученика' : lang === 'kk' ? 'Ата-ана мен оқушының байланыс деректері' : 'Parent & Student Contact Details')
@@ -271,9 +270,9 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
                   {lang === 'ru' ? 'Ваше имя (ФИО) *' : lang === 'kk' ? 'Аты-жөніңіз *' : 'Your Full Name *'}
                 </label>
                 <input
@@ -287,7 +286,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
                   {lang === 'ru' ? 'Телефон для связи *' : lang === 'kk' ? 'Байланыс телефоны *' : 'Contact Phone *'}
                 </label>
                 <input
@@ -302,7 +301,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
               {role === 'parent' && (
                 <div style={{ gridColumn: 'span 2' }}>
-                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
                     {lang === 'ru' ? 'Имя ученика и класс (напр. Алихан 4Б)' : lang === 'kk' ? 'Оқушының аты және сыныбы (мыс. Әлихан 4Б)' : 'Student Name & Class (e.g. Alikhan 4B)'}
                   </label>
                   <input
@@ -322,15 +321,15 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
         {activeDeptObj && activeDeptObj.subcategories && (
           <div style={{
             marginBottom: '16px',
-            background: 'rgba(15, 23, 42, 0.55)',
-            border: `1px solid ${activeDeptObj.color}40`,
-            borderRadius: '12px',
-            padding: '12px 14px'
+            background: '#242424',
+            border: '1px solid #383838',
+            borderRadius: '4px',
+            padding: '10px 12px'
           }}>
             <div style={{
-              fontSize: '12px',
-              fontWeight: '700',
-              color: '#fff',
+              fontSize: '11px',
+              fontWeight: '600',
+              color: '#f3f2f1',
               marginBottom: '8px',
               display: 'flex',
               alignItems: 'center',
@@ -348,15 +347,15 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                     type="button"
                     onClick={() => handleSelectSubcategory(subcat)}
                     style={{
-                      background: isSelected ? `${activeDeptObj.color}35` : 'rgba(30, 41, 59, 0.75)',
-                      border: `1px solid ${isSelected ? activeDeptObj.color : 'rgba(255, 255, 255, 0.1)'}`,
-                      color: isSelected ? '#fff' : '#cbd5e1',
-                      fontWeight: isSelected ? '700' : 'normal',
-                      padding: '6px 11px',
-                      borderRadius: '8px',
-                      fontSize: '12px',
+                      background: isSelected ? '#0f6cbd' : '#1f1f1f',
+                      border: isSelected ? '1px solid #115ea3' : '1px solid #383838',
+                      color: isSelected ? '#ffffff' : '#adadad',
+                      fontWeight: isSelected ? '600' : '400',
+                      padding: '4px 8px',
+                      borderRadius: '3px',
+                      fontSize: '11px',
                       cursor: 'pointer',
-                      transition: 'all 0.15s ease'
+                      transition: 'all 0.12s ease'
                     }}
                   >
                     {isSelected ? '✓ ' : ''}{subcat}
@@ -615,19 +614,22 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'stretch', gap: '10px', marginTop: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px', borderTop: '1px solid #383838', paddingTop: '12px' }}>
             <button
               type="button"
               onClick={onClose}
-              style={{ flex: 1, background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '11px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+              className="fluent-btn-secondary"
+              style={{ minWidth: '90px' }}
             >
               {t.common.cancel}
             </button>
             <button
               type="submit"
-              style={{ flex: 2, background: 'linear-gradient(135deg, var(--primary), var(--secondary))', color: '#fff', border: 'none', padding: '11px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: '700', boxShadow: 'var(--shadow-glow)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              className="fluent-btn-primary"
+              style={{ minWidth: '120px' }}
             >
-              {t.tickets.submit} <ArrowRight size={15} />
+              <span>{t.tickets.submit}</span>
+              <ArrowRight size={14} />
             </button>
           </div>
 

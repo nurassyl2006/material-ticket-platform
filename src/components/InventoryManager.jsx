@@ -87,22 +87,14 @@ export const InventoryManager = () => {
         {canManageStock && (
           <button
             onClick={() => setShowAddModal(true)}
+            className="fluent-btn-primary"
             style={{
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-              color: '#fff',
-              padding: '8px 16px',
-              borderRadius: '10px',
-              fontSize: '13px',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: 'var(--shadow-glow)',
-              border: 'none',
-              cursor: 'pointer'
+              padding: '6px 14px',
+              borderRadius: '4px',
+              fontSize: '12px'
             }}
           >
-            <Plus size={16} /> {t.inventory.addItem}
+            <Plus size={15} /> <span>{t.inventory.addItem}</span>
           </button>
         )}
       </div>
@@ -243,11 +235,11 @@ export const InventoryManager = () => {
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
-                <button type="button" onClick={() => setShowAddModal(false)} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '10px', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px', borderTop: '1px solid #383838', paddingTop: '12px' }}>
+                <button type="button" onClick={() => setShowAddModal(false)} className="fluent-btn-secondary" style={{ padding: '6px 14px', borderRadius: '4px', fontSize: '12px' }}>
                   {t.common.cancel}
                 </button>
-                <button type="submit" style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' }}>
+                <button type="submit" className="fluent-btn-primary" style={{ padding: '6px 16px', borderRadius: '4px', fontSize: '12px' }}>
                   {t.common.save}
                 </button>
               </div>

@@ -7,16 +7,17 @@ import {
   ClipboardList, 
   LayoutDashboard, 
   User, 
-  PlusCircle, 
+  Plus, 
   RotateCcw, 
   LogOut, 
   Bell, 
   Database, 
   Users, 
-  Lock, 
   UserPlus, 
   Compass,
-  LogIn
+  LogIn,
+  LayoutGrid,
+  ShieldAlert
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 
@@ -46,96 +47,198 @@ export const Navbar = ({
   } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
+  // Helper for Microsoft 365 User Initials (e.g., Balkan Kassimov -> BK)
+  const getUserInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
   return (
     <>
-      {/* Desktop Header Navigation */}
-      <header className="glass-panel main-navbar" style={{ borderRadius: '0 0 20px 20px', padding: '14px 24px', marginBottom: '24px' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          
-          {/* Brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('dashboard')}>
-            <div style={{
-              background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-              padding: '10px',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: 'var(--shadow-glow)'
-            }}>
-              <Package size={22} color="#ffffff" />
-            </div>
-            <div>
-              <h1 style={{ fontSize: '18px', fontWeight: '800', background: 'linear-gradient(90deg, #ffffff, #cbd5e1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-                {t.appName}
-              </h1>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                {t.subtitle}
-              </p>
+      {/* Microsoft 365 Enterprise App Header */}
+      <header
+        className="main-navbar"
+        style={{
+          background: '#252525',
+          borderBottom: '1px solid #383838',
+          padding: '0 20px',
+          marginBottom: '20px',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.25)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 900
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1360px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '52px',
+            gap: '16px'
+          }}
+        >
+          {/* Left: Microsoft 365 App Waffle & Brand Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Waffle Menu Icon */}
+            <button
+              type="button"
+              title="Microsoft 365 Apps"
+              onClick={() => setActiveTab('dashboard')}
+              style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '4px',
+                background: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#adadad',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.15s ease'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = '#333333')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <LayoutGrid size={18} />
+            </button>
+
+            {/* Brand Logo & Name */}
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              <div
+                style={{
+                  background: '#0f6cbd',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                <Package size={17} color="#ffffff" />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h1 style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', margin: 0, letterSpacing: '-0.2px' }}>
+                    {t.appName || 'EduOps'}
+                  </h1>
+                  <span style={{ fontSize: '11px', color: '#797775', fontWeight: '400' }}>|</span>
+                  <span style={{ fontSize: '12px', color: '#adadad', fontWeight: '400' }}>
+                    {t.subtitle || 'Facilities & Materials'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Desktop Navigation Tabs */}
-          <nav className="desktop-nav-tabs" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.4)', padding: '5px', borderRadius: '14px', border: '1px solid var(--border-color)' }}>
+          {/* Center: Microsoft Fluent Pivot Tabs */}
+          <nav
+            className="desktop-nav-tabs"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              height: '100%',
+              gap: '2px'
+            }}
+          >
             <button
               onClick={() => setActiveTab('dashboard')}
               style={{
-                padding: '7px 14px',
-                borderRadius: '10px',
+                height: '52px',
+                padding: '0 14px',
                 fontSize: '13px',
-                fontWeight: '600',
+                fontWeight: activeTab === 'dashboard' ? '600' : '500',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                color: activeTab === 'dashboard' ? '#ffffff' : 'var(--text-muted)',
-                background: activeTab === 'dashboard' ? 'var(--primary)' : 'transparent',
-                boxShadow: activeTab === 'dashboard' ? '0 4px 12px rgba(99, 102, 241, 0.4)' : 'none',
-                cursor: 'pointer'
+                color: activeTab === 'dashboard' ? '#ffffff' : '#adadad',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: activeTab === 'dashboard' ? '2px solid #0f6cbd' : '2px solid transparent',
+                cursor: 'pointer',
+                borderRadius: '0',
+                transition: 'color 0.15s ease, border-color 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'dashboard') e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'dashboard') e.currentTarget.style.color = '#adadad';
               }}
             >
-              <LayoutDashboard size={15} />
-              {t.nav.dashboard}
+              <LayoutDashboard size={15} color={activeTab === 'dashboard' ? '#0f6cbd' : 'currentColor'} />
+              <span>{t.nav.dashboard}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('tickets')}
               style={{
-                padding: '7px 14px',
-                borderRadius: '10px',
+                height: '52px',
+                padding: '0 14px',
                 fontSize: '13px',
-                fontWeight: '600',
+                fontWeight: activeTab === 'tickets' ? '600' : '500',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                color: activeTab === 'tickets' ? '#ffffff' : 'var(--text-muted)',
-                background: activeTab === 'tickets' ? 'var(--primary)' : 'transparent',
-                boxShadow: activeTab === 'tickets' ? '0 4px 12px rgba(99, 102, 241, 0.4)' : 'none',
-                cursor: 'pointer'
+                color: activeTab === 'tickets' ? '#ffffff' : '#adadad',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: activeTab === 'tickets' ? '2px solid #0f6cbd' : '2px solid transparent',
+                cursor: 'pointer',
+                borderRadius: '0',
+                transition: 'color 0.15s ease, border-color 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'tickets') e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'tickets') e.currentTarget.style.color = '#adadad';
               }}
             >
-              <ClipboardList size={15} />
-              {t.nav.tickets}
+              <ClipboardList size={15} color={activeTab === 'tickets' ? '#0f6cbd' : 'currentColor'} />
+              <span>{t.nav.tickets}</span>
             </button>
 
             {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && (
               <button
                 onClick={() => setActiveTab('inventory')}
                 style={{
-                  padding: '7px 14px',
-                  borderRadius: '10px',
+                  height: '52px',
+                  padding: '0 14px',
                   fontSize: '13px',
-                  fontWeight: '600',
+                  fontWeight: activeTab === 'inventory' ? '600' : '500',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  color: activeTab === 'inventory' ? '#ffffff' : 'var(--text-muted)',
-                  background: activeTab === 'inventory' ? 'var(--primary)' : 'transparent',
-                  boxShadow: activeTab === 'inventory' ? '0 4px 12px rgba(99, 102, 241, 0.4)' : 'none',
-                  cursor: 'pointer'
+                  color: activeTab === 'inventory' ? '#ffffff' : '#adadad',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: activeTab === 'inventory' ? '2px solid #0f6cbd' : '2px solid transparent',
+                  cursor: 'pointer',
+                  borderRadius: '0',
+                  transition: 'color 0.15s ease, border-color 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'inventory') e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'inventory') e.currentTarget.style.color = '#adadad';
                 }}
               >
-                <Package size={15} />
-                {t.nav.inventory}
+                <Package size={15} color={activeTab === 'inventory' ? '#0f6cbd' : 'currentColor'} />
+                <span>{t.nav.inventory}</span>
               </button>
             )}
 
@@ -143,111 +246,132 @@ export const Navbar = ({
               <button
                 onClick={() => setActiveTab('users')}
                 style={{
-                  padding: '7px 14px',
-                  borderRadius: '10px',
+                  height: '52px',
+                  padding: '0 14px',
                   fontSize: '13px',
-                  fontWeight: '600',
+                  fontWeight: activeTab === 'users' ? '600' : '500',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  color: activeTab === 'users' ? '#ffffff' : 'var(--text-muted)',
-                  background: activeTab === 'users' ? 'var(--primary)' : 'transparent',
-                  boxShadow: activeTab === 'users' ? '0 4px 12px rgba(99, 102, 241, 0.4)' : 'none',
-                  cursor: 'pointer'
+                  color: activeTab === 'users' ? '#ffffff' : '#adadad',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: activeTab === 'users' ? '2px solid #0f6cbd' : '2px solid transparent',
+                  cursor: 'pointer',
+                  borderRadius: '0',
+                  transition: 'color 0.15s ease, border-color 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'users') e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'users') e.currentTarget.style.color = '#adadad';
                 }}
               >
-                <Users size={15} />
-                {t.nav?.users || 'Staff & Roles'}
+                <Users size={15} color={activeTab === 'users' ? '#0f6cbd' : 'currentColor'} />
+                <span>{t.nav?.users || 'Staff & Roles'}</span>
               </button>
             )}
 
+            {/* Microsoft Fluent "+ New Request" Primary Button */}
             {onOpenNewTicket && (
-              <button
-                onClick={onOpenNewTicket}
-                style={{
-                  padding: '7px 14px',
-                  borderRadius: '10px',
-                  fontSize: '13px',
-                  fontWeight: '700',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: '#ffffff',
-                  background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                  boxShadow: '0 2px 10px rgba(6, 182, 212, 0.3)',
-                  cursor: 'pointer',
-                  border: 'none',
-                  marginLeft: '4px'
-                }}
-              >
-                <PlusCircle size={15} />
-                {t.nav.newTicket}
-              </button>
+              <div style={{ marginLeft: '12px' }}>
+                <button
+                  onClick={onOpenNewTicket}
+                  className="fluent-btn-primary"
+                  style={{
+                    height: '30px',
+                    padding: '0 12px',
+                    fontSize: '12px'
+                  }}
+                >
+                  <Plus size={14} />
+                  <span>{t.nav.newTicket}</span>
+                </button>
+              </div>
             )}
           </nav>
 
-          {/* Right Section: Language Switcher, User Role, Profile Button, Reset Demo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Right Section: Controls, Language, Notifications & Profile */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             
-            {/* Language Select */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(30, 41, 59, 0.8)', padding: '5px 10px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
-              <Globe size={15} color="var(--secondary)" />
+            {/* Language Switcher */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: '#202020',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: '1px solid #383838'
+              }}
+            >
+              <Globe size={13} color="#adadad" />
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value)}
                 style={{
                   background: 'transparent',
-                  color: 'var(--text-main)',
+                  color: '#f3f2f1',
                   border: 'none',
                   fontSize: '12px',
                   fontWeight: '600',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  outline: 'none',
+                  padding: 0
                 }}
               >
-                <option value="kk">Қаз (KK)</option>
-                <option value="ru">Рус (RU)</option>
-                <option value="en">Eng (EN)</option>
+                <option value="kk" style={{ background: '#252525' }}>ҚАЗ</option>
+                <option value="ru" style={{ background: '#252525' }}>РУС</option>
+                <option value="en" style={{ background: '#252525' }}>ENG</option>
               </select>
             </div>
 
-            {/* Notification Bell with Badge */}
+            {/* Notification Bell */}
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setIsNotificationOpen(prev => !prev)}
                 title={t.notifications?.title || 'Notifications'}
                 style={{
                   position: 'relative',
+                  width: '32px',
+                  height: '32px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isNotificationOpen ? 'rgba(99, 102, 241, 0.25)' : 'rgba(30, 41, 59, 0.8)',
-                  border: isNotificationOpen ? '1px solid var(--primary)' : '1px solid var(--border-color)',
-                  padding: '7px 10px',
-                  borderRadius: '10px',
-                  color: isNotificationOpen ? 'var(--primary)' : 'var(--text-main)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  background: isNotificationOpen ? '#333333' : 'transparent',
+                  border: '1px solid transparent',
+                  borderRadius: '4px',
+                  color: isNotificationOpen ? '#ffffff' : '#adadad',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#333333')}
+                onMouseLeave={(e) => {
+                  if (!isNotificationOpen) e.currentTarget.style.background = 'transparent';
                 }}
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (
-                  <span style={{
-                    position: 'absolute',
-                    top: '-4px',
-                    right: '-4px',
-                    background: 'var(--danger)',
-                    color: '#fff',
-                    fontSize: '10px',
-                    fontWeight: '800',
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 2px 6px rgba(239, 68, 68, 0.5)',
-                    border: '2px solid #0f172a'
-                  }}>
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '2px',
+                      right: '2px',
+                      background: '#d13438',
+                      color: '#ffffff',
+                      fontSize: '10px',
+                      fontWeight: '700',
+                      minWidth: '15px',
+                      height: '15px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 3px',
+                      border: '1px solid #252525'
+                    }}
+                  >
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -260,249 +384,224 @@ export const Navbar = ({
               />
             </div>
 
-            {/* Authenticated User Badge & Logout OR Guest/Parent Role Selector & Sign In/Register */}
-            {isAuthenticated ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(99, 102, 241, 0.12)', padding: '5px 10px', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.3)' }}>
-                  <UserCheck size={15} color="var(--primary)" />
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff', lineHeight: 1.2 }}>
-                      {currentUser?.name || t.roles[role]}
-                    </span>
-                    <span style={{ fontSize: '10px', color: '#818cf8', fontWeight: '600', lineHeight: 1 }}>
-                      {t.roles[role]}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Logout Button */}
-                <button
-                  onClick={() => logout()}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'rgba(239, 68, 68, 0.12)',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    color: '#f87171',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  title={t.auth.logout}
-                >
-                  <LogOut size={13} />
-                  <span className="logout-btn-text">{t.auth.logout}</span>
-                </button>
-
-                {/* Profile Button */}
-                <button
-                  onClick={onOpenProfile}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid var(--border-color)',
-                    padding: '5px 10px',
-                    borderRadius: '10px',
-                    color: 'var(--text-main)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  title={t.nav.profile}
-                >
-                  <div style={{
-                    width: '22px',
-                    height: '22px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    color: '#fff',
-                    overflow: 'hidden'
-                  }}>
-                    {currentUser?.avatar ? (
-                      <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      currentUser?.name ? currentUser.name.charAt(0) : 'U'
-                    )}
-                  </div>
-                  <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600' }}>
-                    {currentUser?.name ? currentUser.name.split(' ')[0] : t.nav.profile}
-                  </span>
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Guest / Parent Unregistered Selector */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  padding: '3px',
-                  borderRadius: '12px',
-                  border: '1px solid var(--border-color)',
-                  gap: '2px'
-                }}>
-                  <button
-                    type="button"
-                    onClick={() => setRole('guest')}
-                    title="Count as Campus Guest / Visitor"
-                    style={{
-                      padding: '5px 10px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      color: role === 'guest' ? '#fff' : 'var(--text-muted)',
-                      background: role === 'guest' ? 'rgba(6, 182, 212, 0.35)' : 'transparent',
-                      boxShadow: role === 'guest' ? '0 1px 4px rgba(6, 182, 212, 0.3)' : 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <Compass size={13} color={role === 'guest' ? '#38bdf8' : 'currentColor'} />
-                    <span>{t.auth?.guestTag || 'Guest'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRole('parent')}
-                    title="Count as School Parent"
-                    style={{
-                      padding: '5px 10px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontSize: '11px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      color: role === 'parent' ? '#fff' : 'var(--text-muted)',
-                      background: role === 'parent' ? 'rgba(168, 85, 247, 0.35)' : 'transparent',
-                      boxShadow: role === 'parent' ? '0 1px 4px rgba(168, 85, 247, 0.3)' : 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <Users size={13} color={role === 'parent' ? '#c084fc' : 'currentColor'} />
-                    <span>{t.auth?.parentTag || 'Parent'}</span>
-                  </button>
-                </div>
-
-                {/* Sign In Button (opens Login Window) */}
-                <button
-                  type="button"
-                  onClick={onOpenLogin}
-                  title={t.auth?.loginWindow || 'Sign In'}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'rgba(99, 102, 241, 0.18)',
-                    border: '1px solid rgba(99, 102, 241, 0.4)',
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    color: '#818cf8',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <LogIn size={13} />
-                  <span>{t.auth?.signIn || 'Sign In'}</span>
-                </button>
-
-                {/* Register Button (opens Registration Window) */}
-                <button
-                  type="button"
-                  onClick={onOpenRegister}
-                  title={t.auth?.registerWindow || 'Register'}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-                    border: 'none',
-                    padding: '6px 12px',
-                    borderRadius: '10px',
-                    color: '#fff',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  <UserPlus size={13} />
-                  <span>{t.auth?.registerWindow || 'Register'}</span>
-                </button>
-              </>
-            )}
-
-            {/* Database & Multi-Device Sync Indicator */}
-            <div
+            {/* Azure Database Status Pill */}
+            <button
+              type="button"
               onClick={onOpenServerModal || syncWithCloud}
               title={
                 cloudStatus === 'syncing'
-                  ? 'Syncing with SQLite database... Click to inspect connection'
+                  ? 'Syncing with SQLite database...'
                   : cloudStatus === 'offline'
-                  ? 'Offline mode: using local cache (Click to connect to school server)'
-                  : 'SQLite Database Connected & Synced (Click to view database diagnostics)'
+                  ? 'Offline mode (click to configure remote server)'
+                  : 'Connected to SQLite database (click for diagnostics)'
               }
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: cloudStatus === 'syncing'
-                  ? 'rgba(56, 189, 248, 0.14)'
-                  : cloudStatus === 'offline'
-                  ? 'rgba(245, 158, 11, 0.14)'
-                  : 'rgba(16, 185, 129, 0.14)',
-                border: `1px solid ${
-                  cloudStatus === 'syncing'
-                    ? 'rgba(56, 189, 248, 0.35)'
-                    : cloudStatus === 'offline'
-                    ? 'rgba(245, 158, 11, 0.35)'
-                    : 'rgba(16, 185, 129, 0.35)'
-                }`,
-                padding: '5px 10px',
-                borderRadius: '8px',
+                background: '#202020',
+                border: '1px solid #383838',
+                padding: '4px 8px',
+                borderRadius: '4px',
                 cursor: 'pointer',
-                userSelect: 'none',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Database size={13} style={{
-                color: cloudStatus === 'syncing' ? '#38bdf8' : cloudStatus === 'offline' ? '#fbbf24' : '#34d399'
-              }} />
-              <span style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: cloudStatus === 'syncing' ? '#38bdf8' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981',
-                boxShadow: cloudStatus === 'syncing' ? '0 0 6px #38bdf8' : cloudStatus === 'offline' ? '0 0 6px #f59e0b' : '0 0 6px #10b981'
-              }} />
-              <span className="profile-btn-text" style={{
+                color: '#adadad',
                 fontSize: '11px',
-                fontWeight: '700',
-                color: cloudStatus === 'syncing' ? '#38bdf8' : cloudStatus === 'offline' ? '#fbbf24' : '#34d399'
-              }}>
-                {cloudStatus === 'syncing' ? 'Syncing...' : cloudStatus === 'offline' ? 'Offline' : 'DB Synced'}
+                fontWeight: '600',
+                transition: 'border-color 0.15s ease'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#4a4a4a')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#383838')}
+            >
+              <Database size={13} color={cloudStatus === 'syncing' ? '#0f6cbd' : cloudStatus === 'offline' ? '#d83b01' : '#107c41'} />
+              <span
+                style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: cloudStatus === 'syncing' ? '#0f6cbd' : cloudStatus === 'offline' ? '#d83b01' : '#107c41'
+                }}
+              />
+              <span className="profile-btn-text">
+                {cloudStatus === 'syncing' ? 'Syncing' : cloudStatus === 'offline' ? 'Offline' : 'Connected'}
               </span>
-            </div>
+            </button>
 
-            {/* Reset Demo Data button */}
+            {/* Authenticated User OR Guest/Parent Role Selector & Sign In/Register */}
+            {isAuthenticated ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {/* Microsoft 365 Account Avatar & Role */}
+                <button
+                  type="button"
+                  onClick={onOpenProfile}
+                  title={`${currentUser?.name || 'User'} (${t.roles[role]})`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: '#202020',
+                    border: '1px solid #383838',
+                    padding: '3px 8px 3px 4px',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      background: role === 'director' ? '#5b5fc7' : '#0f6cbd',
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      position: 'relative'
+                    }}
+                  >
+                    {currentUser?.avatar ? (
+                      <img
+                        src={currentUser.avatar}
+                        alt={currentUser.name}
+                        style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      getUserInitials(currentUser?.name)
+                    )}
+                    {/* Active presence dot */}
+                    <span
+                      style={{
+                        position: 'absolute',
+                        bottom: '-1px',
+                        right: '-1px',
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        background: '#107c41',
+                        border: '1px solid #202020'
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
+                    <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600', color: '#f3f2f1', lineHeight: 1.2 }}>
+                      {currentUser?.name ? currentUser.name.split(' ')[0] : 'User'}
+                    </span>
+                    <span className="role-logged-text" style={{ fontSize: '10px', color: '#adadad', lineHeight: 1 }}>
+                      {t.roles[role]}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Logout Button */}
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  title={t.auth?.logout || 'Sign Out'}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '4px',
+                    color: '#adadad',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#333333';
+                    e.currentTarget.style.color = '#d13438';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#adadad';
+                  }}
+                >
+                  <LogOut size={15} />
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {/* Guest / Parent Selector Pills */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: '#202020',
+                    border: '1px solid #383838',
+                    borderRadius: '4px',
+                    padding: '2px'
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setRole('guest')}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '2px',
+                      border: 'none',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      color: role === 'guest' ? '#ffffff' : '#adadad',
+                      background: role === 'guest' ? '#0f6cbd' : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Compass size={12} />
+                    <span>{t.auth?.guestTag || 'Guest'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('parent')}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '2px',
+                      border: 'none',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      color: role === 'parent' ? '#ffffff' : '#adadad',
+                      background: role === 'parent' ? '#5b5fc7' : 'transparent',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Users size={12} />
+                    <span>{t.auth?.parentTag || 'Parent'}</span>
+                  </button>
+                </div>
+
+                {/* Sign In Button */}
+                <button
+                  type="button"
+                  onClick={onOpenLogin}
+                  className="fluent-btn-secondary"
+                  style={{ height: '30px', padding: '0 10px', fontSize: '12px' }}
+                >
+                  <LogIn size={13} />
+                  <span>{t.auth?.signIn || 'Sign In'}</span>
+                </button>
+
+                {/* Register Button */}
+                <button
+                  type="button"
+                  onClick={onOpenRegister}
+                  className="fluent-btn-primary"
+                  style={{ height: '30px', padding: '0 10px', fontSize: '12px' }}
+                >
+                  <UserPlus size={13} />
+                  <span>{t.auth?.registerWindow || 'Register'}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Reset Demo Data Button */}
             <button
               onClick={() => {
                 if (window.confirm('Reset demo requests and roles to initial state?')) {
@@ -511,25 +610,33 @@ export const Navbar = ({
               }}
               title="Reset Demo Data"
               style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid var(--border-color)',
-                padding: '6px',
-                borderRadius: '8px',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
+                width: '30px',
+                height: '30px',
                 display: 'flex',
-                alignItems: 'center'
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '4px',
+                color: '#797775',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#333333';
+                e.currentTarget.style.color = '#adadad';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = '#797775';
               }}
             >
               <RotateCcw size={14} />
             </button>
-
           </div>
-
         </div>
       </header>
 
-      {/* Mobile Phone Bottom Navigation Bar */}
+      {/* Mobile Bottom Navigation Bar (Fluent Mobile) */}
       <nav className="mobile-bottom-nav">
         <button
           onClick={() => setActiveTab('dashboard')}
@@ -570,9 +677,9 @@ export const Navbar = ({
         <button
           onClick={onOpenNewTicket}
           className="mobile-nav-item"
-          style={{ color: 'var(--secondary)' }}
+          style={{ color: '#0f6cbd' }}
         >
-          <PlusCircle size={18} />
+          <Plus size={18} />
           <span>{t.nav.newTicket}</span>
         </button>
 
@@ -588,7 +695,7 @@ export const Navbar = ({
           <button
             onClick={onOpenLogin}
             className="mobile-nav-item"
-            style={{ color: '#818cf8' }}
+            style={{ color: '#0f6cbd' }}
           >
             <LogIn size={18} />
             <span>{t.auth?.signIn || 'Sign In'}</span>

@@ -1,34 +1,66 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
+/**
+ * Microsoft Fluent 2 Design System Tokens & Enterprise Styles
+ * Styled after Microsoft 365, Microsoft Teams, Azure Portal & Windows 11 Fluent UI.
+ */
 :root {
-  --bg-dark: #0f172a;
-  --bg-card: rgba(30, 41, 59, 0.7);
-  --bg-card-hover: rgba(51, 65, 85, 0.8);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-focus: #6366f1;
-  
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --secondary: #06b6d4;
-  --accent: #ec4899;
-  
-  --success: #10b981;
-  --accent-emerald: #34d399;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
-  
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  /* Microsoft Fluent Dark Surfaces */
+  --bg-dark: #1f1f1f;
+  --bg-header: #252525;
+  --bg-card: #292929;
+  --bg-card-hover: #333333;
+  --bg-subtle: #2d2d2d;
+  --bg-dialog: #292929;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  
-  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.25);
-  --glass-backdrop: blur(16px);
+  /* Fluent 1px Crisp Dividers */
+  --border-color: #383838;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: #0f6cbd;
+
+  /* Microsoft Signature Brand & Accent Colors */
+  --primary: #0f6cbd;          /* Microsoft Fluent 2 Primary Blue */
+  --primary-hover: #115ea3;    /* Hover State */
+  --primary-pressed: #0c3b5e;  /* Active/Pressed State */
+  --primary-tint: rgba(15, 108, 189, 0.16);
+  --secondary: #0078d4;        /* Classic Fluent Blue */
+  --teams-purple: #5b5fc7;     /* Microsoft Teams Indigo */
+  --accent: #0f6cbd;
+
+  /* Microsoft Status Colors */
+  --success: #107c41;          /* Microsoft Excel Green */
+  --success-bg: rgba(16, 124, 65, 0.18);
+  --success-border: #136136;
+  --warning: #d83b01;          /* Fluent Amber / Orange */
+  --warning-bg: rgba(216, 59, 1, 0.18);
+  --warning-border: #8f2800;
+  --danger: #d13438;           /* Microsoft Crimson Red */
+  --danger-bg: rgba(209, 52, 56, 0.18);
+  --danger-border: #8a1f23;
+  --info: #0f6cbd;
+  --info-bg: rgba(15, 108, 189, 0.18);
+  --info-border: #115ea3;
+
+  /* Fluent Neutral Typography */
+  --text-main: #f3f2f1;
+  --text-muted: #adadad;
+  --text-dim: #797775;
+  --text-disabled: #595959;
+
+  /* Microsoft Fluent 2 Radii (Strict, subtle enterprise curves) */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+
+  /* Microsoft Elevation (Fluent Depth - No neon glows!) */
+  --shadow-depth-2: 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.15);
+  --shadow-depth-4: 0 1.6px 3.6px rgba(0, 0, 0, 0.24), 0 0.3px 0.9px rgba(0, 0, 0, 0.18);
+  --shadow-depth-8: 0 3.2px 7.2px rgba(0, 0, 0, 0.28), 0 0.6px 1.8px rgba(0, 0, 0, 0.20);
+  --shadow-depth-16: 0 6.4px 14.4px rgba(0, 0, 0, 0.32), 0 1.2px 3.6px rgba(0, 0, 0, 0.24);
+  --shadow-glow: none;
+  --glass-backdrop: none;
 }
 
 * {
@@ -38,17 +70,14 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-dark);
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.15) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%);
-  background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   line-height: 1.5;
-  padding-bottom: 70px; /* space for mobile bottom nav */
+  padding-bottom: 70px;
 }
 
 button {
@@ -56,41 +85,103 @@ button {
   font-family: inherit;
   border: none;
   outline: none;
-  transition: all 0.2s ease-in-out;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 input, select, textarea {
   font-family: inherit;
   outline: none;
+  border-radius: var(--radius-sm);
+  background: #202020;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Glass Card */
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+/* Fluent Card / Panel */
 .glass-panel {
   background: var(--bg-card);
-  backdrop-filter: var(--glass-backdrop);
-  -webkit-backdrop-filter: var(--glass-backdrop);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-depth-4);
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .glass-panel-hover:hover {
   background: var(--bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+  border-color: #4a4a4a;
+  box-shadow: var(--shadow-depth-8);
 }
 
-/* Modal Overlay & Card */
+/* Microsoft Fluent Command / Action Button Tokens */
+.fluent-btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: var(--shadow-depth-2);
+}
+
+.fluent-btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.fluent-btn-primary:active {
+  background: var(--primary-pressed);
+}
+
+.fluent-btn-secondary {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fluent-btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: #4a4a4a;
+}
+
+/* Fluent Status Badge / Tag */
+.fluent-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  border: 1px solid transparent;
+}
+
+/* Modal Overlay & Card (Fluent Dialog) */
 .modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,31 +190,30 @@ input, select, textarea {
 }
 
 .modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
+  background: var(--bg-dialog);
+  border: 1px solid #444444;
+  border-radius: var(--radius-lg);
   padding: 24px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow-depth-16);
   max-height: 90vh;
   overflow-y: auto;
 }
 
-/* Mobile Bottom Navigation Bar */
+/* Mobile Bottom Navigation Bar (Fluent Mobile Bar) */
 .mobile-bottom-nav {
   display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  height: 56px;
+  background: #252525;
   border-top: 1px solid var(--border-color);
   z-index: 999;
   justify-content: space-around;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 4px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.25);
 }
 
 .mobile-nav-item {
@@ -131,36 +221,36 @@ input, select, textarea {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   background: transparent;
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 600;
-  padding: 8px 12px;
-  border-radius: 12px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
   flex: 1;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .mobile-nav-item.active {
   color: #ffffff;
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(15, 108, 189, 0.2);
 }
 
 .mobile-nav-item.active svg {
   color: var(--primary);
 }
 
-/* Responsive Media Queries (Phone version adjustments) */
+/* Responsive Media Queries */
 @media (max-width: 768px) {
   body {
-    padding-bottom: 80px;
+    padding-bottom: 72px;
   }
 
   .main-navbar {
-    padding: 12px 16px !important;
-    margin-bottom: 16px !important;
-    border-radius: 0 0 16px 16px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 14px !important;
+    border-radius: 0 !important;
   }
 
   .desktop-nav-tabs {
@@ -180,31 +270,31 @@ input, select, textarea {
   }
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+/* Fluent Micro-Transitions */
+@keyframes fluentFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fluentFadeIn 0.18s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
 }
 
-/* Custom Scrollbar */
+/* Windows 11 Slim Fluent Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: #424242;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: #5c5c5c;
 }

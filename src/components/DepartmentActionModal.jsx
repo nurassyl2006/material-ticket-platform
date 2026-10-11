@@ -341,32 +341,29 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.82)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000, padding: '0' }}>
-      <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '580px', padding: '24px', maxHeight: '94vh', overflowY: 'auto', borderRadius: '24px 24px 0 0', margin: '0 auto' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '600px', padding: '20px 24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '6px', margin: '0 auto', background: '#292929', border: '1px solid #383838', boxShadow: '0 16px 36px rgba(0,0,0,0.5)' }}>
 
-        {/* Drag handle */}
-        <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', margin: '0 auto 16px' }} />
-        
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #383838', paddingBottom: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: `${deptMeta.color}25`, border: `1px solid ${deptMeta.color}50`, padding: '9px', borderRadius: '10px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#202020', border: '1px solid #383838', padding: '6px', borderRadius: '4px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {deptMeta.emoji}
             </div>
             <div>
-              <h2 style={{ fontSize: '17px', fontWeight: '800', margin: 0, color: '#fff' }}>
+              <h2 style={{ fontSize: '15px', fontWeight: '600', margin: 0, color: '#f3f2f1' }}>
                 {deptMeta.translations?.[lang] || deptMeta.name}
               </h2>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Ticket #{ticket.id} • Assigned Handler: <strong style={{ color: '#fff' }}>{currentUser.name}</strong></span>
+              <span style={{ fontSize: '11px', color: '#adadad' }}>Ticket #{ticket.id} • Assigned: <strong style={{ color: '#f3f2f1' }}>{currentUser.name}</strong></span>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '6px' }}>
-            <X size={20} />
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#adadad', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
+            <X size={18} />
           </button>
         </div>
 
         {/* Ticket Snapshot Card */}
-        <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '14px', borderRadius: '12px', marginBottom: '18px', border: '1px solid var(--border-color)' }}>
+        <div style={{ background: '#202020', padding: '12px', borderRadius: '4px', marginBottom: '16px', border: '1px solid #383838' }}>
           
           {/* Translator Bar inside Snapshot */}
           <div style={{
@@ -706,7 +703,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
                   {t.common.cancel}
                 </button>
-                <button type="submit" style={{ background: storageActionType === 'stock' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                <button type="submit" style={{ background: storageActionType === 'stock' ? '#107c41' : 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                   {storageActionType === 'stock' ? '✓ Confirm Give from Stock' : '🛒 Confirm Purchase Order'}
                 </button>
               </div>
@@ -790,7 +787,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={(e) => handleFacilitiesSubmit(e, false)} style={{ background: 'rgba(167, 139, 250, 0.2)', border: '1px solid #a78bfa', color: '#c4b5fd', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 🚚 Dispatch / Moving in Progress
               </button>
-              <button type="button" onClick={(e) => handleFacilitiesSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={(e) => handleFacilitiesSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Relocation Complete
               </button>
             </div>
@@ -830,7 +827,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={(e) => handleITSubmit(e, false)} style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid #38bdf8', color: '#38bdf8', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ⚡ In Diagnostics
               </button>
-              <button type="button" onClick={(e) => handleITSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={(e) => handleITSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Issue Resolved
               </button>
             </div>
@@ -869,7 +866,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={(e) => handleCleaningSubmit(e, false)} style={{ background: 'rgba(52, 211, 153, 0.2)', border: '1px solid #34d399', color: '#34d399', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 🧹 Start Cleaning
               </button>
-              <button type="button" onClick={(e) => handleCleaningSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={(e) => handleCleaningSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Cleaned & Sanitized
               </button>
             </div>
@@ -896,7 +893,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
                 {t.common.cancel}
               </button>
-              <button type="button" onClick={() => { completeTicketDelivery(ticket.id, notes || 'Security check completed.'); onClose(); }} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={() => { completeTicketDelivery(ticket.id, notes || 'Security check completed.'); onClose(); }} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Resolve Security Request
               </button>
             </div>
@@ -936,7 +933,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={(e) => handleEngineeringSubmit(e, false)} style={{ background: 'rgba(251, 191, 36, 0.2)', border: '1px solid #fbbf24', color: '#fbbf24', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ⚡ In Diagnostics / Repair
               </button>
-              <button type="button" onClick={(e) => handleEngineeringSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={(e) => handleEngineeringSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Fixed & Operational
               </button>
             </div>
@@ -976,7 +973,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={(e) => handlePlumbingSubmit(e, false)} style={{ background: 'rgba(6, 182, 212, 0.2)', border: '1px solid #06b6d4', color: '#06b6d4', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 🔧 In Diagnostics / Repair
               </button>
-              <button type="button" onClick={(e) => handlePlumbingSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={(e) => handlePlumbingSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Plumbing Fixed
               </button>
             </div>
@@ -1015,7 +1012,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={(e) => handleGroundsSubmit(e, false)} style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#10b981', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 🌳 In Progress
               </button>
-              <button type="button" onClick={(e) => handleGroundsSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={(e) => handleGroundsSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Grounds Work Complete
               </button>
             </div>
@@ -1054,7 +1051,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <button type="button" onClick={(e) => handleGeneralSubmit(e, false)} style={{ background: 'rgba(129, 140, 248, 0.2)', border: '1px solid #818cf8', color: '#818cf8', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 In Review
               </button>
-              <button type="button" onClick={(e) => handleGeneralSubmit(e, true)} style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+              <button type="button" onClick={(e) => handleGeneralSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                 ✓ Mark Resolved
               </button>
             </div>

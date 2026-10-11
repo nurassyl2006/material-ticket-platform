@@ -96,10 +96,10 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
   return (
     <div 
       ref={dropdownRef}
-      className="glass-panel animate-fade-in"
+      className="fluent-card animate-fade-in"
       style={{
         position: 'absolute',
-        top: 'calc(100% + 10px)',
+        top: 'calc(100% + 6px)',
         right: '0',
         width: '380px',
         maxWidth: '92vw',
@@ -107,12 +107,11 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
         display: 'flex',
         flexDirection: 'column',
         zIndex: 1000,
-        boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.15)',
-        border: '1px solid rgba(255, 255, 255, 0.14)',
-        borderRadius: '18px',
+        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
+        border: '1px solid #383838',
+        borderRadius: '4px',
         overflow: 'hidden',
-        backdropFilter: 'blur(20px)',
-        background: 'rgba(15, 23, 42, 0.96)'
+        background: '#292929'
       }}
     >
       {/* Header */}
@@ -200,24 +199,22 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
       {/* Device Notifications Enable Banner */}
       <div style={{
         padding: '10px 16px',
-        background: devicePermission === 'granted' 
-          ? 'linear-gradient(90deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)' 
-          : 'linear-gradient(90deg, rgba(99, 102, 241, 0.16) 0%, rgba(168, 85, 247, 0.12) 100%)',
-        borderBottom: '1px solid var(--border-color)',
+        background: '#242424',
+        borderBottom: '1px solid #383838',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: '10px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Smartphone size={15} color={devicePermission === 'granted' ? '#34d399' : '#818cf8'} />
+          <Smartphone size={15} color={devicePermission === 'granted' ? '#107c41' : '#0f6cbd'} />
           <div style={{ fontSize: '11px', lineHeight: 1.2 }}>
-            <div style={{ fontWeight: '700', color: '#fff' }}>
+            <div style={{ fontWeight: '600', color: '#f3f2f1' }}>
               {devicePermission === 'granted'
                 ? (lang === 'ru' ? 'Уведомления на устройстве активны' : lang === 'kk' ? 'Құрылғы хабарландырулары белсенді' : 'Device Push Active')
                 : (lang === 'ru' ? 'Уведомления на устройство' : lang === 'kk' ? 'Құрылғыға хабарландырулар' : 'Device Push Alerts')}
             </div>
-            <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+            <div style={{ color: '#8a8a8a', fontSize: '10px' }}>
               {devicePermission === 'granted'
                 ? (lang === 'ru' ? 'Получайте пуш-алерты даже в фоне' : lang === 'kk' ? 'Фондық режимде де пуш келеді' : 'Popups & sounds delivered to this device')
                 : (lang === 'ru' ? 'Включите пуши для телефона и ПК' : lang === 'kk' ? 'Телефон мен компьютерге пуш қосыңыз' : 'Allow notifications for phone & laptop')}
@@ -231,13 +228,13 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               type="button"
               onClick={handleTestNotification}
               style={{
-                padding: '4px 8px',
-                borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#34d399',
+                padding: '3px 8px',
+                borderRadius: '3px',
+                background: '#1f1f1f',
+                border: '1px solid #383838',
+                color: '#62c789',
                 fontSize: '11px',
-                fontWeight: '700',
+                fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -252,13 +249,13 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               onClick={() => setShowTelegramModal(true)}
               title="Configure Telegram Phone Alerts"
               style={{
-                padding: '4px 8px',
-                borderRadius: '8px',
-                background: 'rgba(2, 132, 199, 0.2)',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-                color: '#38bdf8',
+                padding: '3px 8px',
+                borderRadius: '3px',
+                background: '#1f1f1f',
+                border: '1px solid #383838',
+                color: '#70b5f9',
                 fontSize: '11px',
-                fontWeight: '700',
+                fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -274,16 +271,11 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
             <button
               type="button"
               onClick={() => enableDeviceNotifications()}
+              className="fluent-btn-primary"
               style={{
-                padding: '5px 10px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #6366f1, #3b82f6)',
-                border: 'none',
-                color: '#fff',
-                fontSize: '11px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)'
+                padding: '4px 10px',
+                borderRadius: '3px',
+                fontSize: '11px'
               }}
             >
               {lang === 'ru' ? 'Включить' : lang === 'kk' ? 'Қосу' : 'Enable'}

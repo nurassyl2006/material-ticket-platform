@@ -124,18 +124,17 @@ export const UserProfileModal = ({ isOpen, onClose }) => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '46px',
-              height: '46px',
+              width: '42px',
+              height: '42px',
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+              background: '#0f6cbd',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: '700',
-              fontSize: '18px',
-              color: '#fff',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-glow)'
+              fontWeight: '600',
+              fontSize: '16px',
+              color: '#ffffff',
+              overflow: 'hidden'
             }}>
               {currentUser.avatar ? (
                 <img src={currentUser.avatar} alt={currentUser.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -575,16 +574,12 @@ export const UserProfileModal = ({ isOpen, onClose }) => {
               <button
                 type="submit"
                 disabled={isUpdatingPassword}
+                className="fluent-btn-primary"
                 style={{
-                  padding: '10px 22px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                  border: 'none',
-                  color: '#ffffff',
-                  fontWeight: '700',
-                  fontSize: '13px',
+                  padding: '8px 18px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
                   cursor: isUpdatingPassword ? 'wait' : 'pointer',
-                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
                   opacity: isUpdatingPassword ? 0.7 : 1
                 }}
               >
