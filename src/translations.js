@@ -55,7 +55,10 @@ export const translations = {
       myTickets: "My Requests",
       profile: "My Profile",
       users: "Staff & Roles",
-      stats: "Executive View"
+      stats: "Executive View",
+      themeLight: "Light Mode",
+      themeDark: "Dark Mode",
+      relatedOnlyBanner: "Active requests are only visible to related staff, teachers, and requesters."
     },
     profile: {
       title: "User Profile",
@@ -436,7 +439,10 @@ export const translations = {
       myTickets: "Мои заявки",
       profile: "Мой профиль",
       users: "Персонал и Роли",
-      stats: "Обзор директора"
+      stats: "Обзор директора",
+      themeLight: "Светлая тема",
+      themeDark: "Темная тема",
+      relatedOnlyBanner: "Активные заявки видны только ответственным сотрудникам и авторам обращений."
     },
     profile: {
       title: "Профиль пользователя",
@@ -817,7 +823,10 @@ export const translations = {
       myTickets: "Менің өтінімдерім",
       profile: "Менің профилім",
       users: "Қызметкерлер мен Рөлдер",
-      stats: "Директор шолуы"
+      stats: "Директор шолуы",
+      themeLight: "Жарық тақырып",
+      themeDark: "Күңгірт тақырып",
+      relatedOnlyBanner: "Белсенді өтінімдер тек жауапты қызметкерлер мен өтініш берушілерге көрінеді."
     },
     profile: {
       title: "Пайдаланушы профилі",

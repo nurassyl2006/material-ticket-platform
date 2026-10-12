@@ -34,6 +34,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   const { 
     t, 
     tickets, 
+    scopedTickets,
     role, 
     currentUser, 
     completeTicketDelivery, 
@@ -110,11 +111,11 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     else setDeptFilter('all');
   }, [role]);
 
-  // Scoped tickets that this user is legally authorized to see
-  // All tickets available in the platform across facilities
+  // Scoped tickets that this user is authorized/related to view
+  // Active tickets are strictly hidden for users who are not related
   const authorizedTickets = React.useMemo(() => {
-    return tickets;
-  }, [tickets]);
+    return scopedTickets || [];
+  }, [scopedTickets]);
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -347,11 +348,11 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               onChange={e => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                background: 'rgba(15, 23, 42, 0.75)',
+                background: 'var(--bg-card, rgba(15, 23, 42, 0.75))',
                 border: '1px solid var(--border-color)',
                 borderRadius: '8px',
                 padding: '7px 12px 7px 34px',
-                color: 'var(--text-primary)',
+                color: 'var(--text-main)',
                 fontSize: '12px',
                 height: '36px',
                 outline: 'none',
@@ -361,26 +362,26 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
           </div>
 
           {/* Status Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.75)', padding: '0 10px', borderRadius: '8px', border: '1px solid var(--border-color)', height: '36px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card, rgba(15, 23, 42, 0.75))', padding: '0 10px', borderRadius: '8px', border: '1px solid var(--border-color)', height: '36px' }}>
             <Filter size={14} color="var(--text-muted)" />
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
               style={{
                 background: 'transparent',
-                color: 'var(--text-primary)',
+                color: 'var(--text-main)',
                 border: 'none',
                 fontSize: '12px',
                 cursor: 'pointer',
                 outline: 'none'
               }}
             >
-              <option value="all" style={{ background: '#111827', color: '#fff' }}>{t.tickets.filterAll}</option>
-              <option value="pending" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.pending}</option>
-              <option value="in_progress" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.in_progress}</option>
-              <option value="issued" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.issued}</option>
-              <option value="purchasing" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.purchasing}</option>
-              <option value="completed" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.completed}</option>
+              <option value="all" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.filterAll}</option>
+              <option value="pending" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.pending}</option>
+              <option value="in_progress" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.in_progress}</option>
+              <option value="issued" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.issued}</option>
+              <option value="purchasing" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.purchasing}</option>
+              <option value="completed" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.completed}</option>
             </select>
           </div>
 
@@ -499,7 +500,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
       </div>
 
       {/* Department Filter Tabs */}
-      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+      <div className="mobile-overflow-x" style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
               {departments.map(dept => {
                 const isActive = deptFilter === dept.id;
                 const count = getDeptCount(dept.id);
@@ -516,9 +517,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                       alignItems: 'center',
                       gap: '6px',
                       whiteSpace: 'nowrap',
-                      border: isActive ? `1px solid ${dept.color}` : '1px solid rgba(255, 255, 255, 0.08)',
-                      background: isActive ? `${dept.color}22` : 'rgba(15, 23, 42, 0.6)',
-                      color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                      border: isActive ? `1px solid ${dept.color}` : '1px solid var(--border-color)',
+                      background: isActive ? `${dept.color}22` : 'var(--bg-card, rgba(15, 23, 42, 0.6))',
+                      color: isActive ? 'var(--text-main, #ffffff)' : 'var(--text-muted)',
                       cursor: 'pointer',
                       transition: 'all 0.12s ease'
                     }}
@@ -526,8 +527,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                     <span style={{ fontSize: '13px', lineHeight: 1 }}>{dept.emoji}</span>
                     {dept.label}
                     <span style={{ 
-                      background: isActive ? dept.color : 'rgba(255, 255, 255, 0.08)', 
-                      color: '#ffffff', 
+                      background: isActive ? dept.color : 'var(--bg-subtle, rgba(255, 255, 255, 0.08))', 
+                      color: isActive ? '#ffffff' : 'var(--text-main)', 
                       padding: '1px 6px', 
                       borderRadius: '6px', 
                       fontSize: '11px',

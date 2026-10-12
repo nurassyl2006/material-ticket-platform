@@ -160,9 +160,9 @@ export const CampusLocationSelector = ({
 
   return (
     <div style={{
-      background: '#242424',
-      border: '1px solid #383838',
-      borderRadius: '4px',
+      background: 'var(--bg-card, #242424)',
+      border: '1px solid var(--border-color, #383838)',
+      borderRadius: '8px',
       padding: '12px',
       display: 'flex',
       flexDirection: 'column',
@@ -171,8 +171,8 @@ export const CampusLocationSelector = ({
       {/* Header with Mode Toggle */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <MapPin size={15} color="#0f6cbd" />
-          <label style={{ fontSize: '12px', fontWeight: '600', color: '#f3f2f1' }}>
+          <MapPin size={15} color="var(--accent-primary, #0f6cbd)" />
+          <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)' }}>
             {t?.tickets?.locationTitle || 'School Campus Location (Block, Floor & Area)'} *
           </label>
         </div>
@@ -181,12 +181,12 @@ export const CampusLocationSelector = ({
           type="button"
           onClick={() => setMode(m => m === 'structured' ? 'freeform' : 'structured')}
           style={{
-            background: '#1f1f1f',
-            border: '1px solid #383838',
-            borderRadius: '3px',
+            background: 'var(--bg-subtle, #1f1f1f)',
+            border: '1px solid var(--border-color, #383838)',
+            borderRadius: '6px',
             padding: '3px 8px',
             fontSize: '11px',
-            color: '#adadad',
+            color: 'var(--text-muted, #adadad)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -210,11 +210,11 @@ export const CampusLocationSelector = ({
             onChange={e => onChange && onChange(e.target.value)}
             style={{
               width: '100%',
-              background: '#1f1f1f',
-              border: '1px solid #383838',
-              borderRadius: '4px',
+              background: 'var(--bg-subtle, #1f1f1f)',
+              border: '1px solid var(--border-color, #383838)',
+              borderRadius: '6px',
               padding: '8px 10px',
-              color: '#ffffff',
+              color: 'var(--text-main, #ffffff)',
               fontSize: '13px',
               outline: 'none',
               boxSizing: 'border-box'
@@ -239,11 +239,11 @@ export const CampusLocationSelector = ({
                     type="button"
                     onClick={() => handleUpdate(block, floor, typeKey, '', customRoom)}
                     style={{
-                      background: isSelected ? '#333333' : '#1f1f1f',
-                      border: `1px solid ${isSelected ? activeColor : '#383838'}`,
-                      borderRadius: '3px',
+                      background: isSelected ? 'var(--bg-subtle, #333333)' : 'transparent',
+                      border: `1px solid ${isSelected ? activeColor : 'var(--border-color, #383838)'}`,
+                      borderRadius: '6px',
                       padding: '5px 8px',
-                      color: isSelected ? '#ffffff' : '#adadad',
+                      color: isSelected ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #adadad)',
                       fontSize: '11px',
                       fontWeight: isSelected ? '600' : '400',
                       display: 'flex',
@@ -253,7 +253,7 @@ export const CampusLocationSelector = ({
                       transition: 'all 0.12s ease'
                     }}
                   >
-                    <Icon size={13} color={isSelected ? activeColor : '#8a8a8a'} />
+                    <Icon size={13} color={isSelected ? activeColor : 'var(--text-dim, #8a8a8a)'} />
                     <span>{t?.tickets?.areaTypes?.[typeKey] || typeKey}</span>
                   </button>
                 );
@@ -265,7 +265,7 @@ export const CampusLocationSelector = ({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {/* Block / Wing */}
             <div>
-              <div style={{ fontSize: '10px', color: '#8a8a8a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-dim, #8a8a8a)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 2. {t?.tickets?.block || 'Building / Block'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -277,11 +277,11 @@ export const CampusLocationSelector = ({
                       type="button"
                       onClick={() => handleUpdate(bKey, floor, areaType, specificSpot, customRoom)}
                       style={{
-                        background: isSelected ? '#333333' : '#1f1f1f',
-                        border: `1px solid ${isSelected ? '#0f6cbd' : '#383838'}`,
-                        borderRadius: '3px',
+                        background: isSelected ? 'var(--bg-subtle, #333333)' : 'transparent',
+                        border: `1px solid ${isSelected ? 'var(--accent-primary, #0f6cbd)' : 'var(--border-color, #383838)'}`,
+                        borderRadius: '6px',
                         padding: '4px 7px',
-                        color: isSelected ? '#ffffff' : '#adadad',
+                        color: isSelected ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #adadad)',
                         fontSize: '11px',
                         fontWeight: isSelected ? '600' : '400',
                         cursor: 'pointer'
@@ -296,7 +296,7 @@ export const CampusLocationSelector = ({
 
             {/* Floor */}
             <div>
-              <div style={{ fontSize: '10px', color: '#8a8a8a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-dim, #8a8a8a)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 3. {t?.tickets?.floor || 'Floor'}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -308,11 +308,11 @@ export const CampusLocationSelector = ({
                       type="button"
                       onClick={() => handleUpdate(block, fKey, areaType, specificSpot, customRoom)}
                       style={{
-                        background: isSelected ? '#333333' : '#1f1f1f',
-                        border: `1px solid ${isSelected ? '#5b5fc7' : '#383838'}`,
-                        borderRadius: '3px',
+                        background: isSelected ? 'var(--bg-subtle, #333333)' : 'transparent',
+                        border: `1px solid ${isSelected ? 'var(--accent, #5b5fc7)' : 'var(--border-color, #383838)'}`,
+                        borderRadius: '6px',
                         padding: '4px 7px',
-                        color: isSelected ? '#ffffff' : '#adadad',
+                        color: isSelected ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #adadad)',
                         fontSize: '11px',
                         fontWeight: isSelected ? '600' : '400',
                         cursor: 'pointer'
@@ -328,7 +328,7 @@ export const CampusLocationSelector = ({
 
           {/* 3. Specific Spot / Room Details */}
           <div>
-            <div style={{ fontSize: '10px', color: '#8a8a8a', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-dim, #8a8a8a)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               4. {t?.tickets?.specificLocation || 'Room # or Specific Section'}
             </div>
 
@@ -345,11 +345,11 @@ export const CampusLocationSelector = ({
                         handleUpdate(block, floor, areaType, nextSpot, '');
                       }}
                       style={{
-                        background: isSelected ? 'rgba(16, 124, 65, 0.2)' : '#1f1f1f',
-                        border: `1px solid ${isSelected ? '#107c41' : '#383838'}`,
-                        borderRadius: '3px',
+                        background: isSelected ? 'var(--success-bg, rgba(16, 124, 65, 0.2))' : 'transparent',
+                        border: `1px solid ${isSelected ? 'var(--success, #107c41)' : 'var(--border-color, #383838)'}`,
+                        borderRadius: '6px',
                         padding: '3px 7px',
-                        color: isSelected ? '#62c789' : '#adadad',
+                        color: isSelected ? 'var(--success, #62c789)' : 'var(--text-muted, #adadad)',
                         fontSize: '11px',
                         fontWeight: isSelected ? '600' : '400',
                         cursor: 'pointer'
@@ -380,11 +380,11 @@ export const CampusLocationSelector = ({
               }}
               style={{
                 width: '100%',
-                background: '#1f1f1f',
-                border: '1px solid #383838',
-                borderRadius: '4px',
+                background: 'var(--bg-subtle, #1f1f1f)',
+                border: '1px solid var(--border-color, #383838)',
+                borderRadius: '6px',
                 padding: '7px 10px',
-                color: '#ffffff',
+                color: 'var(--text-main, #ffffff)',
                 fontSize: '12px',
                 outline: 'none',
                 boxSizing: 'border-box'

@@ -16,7 +16,9 @@ import {
   UserPlus, 
   Compass,
   LogIn,
-  ShieldAlert
+  ShieldAlert,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 
@@ -42,7 +44,9 @@ export const Navbar = ({
     unreadCount, 
     cloudStatus, 
     syncWithCloud, 
-    isAuthenticated 
+    isAuthenticated,
+    theme,
+    toggleTheme
   } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -62,13 +66,13 @@ export const Navbar = ({
       <header
         className="main-navbar"
         style={{
-          background: 'rgba(10, 15, 29, 0.85)',
+          background: 'var(--bg-header, rgba(10, 15, 29, 0.85))',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
           padding: '0 20px',
           marginBottom: '20px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35)',
+          boxShadow: 'var(--shadow-depth-4, 0 4px 20px rgba(0, 0, 0, 0.35))',
           position: 'sticky',
           top: 0,
           zIndex: 900
@@ -293,19 +297,19 @@ export const Navbar = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
                 padding: '5px 9px',
                 borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.1)'
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))'
               }}
             >
-              <Globe size={13} color="#94a3b8" />
+              <Globe size={13} color="var(--text-muted, #94a3b8)" />
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value)}
                 style={{
                   background: 'transparent',
-                  color: '#f8fafc',
+                  color: 'var(--text-main, #f8fafc)',
                   border: 'none',
                   fontSize: '12px',
                   fontWeight: '600',
@@ -314,11 +318,41 @@ export const Navbar = ({
                   padding: 0
                 }}
               >
-                <option value="kk" style={{ background: '#111827', color: '#fff' }}>ҚАЗ</option>
-                <option value="ru" style={{ background: '#111827', color: '#fff' }}>РУС</option>
-                <option value="en" style={{ background: '#111827', color: '#fff' }}>ENG</option>
+                <option value="kk" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>ҚАЗ</option>
+                <option value="ru" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>РУС</option>
+                <option value="en" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>ENG</option>
               </select>
             </div>
+
+            {/* Theme Toggle (Light / Dark Mode) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              style={{
+                width: '34px',
+                height: '34px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                borderRadius: '8px',
+                color: theme === 'light' ? '#d97706' : '#818cf8',
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.08)';
+                e.currentTarget.style.borderColor = theme === 'light' ? '#d97706' : '#818cf8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.1))';
+              }}
+            >
+              {theme === 'light' ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
 
             {/* Notification Bell */}
             <div style={{ position: 'relative' }}>
@@ -679,10 +713,20 @@ export const Navbar = ({
         <button
           onClick={onOpenNewTicket}
           className="mobile-nav-item"
-          style={{ color: '#0f6cbd' }}
+          style={{ color: 'var(--primary, #4f46e5)' }}
         >
           <Plus size={18} />
           <span>{t.nav.newTicket}</span>
+        </button>
+
+        <button
+          onClick={toggleTheme}
+          className="mobile-nav-item"
+          style={{ color: theme === 'light' ? '#d97706' : '#818cf8' }}
+          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+        >
+          {theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
+          <span>{theme === 'light' ? 'Light' : 'Dark'}</span>
         </button>
 
         {isAuthenticated ? (
@@ -697,7 +741,7 @@ export const Navbar = ({
           <button
             onClick={onOpenLogin}
             className="mobile-nav-item"
-            style={{ color: '#0f6cbd' }}
+            style={{ color: 'var(--primary, #4f46e5)' }}
           >
             <LogIn size={18} />
             <span>{t.auth?.signIn || 'Sign In'}</span>

@@ -35,12 +35,11 @@ import {
 } from './services/translator';
 import {
   playNotificationSound,
-  vibrateDevice,
-  isNotificationSupported,
   getNotificationPermission,
   requestDeviceNotificationPermission,
   sendDeviceNotification
 } from './services/deviceNotifications';
+import { filterVisibleTickets, isUserRelatedToTicket } from './utils/ticketPermissions';
 
 const AppContext = createContext();
 
@@ -51,6 +50,55 @@ const OLD_MOCK_IDS = new Set([
 ]);
 
 export const AppProvider = ({ children }) => {
+  // Theme state ('dark' | 'light')
+  const [theme, setThemeState] = useState(() => {
+    return localStorage.getItem('app_theme') || 'dark';
+  });
+
+  const setTheme = useCallback((newTheme) => {
+    setThemeState(newTheme);
+    localStorage.setItem('app_theme', newTheme);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', newTheme);
+      document.body.setAttribute('data-theme', newTheme);
+    }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setThemeState(prev => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('app_theme', next);
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-theme', next);
+        document.body.setAttribute('data-theme', next);
+      }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.body.setAttribute('data-theme', theme);
+    }
+  }, [theme]);
+
+  // Track ticket IDs authored in this browser session
+  const [myCreatedTicketIds, setMyCreatedTicketIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('app_my_created_ticket_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('app_my_created_ticket_ids', JSON.stringify(myCreatedTicketIds));
+    } catch {}
+  }, [myCreatedTicketIds]);
+
   // Language state
   const [lang, setLang] = useState(() => localStorage.getItem('app_lang') || 'en');
 
@@ -672,6 +720,8 @@ export const AppProvider = ({ children }) => {
       completionPhotos: [],
       teacherName: authorName,
       teacherPhone: authorPhone,
+      createdById: activeUser?.id || null,
+      createdByRole: role,
       status: 'pending',
       assignedWorker: null,
       assignedRole: null,
@@ -682,6 +732,7 @@ export const AppProvider = ({ children }) => {
     };
 
     setTickets(prev => [newTicket, ...prev]);
+    setMyCreatedTicketIds(prev => prev.includes(newTicket.id) ? prev : [newTicket.id, ...prev]);
 
     // Automatically trigger notification for staff and directors
     const targetDept = newTicket.department === 'it' ? 'IT Specialist'
@@ -999,10 +1050,20 @@ export const AppProvider = ({ children }) => {
     );
   }, [notifications, currentUser, role]);
 
-  const unreadCount = userNotifications.filter(n => !n.read).length;
+  // Filter tickets: active tickets are NOT visible to users who are not related
+  const scopedTickets = React.useMemo(() => {
+    return filterVisibleTickets(tickets, activeUser || currentUser, role, myCreatedTicketIds);
+  }, [tickets, activeUser, currentUser, role, myCreatedTicketIds]);
 
   return (
     <AppContext.Provider value={{
+      theme,
+      setTheme,
+      toggleTheme,
+      scopedTickets,
+      myCreatedTicketIds,
+      isUserRelatedToTicket,
+      filterVisibleTickets,
       lang,
       setLang,
       role,

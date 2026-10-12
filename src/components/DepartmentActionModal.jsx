@@ -342,7 +342,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(5, 10, 20, 0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '600px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: '#111827', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 24px 50px rgba(0, 0, 0, 0.7)' }}>
+      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '600px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-dialog, #111827)', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))', boxShadow: 'var(--shadow-depth-16)' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px' }}>

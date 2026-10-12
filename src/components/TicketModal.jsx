@@ -163,11 +163,11 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
   const inputStyle = {
     width: '100%',
-    background: 'rgba(15, 23, 42, 0.75)',
-    border: '1px solid rgba(255, 255, 255, 0.12)',
+    background: 'var(--bg-card, rgba(15, 23, 42, 0.75))',
+    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
     borderRadius: '8px',
     padding: '9px 12px',
-    color: '#ffffff',
+    color: 'var(--text-main, #ffffff)',
     fontSize: '13px',
     outline: 'none',
     boxSizing: 'border-box'
@@ -175,16 +175,16 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: '#111827', border: '1px solid rgba(255, 255, 255, 0.12)', boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.75)' }}>
+      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-dialog, #111827)', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))', boxShadow: 'var(--shadow-depth-16)' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(59, 130, 246, 0.2))', border: '1px solid rgba(99, 102, 241, 0.3)', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center' }}>
               <PlusCircle size={20} color="#818cf8" />
             </div>
             <div>
-              <h2 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: '#f8fafc', letterSpacing: '-0.2px' }}>{t.tickets.createTitle}</h2>
+              <h2 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: 'var(--text-main, #f8fafc)', letterSpacing: '-0.2px' }}>{t.tickets.createTitle}</h2>
               <span style={{ fontSize: '12px', color: '#94a3b8' }}>
                 {role === 'parent' 
                   ? (lang === 'ru' ? 'Подача заявки: Родитель' : lang === 'kk' ? 'Өтінім беруші: Ата-ана' : 'Submitting as: School Parent')

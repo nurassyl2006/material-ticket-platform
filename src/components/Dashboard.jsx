@@ -23,37 +23,29 @@ import {
 import { resolveDepartment, DEPARTMENTS } from '../departments';
 
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
-  const { t, role, currentUser, tickets, inventory, lang } = useApp();
+  const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, inventory, lang } = useApp();
 
-  // Scoped tickets that this user is authorized to see
-  const scopedTickets = React.useMemo(() => {
-    if (role === 'director' || role === 'admin' || role === 'teacher') return tickets;
-    if (role === 'it_support') return tickets.filter(t => resolveDepartment(t.department).id === 'it_helpdesk');
-    if (role === 'cleaning') return tickets.filter(t => resolveDepartment(t.department).id === 'cleaning');
-    if (role === 'engineer') return tickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
-    if (role === 'storage_manager' || role === 'workerA') return tickets.filter(t => (t.department || 'storage') === 'storage' || resolveDepartment(t.department).id === 'other');
-    if (role === 'facilities_manager') return tickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
-    return tickets;
-  }, [tickets, role, currentUser]);
+  // Scoped tickets that this user is authorized/related to see
+  const scopedTickets = appScopedTickets || [];
 
-  // General Metrics
-  const totalTickets = tickets.length;
-  const pendingCount = tickets.filter(t => t.status === 'pending').length;
-  const inProgressCount = tickets.filter(t => t.status === 'in_progress' || t.status === 'purchasing').length;
-  const completedCount = tickets.filter(t => t.status === 'completed' || t.status === 'delivered' || t.status === 'issued').length;
+  // General Metrics scoped to user's authorized visibility
+  const totalTickets = scopedTickets.length;
+  const pendingCount = scopedTickets.filter(t => t.status === 'pending').length;
+  const inProgressCount = scopedTickets.filter(t => t.status === 'in_progress' || t.status === 'purchasing').length;
+  const completedCount = scopedTickets.filter(t => t.status === 'completed' || t.status === 'delivered' || t.status === 'issued').length;
   
   // Total Spent (₸) from storage purchasing and facility parts
-  const totalSpent = tickets.reduce((sum, tk) => sum + (Number(tk.purchaseCost) || 0), 0);
+  const totalSpent = scopedTickets.reduce((sum, tk) => sum + (Number(tk.purchaseCost) || 0), 0);
 
-  // Department specific stats based on core departments
-  const itTickets = tickets.filter(t => resolveDepartment(t.department).id === 'it_helpdesk');
-  const cleaningTickets = tickets.filter(t => resolveDepartment(t.department).id === 'cleaning');
-  const storageTickets = tickets.filter(t => (t.department || 'storage') === 'storage' || resolveDepartment(t.department).id === 'other');
-  const facilitiesTickets = tickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
-  const engineeringTickets = tickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
+  // Department specific stats based on scoped tickets
+  const itTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'it_helpdesk');
+  const cleaningTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'cleaning');
+  const storageTickets = scopedTickets.filter(t => (t.department || 'storage') === 'storage' || resolveDepartment(t.department).id === 'other');
+  const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
+  const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
 
-  // Critical alerts
-  const criticalTickets = tickets.filter(t => t.urgency === 'critical' && t.status !== 'completed' && t.status !== 'delivered');
+  // Critical alerts scoped to tickets user is related/authorized to view
+  const criticalTickets = scopedTickets.filter(t => t.urgency === 'critical' && t.status !== 'completed' && t.status !== 'delivered');
   const lowStockItems = inventory.filter(item => item.quantity <= item.minLevel);
   const activeFurnitureMoves = facilitiesTickets.filter(t => t.moveDetails && t.status !== 'completed');
 
@@ -359,7 +351,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
               {Object.values(DEPARTMENTS).map(dept => {
-                const deptTickets = tickets.filter(t => resolveDepartment(t.department).id === dept.id);
+                const deptTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === dept.id);
                 const progress = getDeptProgress(deptTickets);
                 const inProgress = deptTickets.filter(t => t.status === 'in_progress').length;
                 const completed = deptTickets.filter(t => t.status === 'completed' || t.status === 'delivered' || t.status === 'issued').length;
@@ -370,18 +362,18 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                     key={dept.id}
                     onClick={() => setActiveTab('tickets')}
                     style={{
-                      background: '#222222',
-                      border: '1px solid #383838',
-                      borderRadius: '4px',
+                      background: 'var(--bg-subtle, rgba(30, 41, 59, 0.6))',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
                       padding: '12px',
                       cursor: 'pointer',
                       transition: 'border-color 0.15s ease'
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#0f6cbd')}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#383838')}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--primary, #0f6cbd)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-color)')}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: '#f3f2f1' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)' }}>
                         <span>{dept.emoji}</span>
                         <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>
                           {deptName}
@@ -644,8 +636,8 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 key={ticket.id}
                 onClick={() => setActiveTab('tickets')}
                 style={{
-                  background: 'rgba(18, 25, 44, 0.75)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'var(--bg-card, rgba(18, 25, 44, 0.75))',
+                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                   borderRadius: '12px',
                   padding: '16px',
                   display: 'flex',
@@ -657,19 +649,19 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px -4px rgba(0, 0, 0, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px -4px rgba(0, 0, 0, 0.2)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.08))';
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: '#adadad', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted, #adadad)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>{deptMeta.emoji}</span>
                     <span>{deptName}</span>
-                    <span style={{ color: '#797775' }}>• #{ticket.id}</span>
+                    <span style={{ color: 'var(--text-dim, #797775)' }}>• #{ticket.id}</span>
                   </span>
                   <span
                     style={{
@@ -686,11 +678,11 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                   </span>
                 </div>
 
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#f3f2f1' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)' }}>
                   {ticket.itemTitle}
                 </div>
 
-                <div style={{ fontSize: '11px', color: '#adadad' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted, #adadad)' }}>
                   📍 {ticket.roomNumber || 'Campus'} • By: {ticket.teacherName || 'Staff'}
                 </div>
               </div>

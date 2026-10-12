@@ -193,9 +193,9 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
           maxWidth: '440px',
           borderRadius: '16px',
           padding: '28px 24px',
-          background: '#111827',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+          background: 'var(--bg-dialog, #111827)',
+          border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
+          boxShadow: 'var(--shadow-depth-16)',
           position: 'relative',
           maxHeight: '92vh',
           overflowY: 'auto'

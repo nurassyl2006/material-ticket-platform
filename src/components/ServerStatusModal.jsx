@@ -183,10 +183,10 @@ export default function ServerStatusModal({ isOpen, onClose }) {
           maxWidth: '680px',
           maxHeight: '90vh',
           overflowY: 'auto',
-          background: '#111827',
+          background: 'var(--bg-dialog, #111827)',
           borderRadius: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 24px 50px rgba(0, 0, 0, 0.7)',
+          border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+          boxShadow: 'var(--shadow-depth-16)',
           display: 'flex',
           flexDirection: 'column'
         }}
