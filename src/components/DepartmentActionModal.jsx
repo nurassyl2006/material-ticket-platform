@@ -341,29 +341,29 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '600px', padding: '20px 24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '6px', margin: '0 auto', background: '#292929', border: '1px solid #383838', boxShadow: '0 16px 36px rgba(0,0,0,0.5)' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(5, 10, 20, 0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '600px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: '#111827', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 24px 50px rgba(0, 0, 0, 0.7)' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #383838', paddingBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: '#202020', border: '1px solid #383838', padding: '6px', borderRadius: '4px', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '8px', borderRadius: '10px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {deptMeta.emoji}
             </div>
             <div>
-              <h2 style={{ fontSize: '15px', fontWeight: '600', margin: 0, color: '#f3f2f1' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: 'var(--text-primary)' }}>
                 {deptMeta.translations?.[lang] || deptMeta.name}
               </h2>
-              <span style={{ fontSize: '11px', color: '#adadad' }}>Ticket #{ticket.id} • Assigned: <strong style={{ color: '#f3f2f1' }}>{currentUser.name}</strong></span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ticket #{ticket.id} • Assigned: <strong style={{ color: 'var(--text-primary)' }}>{currentUser.name}</strong></span>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#adadad', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}>
-            <X size={18} />
+          <button onClick={onClose} style={{ background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.15s ease' }}>
+            <X size={16} />
           </button>
         </div>
 
         {/* Ticket Snapshot Card */}
-        <div style={{ background: '#202020', padding: '12px', borderRadius: '4px', marginBottom: '16px', border: '1px solid #383838' }}>
+        <div style={{ background: 'rgba(15, 23, 42, 0.65)', padding: '14px', borderRadius: '12px', marginBottom: '18px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
           
           {/* Translator Bar inside Snapshot */}
           <div style={{

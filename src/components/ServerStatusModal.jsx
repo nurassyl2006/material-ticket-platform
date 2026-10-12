@@ -60,7 +60,7 @@ export default function ServerStatusModal({ isOpen, onClose }) {
     guideTitle: 'How to connect from outside the school:',
     guideStep1: '1. On the school server computer, run: npm run tunnel',
     guideStep2: '2. Copy the generated public HTTPS URL (e.g. https://xxx.trycloudflare.com)',
-    guideStep3: '3. Paste that URL above in this window and click Save & Connect',
+    guideStep3: '3. Paste that URL above and click Save & Connect',
     guideStep4: "4. Your live app will instantly synchronize with the school's central SQLite database!"
   };
 
@@ -183,10 +183,10 @@ export default function ServerStatusModal({ isOpen, onClose }) {
           maxWidth: '680px',
           maxHeight: '90vh',
           overflowY: 'auto',
-          background: '#242424',
-          borderRadius: '6px',
-          border: '1px solid #383838',
-          boxShadow: '0 16px 36px rgba(0, 0, 0, 0.5)',
+          background: '#111827',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 24px 50px rgba(0, 0, 0, 0.7)',
           display: 'flex',
           flexDirection: 'column'
         }}
@@ -195,12 +195,12 @@ export default function ServerStatusModal({ isOpen, onClose }) {
         {/* Header */}
         <div
           style={{
-            padding: '16px 20px',
-            borderBottom: '1px solid #383838',
+            padding: '18px 24px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: '#202020'
+            background: 'rgba(255, 255, 255, 0.02)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

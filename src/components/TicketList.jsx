@@ -314,20 +314,20 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
       {/* Header Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0 }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '800', margin: 0, letterSpacing: '-0.02em' }}>
             {role === 'teacher' ? (t.nav.myTickets || 'My Requests') : t.tickets.title}
           </h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-            <span style={{ fontSize: '12px', color: '#adadad' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
               Showing {filteredTickets.length} of {authorizedTickets.length} requests
             </span>
             <span style={{
               fontSize: '11px',
-              padding: '2px 6px',
-              borderRadius: '3px',
-              background: '#252525',
-              border: '1px solid #383838',
-              color: '#adadad',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              color: 'var(--text-secondary)',
               fontWeight: '600'
             }}>
               🔒 {t.auth.scopeLabel} {role === 'teacher' ? t.auth.onlyMyTickets : (role === 'it_support' ? t.auth.onlyIT : (role === 'cleaning' ? t.auth.onlyCleaning : (role === 'engineer' ? t.auth.onlyEngineering : (role === 'storage_manager' ? t.auth.onlyStorage : (role === 'facilities_manager' ? t.auth.onlyFacilities : t.auth.allOperations)))))}
@@ -339,7 +339,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
           
           {/* Search */}
           <div style={{ position: 'relative', minWidth: '220px', flex: '1' }}>
-            <Search size={14} color="#adadad" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+            <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="text"
               placeholder={t.tickets.searchPlaceholder}
@@ -347,38 +347,40 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               onChange={e => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                background: '#202020',
-                border: '1px solid #383838',
-                borderRadius: '4px',
-                padding: '6px 12px 6px 30px',
-                color: '#f3f2f1',
+                background: 'rgba(15, 23, 42, 0.75)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                padding: '7px 12px 7px 34px',
+                color: 'var(--text-primary)',
                 fontSize: '12px',
-                height: '32px'
+                height: '36px',
+                outline: 'none',
+                transition: 'all 0.15s ease'
               }}
             />
           </div>
 
           {/* Status Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#202020', padding: '0 8px', borderRadius: '4px', border: '1px solid #383838', height: '32px' }}>
-            <Filter size={14} color="#adadad" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.75)', padding: '0 10px', borderRadius: '8px', border: '1px solid var(--border-color)', height: '36px' }}>
+            <Filter size={14} color="var(--text-muted)" />
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
               style={{
                 background: 'transparent',
-                color: '#f3f2f1',
+                color: 'var(--text-primary)',
                 border: 'none',
                 fontSize: '12px',
                 cursor: 'pointer',
                 outline: 'none'
               }}
             >
-              <option value="all" style={{ background: '#252525' }}>{t.tickets.filterAll}</option>
-              <option value="pending" style={{ background: '#252525' }}>{t.tickets.status.pending}</option>
-              <option value="in_progress" style={{ background: '#252525' }}>{t.tickets.status.in_progress}</option>
-              <option value="issued" style={{ background: '#252525' }}>{t.tickets.status.issued}</option>
-              <option value="purchasing" style={{ background: '#252525' }}>{t.tickets.status.purchasing}</option>
-              <option value="completed" style={{ background: '#252525' }}>{t.tickets.status.completed}</option>
+              <option value="all" style={{ background: '#111827', color: '#fff' }}>{t.tickets.filterAll}</option>
+              <option value="pending" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.pending}</option>
+              <option value="in_progress" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.in_progress}</option>
+              <option value="issued" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.issued}</option>
+              <option value="purchasing" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.purchasing}</option>
+              <option value="completed" style={{ background: '#111827', color: '#fff' }}>{t.tickets.status.completed}</option>
             </select>
           </div>
 
@@ -387,11 +389,11 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            background: '#202020',
-            border: autoTranslateTickets ? '1px solid #0f6cbd' : '1px solid #383838',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            height: '32px'
+            background: autoTranslateTickets ? 'rgba(99, 102, 241, 0.12)' : 'rgba(15, 23, 42, 0.75)',
+            border: autoTranslateTickets ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid var(--border-color)',
+            padding: '2px 8px',
+            borderRadius: '8px',
+            height: '36px'
           }}>
             <button
               type="button"
@@ -399,33 +401,33 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: autoTranslateTickets ? '#70b5f9' : '#adadad',
+                color: autoTranslateTickets ? '#a5b4fc' : 'var(--text-secondary)',
                 fontSize: '12px',
                 fontWeight: '600',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '5px'
               }}
               title={t.translator?.autoTranslateHelp || 'Auto-translates English teacher requests to Russian/Kazakh'}
             >
-              <Globe size={13} color={autoTranslateTickets ? '#0f6cbd' : '#adadad'} />
+              <Globe size={13} color={autoTranslateTickets ? '#818cf8' : 'var(--text-muted)'} />
               <span>{autoTranslateTickets ? 'Auto-Translate: ON' : 'Auto-Translate: OFF'}</span>
             </button>
 
             {/* Target language selector */}
-            <div style={{ display: 'flex', gap: '2px', background: '#252525', borderRadius: '2px', padding: '1px' }}>
+            <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.06)', borderRadius: '6px', padding: '2px' }}>
               <button
                 type="button"
                 onClick={() => setTranslatorTargetLang('ru')}
                 style={{
-                  background: translatorTargetLang === 'ru' ? '#0f6cbd' : 'transparent',
+                  background: translatorTargetLang === 'ru' ? 'var(--accent-primary)' : 'transparent',
                   border: 'none',
-                  color: translatorTargetLang === 'ru' ? '#fff' : '#adadad',
-                  borderRadius: '2px',
-                  padding: '2px 5px',
+                  color: translatorTargetLang === 'ru' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '4px',
+                  padding: '2px 6px',
                   fontSize: '10px',
-                  fontWeight: '600',
+                  fontWeight: '700',
                   cursor: 'pointer'
                 }}
                 title="Translate to Russian"
@@ -436,13 +438,13 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                 type="button"
                 onClick={() => setTranslatorTargetLang('kk')}
                 style={{
-                  background: translatorTargetLang === 'kk' ? '#0f6cbd' : 'transparent',
+                  background: translatorTargetLang === 'kk' ? 'var(--accent-primary)' : 'transparent',
                   border: 'none',
-                  color: translatorTargetLang === 'kk' ? '#fff' : '#adadad',
-                  borderRadius: '2px',
-                  padding: '2px 5px',
+                  color: translatorTargetLang === 'kk' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '4px',
+                  padding: '2px 6px',
                   fontSize: '10px',
-                  fontWeight: '600',
+                  fontWeight: '700',
                   cursor: 'pointer'
                 }}
                 title="Translate to Kazakh"
@@ -453,13 +455,13 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                 type="button"
                 onClick={() => setTranslatorTargetLang('en')}
                 style={{
-                  background: translatorTargetLang === 'en' ? '#0f6cbd' : 'transparent',
+                  background: translatorTargetLang === 'en' ? 'var(--accent-primary)' : 'transparent',
                   border: 'none',
-                  color: translatorTargetLang === 'en' ? '#fff' : '#adadad',
-                  borderRadius: '2px',
-                  padding: '2px 5px',
+                  color: translatorTargetLang === 'en' ? '#fff' : 'var(--text-muted)',
+                  borderRadius: '4px',
+                  padding: '2px 6px',
                   fontSize: '10px',
-                  fontWeight: '600',
+                  fontWeight: '700',
                   cursor: 'pointer'
                 }}
                 title="Keep Original English"
@@ -474,19 +476,19 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             <button
               onClick={onOpenNewTicket}
               style={{
-                background: '#0f6cbd',
+                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
                 color: '#ffffff',
-                padding: '6px 14px',
-                borderRadius: '4px',
+                padding: '7px 16px',
+                borderRadius: '8px',
                 fontSize: '12px',
                 fontWeight: '600',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                border: '1px solid #115ea3',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
                 cursor: 'pointer',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                transition: 'background 0.15s ease'
+                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+                transition: 'all 0.15s ease'
               }}
             >
               <Plus size={15} /> {t.nav.newTicket}
@@ -497,7 +499,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
       </div>
 
       {/* Department Filter Tabs */}
-      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
               {departments.map(dept => {
                 const isActive = deptFilter === dept.id;
                 const count = getDeptCount(dept.id);
@@ -506,17 +508,17 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                     key={dept.id}
                     onClick={() => setDeptFilter(dept.id)}
                     style={{
-                      padding: '4px 10px',
-                      borderRadius: '4px',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
                       fontSize: '12px',
-                      fontWeight: isActive ? '600' : '400',
+                      fontWeight: isActive ? '600' : '500',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
                       whiteSpace: 'nowrap',
-                      border: isActive ? `1px solid ${dept.color}` : '1px solid #383838',
-                      background: isActive ? '#333333' : '#242424',
-                      color: isActive ? '#ffffff' : '#adadad',
+                      border: isActive ? `1px solid ${dept.color}` : '1px solid rgba(255, 255, 255, 0.08)',
+                      background: isActive ? `${dept.color}22` : 'rgba(15, 23, 42, 0.6)',
+                      color: isActive ? '#ffffff' : 'var(--text-secondary)',
                       cursor: 'pointer',
                       transition: 'all 0.12s ease'
                     }}
@@ -524,12 +526,12 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                     <span style={{ fontSize: '13px', lineHeight: 1 }}>{dept.emoji}</span>
                     {dept.label}
                     <span style={{ 
-                      background: isActive ? '#0f6cbd' : '#333333', 
+                      background: isActive ? dept.color : 'rgba(255, 255, 255, 0.08)', 
                       color: '#ffffff', 
-                      padding: '1px 5px', 
-                      borderRadius: '3px', 
-                      fontSize: '10px',
-                      fontWeight: '600' 
+                      padding: '1px 6px', 
+                      borderRadius: '6px', 
+                      fontSize: '11px',
+                      fontWeight: '700' 
                     }}>
                       {count}
                     </span>
@@ -540,8 +542,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
       {/* Location Area Quick-Filters */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', padding: '2px 0' }}>
-        <span style={{ fontSize: '11px', color: '#8a8a8a', display: 'flex', alignItems: 'center', gap: '4px', marginRight: '4px' }}>
-          <MapPin size={12} color="#0f6cbd" />
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginRight: '4px' }}>
+          <MapPin size={12} color="var(--accent-primary)" />
           {t?.tickets?.areaType || 'Location'}:
         </span>
         {[
@@ -557,21 +559,21 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               key={locItem.id}
               onClick={() => setLocationFilter(locItem.id)}
               style={{
-                padding: '3px 8px',
-                borderRadius: '3px',
+                padding: '4px 10px',
+                borderRadius: '6px',
                 fontSize: '11px',
-                fontWeight: isSelected ? '600' : '400',
+                fontWeight: isSelected ? '600' : '500',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                border: isSelected ? '1px solid #0f6cbd' : '1px solid #383838',
-                background: isSelected ? 'rgba(15, 108, 189, 0.2)' : '#242424',
-                color: isSelected ? '#ffffff' : '#adadad',
+                border: isSelected ? '1px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
+                background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'rgba(15, 23, 42, 0.5)',
+                color: isSelected ? '#ffffff' : 'var(--text-secondary)',
                 cursor: 'pointer',
                 transition: 'all 0.12s ease'
               }}
             >
-              <LocIcon size={12} color={isSelected ? '#0f6cbd' : '#8a8a8a'} />
+              <LocIcon size={12} color={isSelected ? 'var(--accent-primary)' : 'var(--text-muted)'} />
               {locItem.label}
             </button>
           );

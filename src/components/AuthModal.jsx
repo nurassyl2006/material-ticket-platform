@@ -15,7 +15,8 @@ import {
   X,
   Users,
   Compass,
-  GraduationCap
+  GraduationCap,
+  Package
 } from 'lucide-react';
 
 export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
@@ -171,8 +172,9 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(15, 23, 42, 0.8)',
-        backdropFilter: 'blur(10px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.72)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -189,11 +191,11 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         style={{
           width: '100%',
           maxWidth: '440px',
-          borderRadius: '6px',
+          borderRadius: '16px',
           padding: '28px 24px',
-          background: '#292929',
-          border: '1px solid #383838',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+          background: '#111827',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05)',
           position: 'relative',
           maxHeight: '92vh',
           overflowY: 'auto'
@@ -208,52 +210,70 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             position: 'absolute',
             top: '16px',
             right: '16px',
-            background: 'transparent',
-            border: 'none',
-            color: '#adadad',
-            width: '28px',
-            height: '28px',
-            borderRadius: '3px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            color: '#94a3b8',
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            transition: 'background 0.15s ease'
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.color = '#ffffff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+            e.currentTarget.style.color = '#94a3b8';
           }}
         >
           <X size={16} />
         </button>
 
-        {/* Modal Header: Microsoft 4-Color Tiles Emblem */}
+        {/* Modal Header: EduOps Brand Emblem */}
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '11px 11px', gap: '2px', width: '24px', height: '24px', margin: '0 auto 14px' }}>
-            <div style={{ background: '#f25022', borderRadius: '1px' }} />
-            <div style={{ background: '#7fba00', borderRadius: '1px' }} />
-            <div style={{ background: '#00a4ef', borderRadius: '1px' }} />
-            <div style={{ background: '#ffb900', borderRadius: '1px' }} />
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 14px',
+              boxShadow: '0 8px 20px -2px rgba(99, 102, 241, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2) inset',
+              color: '#ffffff'
+            }}
+          >
+            <Package size={22} />
           </div>
-          <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#f3f2f1', margin: '0 0 6px 0' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#f8fafc', margin: '0 0 6px 0', letterSpacing: '-0.2px' }}>
             {activeTab === 'signin' 
               ? (lang === 'ru' ? 'Вход в систему школы' : lang === 'kk' ? 'Мектеп жүйесіне кіру' : 'Sign in to your account')
               : (lang === 'ru' ? 'Регистрация аккаунта' : lang === 'kk' ? 'Тіркелгі жасау' : 'Create an account')}
           </h2>
-          <p style={{ fontSize: '12px', color: '#adadad', margin: 0 }}>
+          <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
             {activeTab === 'signin'
               ? (lang === 'ru' ? 'Введите логин сотрудника или зарегистрированного пользователя' : lang === 'kk' ? 'Тіркелген деректеріңіз арқылы кіріңіз' : 'Enter credentials to access full school operations')
               : (lang === 'ru' ? 'Создайте учетную запись для подачи и контроля заявок' : lang === 'kk' ? 'Өтінімдерді басқару үшін тіркеліңіз' : 'Register to submit & monitor campus requests')}
           </p>
         </div>
 
-        {/* Tab Switcher: Microsoft Fluent Segmented Control */}
+        {/* Tab Switcher: Modern Segmented Control */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '2px',
-          background: '#202020',
-          padding: '2px',
-          borderRadius: '4px',
-          marginBottom: '18px',
-          border: '1px solid #383838'
+          gap: '4px',
+          background: 'rgba(255, 255, 255, 0.05)',
+          padding: '4px',
+          borderRadius: '10px',
+          marginBottom: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
         }}>
           <button
             type="button"
@@ -263,15 +283,16 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
               setSuccessMessage('');
             }}
             style={{
-              padding: '7px',
-              borderRadius: '3px',
+              padding: '8px',
+              borderRadius: '8px',
               border: 'none',
               fontSize: '12px',
-              fontWeight: activeTab === 'signin' ? '600' : '400',
+              fontWeight: activeTab === 'signin' ? '600' : '500',
               cursor: 'pointer',
-              color: activeTab === 'signin' ? '#ffffff' : '#adadad',
-              background: activeTab === 'signin' ? '#0f6cbd' : 'transparent',
-              transition: 'background 0.15s ease',
+              color: activeTab === 'signin' ? '#ffffff' : '#94a3b8',
+              background: activeTab === 'signin' ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'transparent',
+              boxShadow: activeTab === 'signin' ? '0 2px 8px rgba(79, 70, 229, 0.4)' : 'none',
+              transition: 'all 0.15s ease',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -289,15 +310,16 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
               setSuccessMessage('');
             }}
             style={{
-              padding: '7px',
-              borderRadius: '3px',
+              padding: '8px',
+              borderRadius: '8px',
               border: 'none',
               fontSize: '12px',
-              fontWeight: activeTab === 'signup' ? '600' : '400',
+              fontWeight: activeTab === 'signup' ? '600' : '500',
               cursor: 'pointer',
-              color: activeTab === 'signup' ? '#ffffff' : '#adadad',
-              background: activeTab === 'signup' ? '#0f6cbd' : 'transparent',
-              transition: 'background 0.15s ease',
+              color: activeTab === 'signup' ? '#ffffff' : '#94a3b8',
+              background: activeTab === 'signup' ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'transparent',
+              boxShadow: activeTab === 'signup' ? '0 2px 8px rgba(79, 70, 229, 0.4)' : 'none',
+              transition: 'all 0.15s ease',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -345,7 +367,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             <span>{successMessage}</span>
           </div>
         )}
-        {/* SIGN IN FORM (LOGIN WINDOW) */}
+        {/* SIGN IN FORM */}
         {activeTab === 'signin' && (
           <form onSubmit={handleSignInSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
@@ -478,7 +500,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
           </form>
         )}
 
-        {/* SIGN UP FORM (REGISTRATION WINDOW) */}
+        {/* SIGN UP FORM */}
         {activeTab === 'signup' && (
           <form onSubmit={handleSignUpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>

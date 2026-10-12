@@ -163,10 +163,10 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
   const inputStyle = {
     width: '100%',
-    background: '#1f1f1f',
-    border: '1px solid #383838',
-    borderRadius: '4px',
-    padding: '8px 10px',
+    background: 'rgba(15, 23, 42, 0.75)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
+    borderRadius: '8px',
+    padding: '9px 12px',
     color: '#ffffff',
     fontSize: '13px',
     outline: 'none',
@@ -174,37 +174,60 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '640px', padding: '20px 24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '6px', margin: '0 auto', background: '#292929', border: '1px solid #383838', boxShadow: '0 16px 36px rgba(0,0,0,0.4)' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: '#111827', border: '1px solid rgba(255, 255, 255, 0.12)', boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.75)' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #383838', paddingBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ background: 'rgba(15, 108, 189, 0.15)', padding: '6px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
-              <PlusCircle size={20} color="#0f6cbd" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(59, 130, 246, 0.2))', border: '1px solid rgba(99, 102, 241, 0.3)', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center' }}>
+              <PlusCircle size={20} color="#818cf8" />
             </div>
             <div>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#f3f2f1' }}>{t.tickets.createTitle}</h2>
-              <span style={{ fontSize: '11px', color: '#adadad' }}>
+              <h2 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: '#f8fafc', letterSpacing: '-0.2px' }}>{t.tickets.createTitle}</h2>
+              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
                 {role === 'parent' 
                   ? (lang === 'ru' ? 'Подача заявки: Родитель' : lang === 'kk' ? 'Өтінім беруші: Ата-ана' : 'Submitting as: School Parent')
                   : role === 'guest'
                   ? (lang === 'ru' ? 'Подача заявки: Гость школы' : lang === 'kk' ? 'Өтінім беруші: Мектеп қонағы' : 'Submitting as: Campus Guest')
-                  : <>Sender: <strong style={{ color: '#f3f2f1' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
+                  : <>Sender: <strong style={{ color: '#f8fafc' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
               </span>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#adadad', cursor: 'pointer', padding: '6px', borderRadius: '3px', display: 'flex', alignItems: 'center' }}>
-            <X size={18} />
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.color = '#ffffff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              e.currentTarget.style.color = '#94a3b8';
+            }}
+          >
+            <X size={16} />
           </button>
         </div>
 
         {/* Step 1: Select Department */}
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ fontSize: '11px', fontWeight: '600', color: '#adadad', display: 'block', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        <div style={{ marginBottom: '18px' }}>
+          <label style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             {t.tickets.selectDepartment} *
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
             {departmentList.map(dept => {
               const isSelected = department === dept.id;
               const deptTitle = dept.translations?.[lang] || dept.name;
@@ -221,21 +244,22 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                     }));
                   }}
                   style={{
-                    padding: '8px 6px',
-                    borderRadius: '4px',
-                    border: isSelected ? `1px solid ${dept.color}` : '1px solid #383838',
-                    background: isSelected ? '#333333' : '#242424',
+                    padding: '10px 8px',
+                    borderRadius: '8px',
+                    border: isSelected ? `1.5px solid ${dept.color || '#6366f1'}` : '1px solid rgba(255, 255, 255, 0.08)',
+                    background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'rgba(255, 255, 255, 0.04)',
+                    boxShadow: isSelected ? '0 0 12px rgba(99, 102, 241, 0.25)' : 'none',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: '5px',
                     cursor: 'pointer',
-                    transition: 'all 0.12s ease',
+                    transition: 'all 0.15s ease',
                     textAlign: 'center'
                   }}
                 >
-                  <span style={{ fontSize: '18px', lineHeight: 1 }}>{dept.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '600' : '400', color: isSelected ? '#ffffff' : '#adadad', lineHeight: 1.2 }}>
+                  <span style={{ fontSize: '20px', lineHeight: 1 }}>{dept.emoji}</span>
+                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '600' : '500', color: isSelected ? '#ffffff' : '#94a3b8', lineHeight: 1.2 }}>
                     {deptTitle}
                   </span>
                 </button>

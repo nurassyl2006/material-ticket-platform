@@ -5,8 +5,8 @@
   "type": "module",
   "homepage": "https://nurassyl2006.github.io/material-ticket-platform",
   "scripts": {
-    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,green\" \"node server/index.js\" \"vite\"",
-    "server": "node server/index.js",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,green\" \"node --watch server/index.js\" \"vite\"",
+    "server": "node --watch server/index.js",
     "client": "vite",
     "db:view": "node server/view-db.js",
     "start": "node server/index.js",

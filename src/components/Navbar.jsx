@@ -16,7 +16,6 @@ import {
   UserPlus, 
   Compass,
   LogIn,
-  LayoutGrid,
   ShieldAlert
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
@@ -47,7 +46,7 @@ export const Navbar = ({
   } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  // Helper for Microsoft 365 User Initials (e.g., Balkan Kassimov -> BK)
+  // Helper for User Initials (e.g., Balkan Kassimov -> BK)
   const getUserInitials = (name) => {
     if (!name) return 'U';
     const parts = name.trim().split(/\s+/);
@@ -59,15 +58,17 @@ export const Navbar = ({
 
   return (
     <>
-      {/* Microsoft 365 Enterprise App Header */}
+      {/* Enterprise App Header */}
       <header
         className="main-navbar"
         style={{
-          background: '#252525',
-          borderBottom: '1px solid #383838',
+          background: 'rgba(10, 15, 29, 0.85)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
           padding: '0 20px',
           marginBottom: '20px',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.25)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.35)',
           position: 'sticky',
           top: 0,
           zIndex: 900
@@ -80,134 +81,115 @@ export const Navbar = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            height: '52px',
+            height: '56px',
             gap: '16px'
           }}
         >
-          {/* Left: Microsoft 365 App Waffle & Brand Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Waffle Menu Icon */}
-            <button
-              type="button"
-              title="Microsoft 365 Apps"
-              onClick={() => setActiveTab('dashboard')}
+          {/* Left: Brand Logo & Title */}
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <div
               style={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
                 width: '34px',
                 height: '34px',
-                borderRadius: '4px',
-                background: 'transparent',
+                borderRadius: '9px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#adadad',
-                border: 'none',
-                cursor: 'pointer',
-                transition: 'background-color 0.15s ease'
+                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2) inset'
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#333333')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <LayoutGrid size={18} />
-            </button>
-
-            {/* Brand Logo & Name */}
-            <div
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              <div
-                style={{
-                  background: '#0f6cbd',
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
-                }}
-              >
-                <Package size={17} color="#ffffff" />
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <h1 style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', margin: 0, letterSpacing: '-0.2px' }}>
-                    {t.appName || 'EduOps'}
-                  </h1>
-                  <span style={{ fontSize: '11px', color: '#797775', fontWeight: '400' }}>|</span>
-                  <span style={{ fontSize: '12px', color: '#adadad', fontWeight: '400' }}>
-                    {t.subtitle || 'Facilities & Materials'}
-                  </span>
-                </div>
-              </div>
+              <Package size={18} color="#ffffff" />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h1 style={{ fontSize: '16px', fontWeight: '800', color: '#ffffff', margin: 0, letterSpacing: '-0.3px' }}>
+                {t.appName ? (t.appName.includes(' - ') ? t.appName.split(' - ')[0] : t.appName) : 'EduOps'}
+              </h1>
+              <span style={{ height: '12px', width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
+              <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>
+                {t.subtitle || 'Facilities & Operations'}
+              </span>
             </div>
           </div>
 
-          {/* Center: Microsoft Fluent Pivot Tabs */}
+          {/* Center: Modern Navigation Tabs */}
           <nav
             className="desktop-nav-tabs"
             style={{
               display: 'flex',
               alignItems: 'center',
               height: '100%',
-              gap: '2px'
+              gap: '4px'
             }}
           >
             <button
               onClick={() => setActiveTab('dashboard')}
               style={{
-                height: '52px',
+                height: '36px',
                 padding: '0 14px',
                 fontSize: '13px',
                 fontWeight: activeTab === 'dashboard' ? '600' : '500',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                color: activeTab === 'dashboard' ? '#ffffff' : '#adadad',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: activeTab === 'dashboard' ? '2px solid #0f6cbd' : '2px solid transparent',
+                gap: '7px',
+                color: activeTab === 'dashboard' ? '#818cf8' : '#94a3b8',
+                background: activeTab === 'dashboard' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
+                border: activeTab === 'dashboard' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                borderRadius: '0',
-                transition: 'color 0.15s ease, border-color 0.15s ease'
+                transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
-                if (activeTab !== 'dashboard') e.currentTarget.style.color = '#ffffff';
+                if (activeTab !== 'dashboard') {
+                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }
               }}
               onMouseLeave={(e) => {
-                if (activeTab !== 'dashboard') e.currentTarget.style.color = '#adadad';
+                if (activeTab !== 'dashboard') {
+                  e.currentTarget.style.color = '#94a3b8';
+                  e.currentTarget.style.background = 'transparent';
+                }
               }}
             >
-              <LayoutDashboard size={15} color={activeTab === 'dashboard' ? '#0f6cbd' : 'currentColor'} />
+              <LayoutDashboard size={15} color={activeTab === 'dashboard' ? '#818cf8' : 'currentColor'} />
               <span>{t.nav.dashboard}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('tickets')}
               style={{
-                height: '52px',
+                height: '36px',
                 padding: '0 14px',
                 fontSize: '13px',
                 fontWeight: activeTab === 'tickets' ? '600' : '500',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                color: activeTab === 'tickets' ? '#ffffff' : '#adadad',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: activeTab === 'tickets' ? '2px solid #0f6cbd' : '2px solid transparent',
+                gap: '7px',
+                color: activeTab === 'tickets' ? '#818cf8' : '#94a3b8',
+                background: activeTab === 'tickets' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
+                border: activeTab === 'tickets' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                borderRadius: '0',
-                transition: 'color 0.15s ease, border-color 0.15s ease'
+                transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
-                if (activeTab !== 'tickets') e.currentTarget.style.color = '#ffffff';
+                if (activeTab !== 'tickets') {
+                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }
               }}
               onMouseLeave={(e) => {
-                if (activeTab !== 'tickets') e.currentTarget.style.color = '#adadad';
+                if (activeTab !== 'tickets') {
+                  e.currentTarget.style.color = '#94a3b8';
+                  e.currentTarget.style.background = 'transparent';
+                }
               }}
             >
-              <ClipboardList size={15} color={activeTab === 'tickets' ? '#0f6cbd' : 'currentColor'} />
+              <ClipboardList size={15} color={activeTab === 'tickets' ? '#818cf8' : 'currentColor'} />
               <span>{t.nav.tickets}</span>
             </button>
 
@@ -215,29 +197,34 @@ export const Navbar = ({
               <button
                 onClick={() => setActiveTab('inventory')}
                 style={{
-                  height: '52px',
+                  height: '36px',
                   padding: '0 14px',
                   fontSize: '13px',
                   fontWeight: activeTab === 'inventory' ? '600' : '500',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  color: activeTab === 'inventory' ? '#ffffff' : '#adadad',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: activeTab === 'inventory' ? '2px solid #0f6cbd' : '2px solid transparent',
+                  gap: '7px',
+                  color: activeTab === 'inventory' ? '#818cf8' : '#94a3b8',
+                  background: activeTab === 'inventory' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
+                  border: activeTab === 'inventory' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+                  borderRadius: '8px',
                   cursor: 'pointer',
-                  borderRadius: '0',
-                  transition: 'color 0.15s ease, border-color 0.15s ease'
+                  transition: 'all 0.15s ease'
                 }}
                 onMouseEnter={(e) => {
-                  if (activeTab !== 'inventory') e.currentTarget.style.color = '#ffffff';
+                  if (activeTab !== 'inventory') {
+                    e.currentTarget.style.color = '#ffffff';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  if (activeTab !== 'inventory') e.currentTarget.style.color = '#adadad';
+                  if (activeTab !== 'inventory') {
+                    e.currentTarget.style.color = '#94a3b8';
+                    e.currentTarget.style.background = 'transparent';
+                  }
                 }}
               >
-                <Package size={15} color={activeTab === 'inventory' ? '#0f6cbd' : 'currentColor'} />
+                <Package size={15} color={activeTab === 'inventory' ? '#818cf8' : 'currentColor'} />
                 <span>{t.nav.inventory}</span>
               </button>
             )}
@@ -246,42 +233,47 @@ export const Navbar = ({
               <button
                 onClick={() => setActiveTab('users')}
                 style={{
-                  height: '52px',
+                  height: '36px',
                   padding: '0 14px',
                   fontSize: '13px',
                   fontWeight: activeTab === 'users' ? '600' : '500',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  color: activeTab === 'users' ? '#ffffff' : '#adadad',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: activeTab === 'users' ? '2px solid #0f6cbd' : '2px solid transparent',
+                  gap: '7px',
+                  color: activeTab === 'users' ? '#818cf8' : '#94a3b8',
+                  background: activeTab === 'users' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
+                  border: activeTab === 'users' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+                  borderRadius: '8px',
                   cursor: 'pointer',
-                  borderRadius: '0',
-                  transition: 'color 0.15s ease, border-color 0.15s ease'
+                  transition: 'all 0.15s ease'
                 }}
                 onMouseEnter={(e) => {
-                  if (activeTab !== 'users') e.currentTarget.style.color = '#ffffff';
+                  if (activeTab !== 'users') {
+                    e.currentTarget.style.color = '#ffffff';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  if (activeTab !== 'users') e.currentTarget.style.color = '#adadad';
+                  if (activeTab !== 'users') {
+                    e.currentTarget.style.color = '#94a3b8';
+                    e.currentTarget.style.background = 'transparent';
+                  }
                 }}
               >
-                <Users size={15} color={activeTab === 'users' ? '#0f6cbd' : 'currentColor'} />
+                <Users size={15} color={activeTab === 'users' ? '#818cf8' : 'currentColor'} />
                 <span>{t.nav?.users || 'Staff & Roles'}</span>
               </button>
             )}
 
-            {/* Microsoft Fluent "+ New Request" Primary Button */}
+            {/* "+ New Request" Primary Button */}
             {onOpenNewTicket && (
               <div style={{ marginLeft: '12px' }}>
                 <button
                   onClick={onOpenNewTicket}
                   className="fluent-btn-primary"
                   style={{
-                    height: '30px',
-                    padding: '0 12px',
+                    height: '32px',
+                    padding: '0 14px',
                     fontSize: '12px'
                   }}
                 >
@@ -300,20 +292,20 @@ export const Navbar = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                background: '#202020',
-                padding: '4px 8px',
-                borderRadius: '4px',
-                border: '1px solid #383838'
+                gap: '5px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                padding: '5px 9px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
               }}
             >
-              <Globe size={13} color="#adadad" />
+              <Globe size={13} color="#94a3b8" />
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value)}
                 style={{
                   background: 'transparent',
-                  color: '#f3f2f1',
+                  color: '#f8fafc',
                   border: 'none',
                   fontSize: '12px',
                   fontWeight: '600',
@@ -322,9 +314,9 @@ export const Navbar = ({
                   padding: 0
                 }}
               >
-                <option value="kk" style={{ background: '#252525' }}>ҚАЗ</option>
-                <option value="ru" style={{ background: '#252525' }}>РУС</option>
-                <option value="en" style={{ background: '#252525' }}>ENG</option>
+                <option value="kk" style={{ background: '#111827', color: '#fff' }}>ҚАЗ</option>
+                <option value="ru" style={{ background: '#111827', color: '#fff' }}>РУС</option>
+                <option value="en" style={{ background: '#111827', color: '#fff' }}>ENG</option>
               </select>
             </div>
 
@@ -335,20 +327,20 @@ export const Navbar = ({
                 title={t.notifications?.title || 'Notifications'}
                 style={{
                   position: 'relative',
-                  width: '32px',
-                  height: '32px',
+                  width: '34px',
+                  height: '34px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isNotificationOpen ? '#333333' : 'transparent',
-                  border: '1px solid transparent',
-                  borderRadius: '4px',
-                  color: isNotificationOpen ? '#ffffff' : '#adadad',
+                  background: isNotificationOpen ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  color: isNotificationOpen ? '#ffffff' : '#94a3b8',
                   cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#333333')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)')}
                 onMouseLeave={(e) => {
-                  if (!isNotificationOpen) e.currentTarget.style.background = 'transparent';
+                  if (!isNotificationOpen) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
                 }}
               >
                 <Bell size={16} />
@@ -358,7 +350,7 @@ export const Navbar = ({
                       position: 'absolute',
                       top: '2px',
                       right: '2px',
-                      background: '#d13438',
+                      background: '#ef4444',
                       color: '#ffffff',
                       fontSize: '10px',
                       fontWeight: '700',
@@ -369,7 +361,7 @@ export const Navbar = ({
                       alignItems: 'center',
                       justifyContent: 'center',
                       padding: '0 3px',
-                      border: '1px solid #252525'
+                      boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)'
                     }}
                   >
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -384,7 +376,7 @@ export const Navbar = ({
               />
             </div>
 
-            {/* Azure Database Status Pill */}
+            {/* Database Status Pill */}
             <button
               type="button"
               onClick={onOpenServerModal || syncWithCloud}
@@ -399,26 +391,27 @@ export const Navbar = ({
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: '#202020',
-                border: '1px solid #383838',
-                padding: '4px 8px',
-                borderRadius: '4px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '5px 10px',
+                borderRadius: '8px',
                 cursor: 'pointer',
-                color: '#adadad',
+                color: '#94a3b8',
                 fontSize: '11px',
                 fontWeight: '600',
-                transition: 'border-color 0.15s ease'
+                transition: 'all 0.15s ease'
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#4a4a4a')}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#383838')}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)')}
             >
-              <Database size={13} color={cloudStatus === 'syncing' ? '#0f6cbd' : cloudStatus === 'offline' ? '#d83b01' : '#107c41'} />
+              <Database size={13} color={cloudStatus === 'syncing' ? '#6366f1' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981'} />
               <span
                 style={{
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  background: cloudStatus === 'syncing' ? '#0f6cbd' : cloudStatus === 'offline' ? '#d83b01' : '#107c41'
+                  background: cloudStatus === 'syncing' ? '#6366f1' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981',
+                  boxShadow: cloudStatus === 'connected' ? '0 0 6px rgba(16, 185, 129, 0.6)' : 'none'
                 }}
               />
               <span className="profile-btn-text">
@@ -429,7 +422,7 @@ export const Navbar = ({
             {/* Authenticated User OR Guest/Parent Role Selector & Sign In/Register */}
             {isAuthenticated ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                {/* Microsoft 365 Account Avatar & Role */}
+                {/* Account Avatar & Role */}
                 <button
                   type="button"
                   onClick={onOpenProfile}
@@ -438,19 +431,22 @@ export const Navbar = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    background: '#202020',
-                    border: '1px solid #383838',
-                    padding: '3px 8px 3px 4px',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    padding: '4px 10px 4px 5px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
                   }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)')}
                 >
                   <div
                     style={{
-                      width: '26px',
-                      height: '26px',
+                      width: '28px',
+                      height: '28px',
                       borderRadius: '50%',
-                      background: role === 'director' ? '#5b5fc7' : '#0f6cbd',
+                      background: role === 'director' ? 'linear-gradient(135deg, #8b5cf6, #6366f1)' : 'linear-gradient(135deg, #3b82f6, #4f46e5)',
                       color: '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
@@ -478,16 +474,16 @@ export const Navbar = ({
                         width: '7px',
                         height: '7px',
                         borderRadius: '50%',
-                        background: '#107c41',
-                        border: '1px solid #202020'
+                        background: '#10b981',
+                        border: '1px solid #0a0f1d'
                       }}
                     />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
-                    <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600', color: '#f3f2f1', lineHeight: 1.2 }}>
+                    <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600', color: '#f8fafc', lineHeight: 1.2 }}>
                       {currentUser?.name ? currentUser.name.split(' ')[0] : 'User'}
                     </span>
-                    <span className="role-logged-text" style={{ fontSize: '10px', color: '#adadad', lineHeight: 1 }}>
+                    <span className="role-logged-text" style={{ fontSize: '10px', color: '#94a3b8', lineHeight: 1 }}>
                       {t.roles[role]}
                     </span>
                   </div>
@@ -499,39 +495,42 @@ export const Navbar = ({
                   onClick={() => logout()}
                   title={t.auth?.logout || 'Sign Out'}
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '34px',
+                    height: '34px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '4px',
-                    color: '#adadad',
-                    cursor: 'pointer'
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#333333';
-                    e.currentTarget.style.color = '#d13438';
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                    e.currentTarget.style.color = '#ef4444';
+                    e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#adadad';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.color = '#94a3b8';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                   }}
                 >
                   <LogOut size={15} />
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {/* Guest / Parent Selector Pills */}
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    background: '#202020',
-                    border: '1px solid #383838',
-                    borderRadius: '4px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
                     padding: '2px'
                   }}
                 >
@@ -539,17 +538,18 @@ export const Navbar = ({
                     type="button"
                     onClick={() => setRole('guest')}
                     style={{
-                      padding: '4px 8px',
-                      borderRadius: '2px',
+                      padding: '5px 9px',
+                      borderRadius: '6px',
                       border: 'none',
                       fontSize: '11px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      color: role === 'guest' ? '#ffffff' : '#adadad',
-                      background: role === 'guest' ? '#0f6cbd' : 'transparent',
+                      color: role === 'guest' ? '#ffffff' : '#94a3b8',
+                      background: role === 'guest' ? 'linear-gradient(135deg, #6366f1, #4f46e5)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
                     }}
                   >
                     <Compass size={12} />
@@ -559,17 +559,18 @@ export const Navbar = ({
                     type="button"
                     onClick={() => setRole('parent')}
                     style={{
-                      padding: '4px 8px',
-                      borderRadius: '2px',
+                      padding: '5px 9px',
+                      borderRadius: '6px',
                       border: 'none',
                       fontSize: '11px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      color: role === 'parent' ? '#ffffff' : '#adadad',
-                      background: role === 'parent' ? '#5b5fc7' : 'transparent',
+                      color: role === 'parent' ? '#ffffff' : '#94a3b8',
+                      background: role === 'parent' ? 'linear-gradient(135deg, #8b5cf6, #6366f1)' : 'transparent',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
                     }}
                   >
                     <Users size={12} />
@@ -582,10 +583,10 @@ export const Navbar = ({
                   type="button"
                   onClick={onOpenLogin}
                   className="fluent-btn-secondary"
-                  style={{ height: '30px', padding: '0 10px', fontSize: '12px' }}
+                  style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
                 >
                   <LogIn size={13} />
-                  <span>{t.auth?.signIn || 'Sign In'}</span>
+                  <span>{t.auth?.loginWindow || t.auth?.signIn || 'Sign In'}</span>
                 </button>
 
                 {/* Register Button */}
@@ -593,7 +594,7 @@ export const Navbar = ({
                   type="button"
                   onClick={onOpenRegister}
                   className="fluent-btn-primary"
-                  style={{ height: '30px', padding: '0 10px', fontSize: '12px' }}
+                  style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
                 >
                   <UserPlus size={13} />
                   <span>{t.auth?.registerWindow || 'Register'}</span>
@@ -610,24 +611,25 @@ export const Navbar = ({
               }}
               title="Reset Demo Data"
               style={{
-                width: '30px',
-                height: '30px',
+                width: '32px',
+                height: '32px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: 'transparent',
                 border: 'none',
-                borderRadius: '4px',
-                color: '#797775',
-                cursor: 'pointer'
+                borderRadius: '8px',
+                color: '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#333333';
-                e.currentTarget.style.color = '#adadad';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.color = '#94a3b8';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#797775';
+                e.currentTarget.style.color = '#64748b';
               }}
             >
               <RotateCcw size={14} />

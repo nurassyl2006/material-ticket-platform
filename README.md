@@ -62,7 +62,7 @@ npm run dev
 - **API Server & DB**: http://localhost:5001/api/
 
 ### 3. Separate Execution Commands
-- Start only the Express API Server:
+- Start the Express API Server (with auto-reload on code changes):
   ```bash
   npm run server
   ```

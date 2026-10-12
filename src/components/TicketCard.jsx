@@ -151,21 +151,22 @@ export const TicketCard = ({
     <div 
       className="glass-panel"
       style={{
-        padding: '14px 18px',
+        padding: '16px 20px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
-        background: '#292929',
-        border: '1px solid #383838',
-        borderRadius: '4px',
-        borderLeft: `3px solid ${
-          targetDept === 'it' ? '#0f6cbd' :
-          targetDept === 'cleaning' ? '#107c41' :
-          targetDept === 'facilities' ? '#5b5fc7' :
-          targetDept === 'security' ? '#d13438' : '#d83b01'
+        gap: '12px',
+        background: 'rgba(18, 25, 44, 0.75)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '12px',
+        borderLeft: `4px solid ${
+          targetDept === 'it' ? '#3b82f6' :
+          targetDept === 'cleaning' ? '#10b981' :
+          targetDept === 'facilities' ? '#8b5cf6' :
+          targetDept === 'security' ? '#ef4444' : '#f59e0b'
         }`,
         position: 'relative',
-        boxShadow: 'var(--shadow-depth-2)'
+        boxShadow: 'var(--shadow-depth-2)',
+        transition: 'all 0.18s ease'
       }}
     >
       {/* Top Row: Department, Title, Urgency, Status & Translation Switcher */}
@@ -326,42 +327,42 @@ export const TicketCard = ({
         </p>
       )}
 
-      {/* Relocation Logistics info (Fluent style) */}
+      {/* Relocation Logistics info */}
       {ticket.moveDetails && (
         <div style={{
-          background: '#242424',
-          border: '1px solid #383838',
-          borderLeft: '3px solid #5b5fc7',
-          padding: '6px 10px',
-          borderRadius: '3px',
+          background: 'rgba(139, 92, 246, 0.12)',
+          border: '1px solid rgba(139, 92, 246, 0.25)',
+          borderLeft: '3px solid #8b5cf6',
+          padding: '8px 12px',
+          borderRadius: '8px',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
           fontSize: '11px',
-          color: '#d1d1d1',
+          color: '#e2e8f0',
           flexWrap: 'wrap'
         }}>
-          <Truck size={14} color="#5b5fc7" />
-          <span><strong>Relocation:</strong> {ticket.moveDetails.fromRoom} ➔ <strong style={{ color: '#8b8fe8' }}>{ticket.moveDetails.toRoom}</strong></span>
-          {ticket.moveDetails.items && <span style={{ color: '#8a8a8a' }}>({ticket.moveDetails.items})</span>}
+          <Truck size={14} color="#a78bfa" />
+          <span><strong>Relocation:</strong> {ticket.moveDetails.fromRoom} ➔ <strong style={{ color: '#c4b5fd' }}>{ticket.moveDetails.toRoom}</strong></span>
+          {ticket.moveDetails.items && <span style={{ color: '#94a3b8' }}>({ticket.moveDetails.items})</span>}
         </div>
       )}
 
-      {/* Materials / Purchase info (Fluent style) */}
+      {/* Materials / Purchase info */}
       {ticket.requiredMaterials && (
         <div style={{
-          background: '#242424',
-          border: '1px solid #383838',
-          borderLeft: '3px solid #c19c00',
-          padding: '6px 10px',
-          borderRadius: '3px',
+          background: 'rgba(245, 158, 11, 0.12)',
+          border: '1px solid rgba(245, 158, 11, 0.25)',
+          borderLeft: '3px solid #f59e0b',
+          padding: '8px 12px',
+          borderRadius: '8px',
           fontSize: '11px',
-          color: '#d1d1d1'
+          color: '#e2e8f0'
         }}>
-          <span style={{ color: '#e0b500', fontWeight: '600' }}>📦 Materials: </span>
+          <span style={{ color: '#fbbf24', fontWeight: '600' }}>📦 Materials: </span>
           <span>{ticket.requiredMaterials}</span>
           {ticket.estimatedCost && (
-            <span style={{ color: '#e0b500', marginLeft: '6px', fontWeight: '600' }}>
+            <span style={{ color: '#fbbf24', marginLeft: '6px', fontWeight: '600' }}>
               (₸{ticket.estimatedCost.toLocaleString()})
             </span>
           )}

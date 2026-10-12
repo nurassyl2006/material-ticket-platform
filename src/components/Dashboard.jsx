@@ -72,39 +72,43 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       
-      {/* Microsoft 365 Command Header / Welcome Surface */}
+      {/* Operations Command Header / Welcome Surface */}
       <div
         style={{ 
-          padding: '18px 22px', 
-          background: '#252525',
-          border: '1px solid #383838',
-          borderRadius: '6px',
-          boxShadow: 'var(--shadow-depth-2)'
+          padding: '22px 24px', 
+          background: 'rgba(18, 25, 44, 0.75)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '14px',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: 'var(--shadow-depth-4)',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', position: 'relative', zIndex: 1 }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
               <span
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '4px',
-                  background: '#202020',
-                  border: '1px solid #383838',
-                  padding: '2px 8px',
-                  borderRadius: '3px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '3px 9px',
+                  borderRadius: '6px',
                   fontSize: '11px',
                   fontWeight: '600',
-                  color: '#adadad'
+                  color: '#94a3b8'
                 }}
               >
-                <UserCheck size={12} color="#0f6cbd" />
+                <UserCheck size={12} color="#818cf8" />
                 <span>{t.roles[role]}</span>
               </span>
-              <span style={{ fontSize: '11px', color: '#797775' }}>•</span>
-              <span style={{ fontSize: '11px', color: '#797775' }}>
-                Microsoft 365 Operations Suite
+              <span style={{ fontSize: '11px', color: '#64748b' }}>•</span>
+              <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '500' }}>
+                Campus Operations Suite
               </span>
             </div>
 
@@ -149,29 +153,30 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
         </div>
       </div>
 
-      {/* Critical Alert Warning (Microsoft Fluent Error / Crimson MessageBar) */}
+      {/* Critical Alert Warning */}
       {criticalTickets.length > 0 && (
         <div
           style={{ 
-            padding: '10px 16px', 
-            background: '#292020', 
-            border: '1px solid #5a2024',
-            borderLeft: '4px solid #d13438',
-            borderRadius: '4px',
+            padding: '12px 18px', 
+            background: 'rgba(239, 68, 68, 0.12)', 
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderLeft: '4px solid #ef4444',
+            borderRadius: '12px',
+            backdropFilter: 'blur(12px)',
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between', 
             flexWrap: 'wrap', 
-            gap: '10px' 
+            gap: '12px' 
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Flame size={18} color="#d13438" />
+            <Flame size={18} color="#f87171" />
             <div>
               <strong style={{ fontSize: '13px', color: '#f87171', fontWeight: '600' }}>
                 {t.dashboard.urgentAlerts} ({criticalTickets.length})
               </strong>
-              <p style={{ fontSize: '12px', color: '#adadad', margin: 0 }}>
+              <p style={{ fontSize: '12px', color: '#cbd5e1', margin: 0 }}>
                 {criticalTickets.map(ct => `[${resolveDepartment(ct.department).emoji} ${ct.itemTitle}] (${ct.roomNumber || 'Campus'})`).join(' • ')}
               </p>
             </div>
@@ -179,7 +184,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           <button
             onClick={() => setActiveTab('tickets')}
             className="fluent-btn-primary"
-            style={{ height: '28px', background: '#d13438', fontSize: '12px' }}
+            style={{ height: '30px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', fontSize: '12px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)' }}
           >
             Review Tasks
           </button>
@@ -187,7 +192,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       )}
 
       {/* ============================================================== */}
-      {/* 1. EXECUTIVE KPI CARDS GRID (Microsoft Azure / Office 365 KPI Cards) */}
+      {/* 1. EXECUTIVE KPI CARDS GRID */}
       {/* ============================================================== */}
       {(role === 'director' || role === 'admin') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -197,25 +202,25 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Total School Requests */}
             <div
               style={{
-                background: '#292929',
-                border: '1px solid #383838',
-                borderLeft: '3px solid #0f6cbd',
-                borderRadius: '4px',
-                padding: '14px 16px',
+                background: 'rgba(18, 25, 44, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: '4px solid #6366f1',
+                borderRadius: '12px',
+                padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '14px',
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-                <ClipboardList size={20} color="#0f6cbd" />
+              <div style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <ClipboardList size={20} color="#818cf8" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.totalJobs}
                 </div>
-                <div style={{ fontSize: '22px', fontWeight: '600', color: '#f3f2f1', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#f8fafc', lineHeight: 1.2 }}>
                   {totalTickets}
                 </div>
               </div>
@@ -224,25 +229,25 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* In Progress */}
             <div
               style={{
-                background: '#292929',
-                border: '1px solid #383838',
-                borderLeft: '3px solid #0f6cbd',
-                borderRadius: '4px',
-                padding: '14px 16px',
+                background: 'rgba(18, 25, 44, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: '4px solid #3b82f6',
+                borderRadius: '12px',
+                padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '14px',
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-                <Clock size={20} color="#70b5f9" />
+              <div style={{ background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <Clock size={20} color="#60a5fa" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.inProcessJobs}
                 </div>
-                <div style={{ fontSize: '22px', fontWeight: '600', color: '#70b5f9', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#60a5fa', lineHeight: 1.2 }}>
                   {inProgressCount}
                 </div>
               </div>
@@ -251,25 +256,25 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Completed */}
             <div
               style={{
-                background: '#292929',
-                border: '1px solid #383838',
-                borderLeft: '3px solid #107c41',
-                borderRadius: '4px',
-                padding: '14px 16px',
+                background: 'rgba(18, 25, 44, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: '4px solid #10b981',
+                borderRadius: '12px',
+                padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '14px',
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-                <CheckCircle2 size={20} color="#107c41" />
+              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <CheckCircle2 size={20} color="#34d399" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.completedJobs}
                 </div>
-                <div style={{ fontSize: '22px', fontWeight: '600', color: '#62c789', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#34d399', lineHeight: 1.2 }}>
                   {completedCount}
                 </div>
               </div>
@@ -278,25 +283,25 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Pending Assignment */}
             <div
               style={{
-                background: '#292929',
-                border: '1px solid #383838',
-                borderLeft: '3px solid #d83b01',
-                borderRadius: '4px',
-                padding: '14px 16px',
+                background: 'rgba(18, 25, 44, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: '4px solid #f59e0b',
+                borderRadius: '12px',
+                padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '14px',
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-                <AlertTriangle size={20} color="#d83b01" />
+              <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <AlertTriangle size={20} color="#fbbf24" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.pendingJobs}
                 </div>
-                <div style={{ fontSize: '22px', fontWeight: '600', color: '#f59e0b', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#fbbf24', lineHeight: 1.2 }}>
                   {pendingCount}
                 </div>
               </div>
@@ -305,22 +310,22 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Budget / Parts Spent */}
             <div
               style={{
-                background: '#292929',
-                border: '1px solid #383838',
-                borderLeft: '3px solid #5b5fc7',
-                borderRadius: '4px',
-                padding: '14px 16px',
+                background: 'rgba(18, 25, 44, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderLeft: '4px solid #8b5cf6',
+                borderRadius: '12px',
+                padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '14px',
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-                <DollarSign size={20} color="#8b8fe6" />
+              <div style={{ background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <DollarSign size={20} color="#a78bfa" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.totalSpent}
                 </div>
                 <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1', lineHeight: 1.2 }}>
@@ -334,21 +339,22 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           {/* Department Workload & Completion Status */}
           <div
             style={{
-              background: '#292929',
-              border: '1px solid #383838',
-              borderRadius: '6px',
-              padding: '18px 20px',
-              boxShadow: 'var(--shadow-depth-2)'
+              background: 'rgba(18, 25, 44, 0.75)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '14px',
+              padding: '20px 22px',
+              boxShadow: 'var(--shadow-depth-4)',
+              backdropFilter: 'blur(16px)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <TrendingUp size={16} color="#0f6cbd" />
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#f3f2f1', margin: 0 }}>
+                <TrendingUp size={16} color="#818cf8" />
+                <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', margin: 0 }}>
                   {t.dashboard.departmentWorkload}
                 </h3>
               </div>
-              <span style={{ fontSize: '11px', color: '#adadad' }}>Microsoft 365 Campus SLA</span>
+              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>Campus Operations SLA</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
@@ -386,9 +392,9 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                       </span>
                     </div>
 
-                    {/* Microsoft Fluent Progress Bar (Thin, crisp) */}
-                    <div style={{ background: '#333333', height: '4px', borderRadius: '2px', overflow: 'hidden', marginBottom: '8px' }}>
-                      <div style={{ width: `${progress}%`, height: '100%', background: progress === 100 ? '#107c41' : '#0f6cbd' }} />
+                    {/* Sleek Progress Bar */}
+                    <div style={{ background: 'rgba(255, 255, 255, 0.08)', height: '5px', borderRadius: '9999px', overflow: 'hidden', marginBottom: '8px' }}>
+                      <div style={{ width: `${progress}%`, height: '100%', background: progress === 100 ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #6366f1, #06b6d4)', borderRadius: '9999px' }} />
                     </div>
 
                     <div style={{ fontSize: '11px', color: '#adadad', display: 'flex', justifyContent: 'space-between' }}>
@@ -497,20 +503,21 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       )}
 
       {/* ============================================================== */}
-      {/* QUICK REQUEST LAUNCHPAD (Microsoft 365 Service Tiles) */}
+      {/* QUICK REQUEST LAUNCHPAD */}
       {/* ============================================================== */}
       <div
         style={{
-          background: '#292929',
-          border: '1px solid #383838',
-          borderRadius: '6px',
-          padding: '18px 20px',
-          boxShadow: 'var(--shadow-depth-2)'
+          background: 'rgba(18, 25, 44, 0.75)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '14px',
+          padding: '20px 22px',
+          boxShadow: 'var(--shadow-depth-4)',
+          backdropFilter: 'blur(16px)'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-          <Layers size={16} color="#0f6cbd" />
-          <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#f3f2f1', margin: 0 }}>
+          <Layers size={16} color="#818cf8" />
+          <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', margin: 0 }}>
             {t.dashboard.quickActions || 'Submit Service Request by Department'}:
           </h3>
         </div>
@@ -524,33 +531,37 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 key={dept.id}
                 onClick={() => openNewRequestForDept(dept.id)}
                 style={{
-                  background: '#222222',
-                  border: '1px solid #383838',
-                  padding: '12px',
-                  borderRadius: '4px',
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  padding: '14px',
+                  borderRadius: '10px',
                   textAlign: 'left',
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '4px',
-                  transition: 'border-color 0.15s ease, background-color 0.15s ease'
+                  gap: '6px',
+                  transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#0f6cbd';
-                  e.currentTarget.style.backgroundColor = '#2a2a2a';
+                  e.currentTarget.style.borderColor = dept.color || '#6366f1';
+                  e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.75)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px -4px rgba(0, 0, 0, 0.4)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#383838';
-                  e.currentTarget.style.backgroundColor = '#222222';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f3f2f1', fontWeight: '600', fontSize: '13px' }}>
-                  <span>{dept.emoji}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f8fafc', fontWeight: '600', fontSize: '13px' }}>
+                  <span style={{ fontSize: '16px' }}>{dept.emoji}</span>
                   <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {localizedName}
                   </span>
                 </div>
-                <p style={{ fontSize: '11px', color: '#adadad', margin: 0, lineHeight: 1.4 }}>
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
                   {sampleSubcats}
                 </p>
               </button>
@@ -596,7 +607,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
         </div>
       )}
 
-      {/* Recent Requests Section (Microsoft Outlook / Teams Activity Feed) */}
+      {/* Recent Requests Section (Activity Feed) */}
       <div style={{ marginTop: '8px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#f3f2f1', margin: 0 }}>
@@ -633,18 +644,26 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 key={ticket.id}
                 onClick={() => setActiveTab('tickets')}
                 style={{
-                  background: '#292929',
-                  border: '1px solid #383838',
-                  borderRadius: '4px',
-                  padding: '14px',
+                  background: 'rgba(18, 25, 44, 0.75)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  padding: '16px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '6px',
+                  gap: '8px',
                   cursor: 'pointer',
-                  transition: 'border-color 0.15s ease'
+                  transition: 'all 0.18s ease'
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#0f6cbd')}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#383838')}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px -4px rgba(0, 0, 0, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '11px', color: '#adadad', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>

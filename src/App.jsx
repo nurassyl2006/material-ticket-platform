@@ -22,7 +22,7 @@ function MainApp() {
   const [targetTicketId, setTargetTicketId] = useState(null);
   const [isServerModalOpen, setIsServerModalOpen] = useState(false);
 
-  // Authentication Modal Windows State (Login Window & Registration Window)
+  // Authentication Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState('signin'); // 'signin' | 'signup'
 
@@ -67,15 +67,17 @@ function MainApp() {
       />
       <DeviceToastAlert onSelectTicket={handleSelectTicketFromNotification} />
 
-      {/* Unregistered Guest / Parent Notification & Access Banner (Microsoft Fluent InfoBar) */}
+      {/* Unregistered Guest / Parent Notification & Access Banner */}
       {!isAuthenticated && (
         <div style={{ maxWidth: '1360px', margin: '-8px auto 16px', padding: '0 20px' }}>
           <div style={{
-            background: '#292929',
-            border: '1px solid #383838',
-            borderLeft: `3px solid ${role === 'parent' ? '#5b5fc7' : '#0f6cbd'}`,
-            borderRadius: '4px',
-            padding: '10px 16px',
+            background: 'rgba(18, 25, 44, 0.75)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderLeft: `4px solid ${role === 'parent' ? '#8b5cf6' : '#6366f1'}`,
+            borderRadius: '12px',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            padding: '12px 18px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -243,7 +245,7 @@ function MainApp() {
         onClose={() => setIsProfileOpen(false)} 
       />
 
-      {/* Authentication Modal Window (Login & Registration Windows) */}
+      {/* Authentication Modal */}
       <AuthModal 
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
