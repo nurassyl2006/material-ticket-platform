@@ -15,6 +15,8 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
+    "deploy:server": "npm run build && rsync -avz --delete dist/ service@10.1.13.50:~/material-ticket-platform/dist/",
+    "update:server": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git pull origin main && npm install && npm run build && (pm2 restart all 2>/dev/null || pkill -f 'node.*server/index.js' || true) && npm run server\"",
     "tunnel": "node server/tunnel.js"
   },
   "dependencies": {
