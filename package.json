@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,green\" \"node --watch server/index.js\" \"vite\"",
     "server": "node --watch server/index.js",
+    "server:prod": "node server/index.js",
     "client": "vite",
     "db:view": "node server/view-db.js",
     "start": "node server/index.js",
@@ -16,13 +17,13 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "deploy:server": "npm run build && rsync -avz --delete dist/ service@10.1.13.50:~/material-ticket-platform/dist/",
-    "update:server": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git pull origin main && npm install && npm run build && (pm2 restart all 2>/dev/null || pkill -f 'node.*server/index.js' || true) && npm run server\"",
+    "update:server": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git pull origin main && npm install && npm run build && (pm2 restart all 2>/dev/null || (pkill -f 'node.*server/index.js' || true && nohup node server/index.js > ~/server.log 2>&1 &))\"",
     "tunnel": "node server/tunnel.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.6",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.4",
+    "dotenv": "^18.0.7",
     "express": "^5.2.1",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",

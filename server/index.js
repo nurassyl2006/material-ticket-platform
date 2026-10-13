@@ -42,7 +42,9 @@ function formatTicket(row) {
     purchaseCost: Number(row.purchaseCost) || 0,
     photos: safeJsonParse(row.photos, []),
     completionPhotos: safeJsonParse(row.completionPhotos, []),
-    moveDetails: safeJsonParse(row.moveDetails, null)
+    moveDetails: safeJsonParse(row.moveDetails, null),
+    createdById: row.createdById || null,
+    createdByRole: row.createdByRole || null
   };
 }
 
@@ -355,10 +357,32 @@ app.get('/api/auth/demo-credentials', (req, res) => {
 // Tickets API Endpoints
 // -------------------------------------------------------------
 
-// GET all tickets (newest first)
+// GET all tickets (newest first, with optional query filters)
 app.get('/api/tickets', (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM tickets ORDER BY createdAt DESC').all();
+    const { status, department, createdById, search } = req.query;
+    let query = 'SELECT * FROM tickets WHERE 1=1';
+    const params = {};
+
+    if (status) {
+      query += ' AND status = @status';
+      params.status = status;
+    }
+    if (department) {
+      query += ' AND department = @department';
+      params.department = department;
+    }
+    if (createdById) {
+      query += ' AND createdById = @createdById';
+      params.createdById = createdById;
+    }
+    if (search) {
+      query += ' AND (LOWER(itemTitle) LIKE @search OR LOWER(description) LIKE @search OR LOWER(teacherName) LIKE @search)';
+      params.search = `%${search.toLowerCase().trim()}%`;
+    }
+
+    query += ' ORDER BY createdAt DESC';
+    const rows = db.prepare(query).all(params);
     res.json(rows.map(formatTicket));
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -399,6 +423,8 @@ app.post('/api/tickets', (req, res) => {
       completionPhotos: Array.isArray(body.completionPhotos) ? JSON.stringify(body.completionPhotos) : '[]',
       teacherName: body.teacherName || '',
       teacherPhone: body.teacherPhone || '',
+      createdById: body.createdById || null,
+      createdByRole: body.createdByRole || null,
       status: body.status || 'pending',
       assignedWorker: body.assignedWorker || null,
       assignedRole: body.assignedRole || null,
@@ -414,11 +440,13 @@ app.post('/api/tickets', (req, res) => {
       INSERT INTO tickets (
         id, department, itemTitle, subcategory, category, quantity, unit, urgency, roomNumber,
         moveDetails, description, photos, completionPhotos, teacherName, teacherPhone,
+        createdById, createdByRole,
         status, assignedWorker, assignedRole, handledAction, purchaseCost, supplier, notes,
         createdAt, updatedAt
       ) VALUES (
         @id, @department, @itemTitle, @subcategory, @category, @quantity, @unit, @urgency, @roomNumber,
         @moveDetails, @description, @photos, @completionPhotos, @teacherName, @teacherPhone,
+        @createdById, @createdByRole,
         @status, @assignedWorker, @assignedRole, @handledAction, @purchaseCost, @supplier, @notes,
         @createdAt, @updatedAt
       )
@@ -481,8 +509,8 @@ app.patch('/api/tickets/:id', (req, res) => {
     const allowedFields = [
       'department', 'itemTitle', 'subcategory', 'category', 'quantity', 'unit', 'urgency',
       'roomNumber', 'moveDetails', 'description', 'photos', 'completionPhotos',
-      'teacherName', 'teacherPhone', 'status', 'assignedWorker', 'assignedRole',
-      'handledAction', 'purchaseCost', 'supplier', 'notes'
+      'teacherName', 'teacherPhone', 'createdById', 'createdByRole', 'status',
+      'assignedWorker', 'assignedRole', 'handledAction', 'purchaseCost', 'supplier', 'notes'
     ];
 
     const fieldsToSet = [];
@@ -569,11 +597,13 @@ app.post('/api/tickets/bulk', (req, res) => {
       INSERT INTO tickets (
         id, department, itemTitle, subcategory, category, quantity, unit, urgency, roomNumber,
         moveDetails, description, photos, completionPhotos, teacherName, teacherPhone,
+        createdById, createdByRole,
         status, assignedWorker, assignedRole, handledAction, purchaseCost, supplier, notes,
         createdAt, updatedAt
       ) VALUES (
         @id, @department, @itemTitle, @subcategory, @category, @quantity, @unit, @urgency, @roomNumber,
         @moveDetails, @description, @photos, @completionPhotos, @teacherName, @teacherPhone,
+        @createdById, @createdByRole,
         @status, @assignedWorker, @assignedRole, @handledAction, @purchaseCost, @supplier, @notes,
         @createdAt, @updatedAt
       )
@@ -592,6 +622,8 @@ app.post('/api/tickets/bulk', (req, res) => {
         completionPhotos = excluded.completionPhotos,
         teacherName = excluded.teacherName,
         teacherPhone = excluded.teacherPhone,
+        createdById = COALESCE(excluded.createdById, tickets.createdById),
+        createdByRole = COALESCE(excluded.createdByRole, tickets.createdByRole),
         status = excluded.status,
         assignedWorker = excluded.assignedWorker,
         assignedRole = excluded.assignedRole,
@@ -621,6 +653,8 @@ app.post('/api/tickets/bulk', (req, res) => {
           completionPhotos: Array.isArray(t.completionPhotos) ? JSON.stringify(t.completionPhotos) : (typeof t.completionPhotos === 'string' ? t.completionPhotos : '[]'),
           teacherName: t.teacherName || '',
           teacherPhone: t.teacherPhone || '',
+          createdById: t.createdById || null,
+          createdByRole: t.createdByRole || null,
           status: t.status || 'pending',
           assignedWorker: t.assignedWorker || null,
           assignedRole: t.assignedRole || null,
@@ -1233,7 +1267,22 @@ if (fs.existsSync(distDir)) {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`EduOps Server & SQLite Database running on http://0.0.0.0:${PORT}`);
   console.log(`API endpoints accessible at http://localhost:${PORT}/api/`);
 });
+
+// Graceful process termination (prevents SQLite WAL corruption on reload)
+const handleShutdown = (signal) => {
+  console.log(`\nReceived ${signal}. Gracefully stopping EduOps server...`);
+  server.close(() => {
+    try {
+      db.close();
+    } catch {}
+    console.log('Database and server closed.');
+    process.exit(0);
+  });
+};
+
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+process.on('SIGINT', () => handleShutdown('SIGINT'));

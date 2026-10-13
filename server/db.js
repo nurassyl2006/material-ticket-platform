@@ -19,6 +19,7 @@ const db = new Database(dbPath);
 // Enable WAL mode for high concurrency & better performance
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 5000');
 
 // Cryptographic Password Hashing & Verification Utilities
 export function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
@@ -59,6 +60,8 @@ db.exec(`
     completionPhotos TEXT DEFAULT '[]',
     teacherName TEXT DEFAULT '',
     teacherPhone TEXT DEFAULT '',
+    createdById TEXT DEFAULT NULL,
+    createdByRole TEXT DEFAULT NULL,
     status TEXT DEFAULT 'pending',
     assignedWorker TEXT DEFAULT NULL,
     assignedRole TEXT DEFAULT NULL,
@@ -71,6 +74,7 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_tickets_status ON tickets(status);
   CREATE INDEX IF NOT EXISTS idx_tickets_createdAt ON tickets(createdAt);
+  CREATE INDEX IF NOT EXISTS idx_tickets_department ON tickets(department);
 
   -- Storage List of Goods (Inventory) Table
   CREATE TABLE IF NOT EXISTS inventory (
@@ -142,8 +146,25 @@ try {
   if (!userColumns.includes('salt')) {
     db.prepare("ALTER TABLE users ADD COLUMN salt TEXT DEFAULT ''").run();
   }
-} catch (e) {
+} catch {
   // Column check warning
+}
+
+// Migration: Ensure createdById & createdByRole columns exist on tickets
+try {
+  const ticketColumns = db.prepare("PRAGMA table_info(tickets)").all().map(c => c.name);
+  if (!ticketColumns.includes('createdById')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN createdById TEXT DEFAULT NULL").run();
+  }
+  if (!ticketColumns.includes('createdByRole')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN createdByRole TEXT DEFAULT NULL").run();
+  }
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_tickets_createdById ON tickets(createdById)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_tickets_department ON tickets(department)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_users_id ON users(id)").run();
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)").run();
+} catch {
+  // Index/column migration check
 }
 
 // Default initial inventory items
