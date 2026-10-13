@@ -189,7 +189,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {(role === 'director' || role === 'admin') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+          <div className="dashboard-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
             
             {/* Total School Requests */}
             <div
@@ -514,7 +514,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           </h3>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
+        <div className="dashboard-service-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
           {Object.values(DEPARTMENTS).map(dept => {
             const localizedName = dept.translations?.[lang] || dept.name;
             const sampleSubcats = dept.subcategories.slice(0, 3).join(', ') + '...';
@@ -549,7 +549,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f8fafc', fontWeight: '600', fontSize: '13px' }}>
                   <span style={{ fontSize: '16px' }}>{dept.emoji}</span>
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span className="dashboard-service-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {localizedName}
                   </span>
                 </div>

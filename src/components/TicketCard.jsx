@@ -172,7 +172,7 @@ export const TicketCard = ({
       {/* Top Row: Department, Title, Urgency, Status & Translation Switcher */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '240px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 200px', minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {getDepartmentBadge(ticket)}
             <span style={{ fontSize: '11px', color: '#797775', fontWeight: '600' }}>#{ticket.id}</span>

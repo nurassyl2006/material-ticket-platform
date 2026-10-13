@@ -174,8 +174,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-dialog, #111827)', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))', boxShadow: 'var(--shadow-depth-16)' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '12px' }}>
+      <div className="fluent-card animate-fade-in modal-dialog-responsive" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-dialog, #111827)', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))', boxShadow: 'var(--shadow-depth-16)' }}>
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingBottom: '14px' }}>
@@ -246,8 +246,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   style={{
                     padding: '10px 8px',
                     borderRadius: '8px',
-                    border: isSelected ? `1.5px solid ${dept.color || '#6366f1'}` : '1px solid rgba(255, 255, 255, 0.08)',
-                    background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'rgba(255, 255, 255, 0.04)',
+                    border: isSelected ? `1.5px solid ${dept.color || '#6366f1'}` : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                    background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
                     boxShadow: isSelected ? '0 0 12px rgba(99, 102, 241, 0.25)' : 'none',
                     display: 'flex',
                     flexDirection: 'column',
@@ -259,7 +259,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   }}
                 >
                   <span style={{ fontSize: '20px', lineHeight: 1 }}>{dept.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '600' : '500', color: isSelected ? '#ffffff' : '#94a3b8', lineHeight: 1.2 }}>
+                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '500', color: isSelected ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)', lineHeight: 1.2 }}>
                     {deptTitle}
                   </span>
                 </button>
@@ -270,10 +270,10 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
         {/* Sender Details for Unregistered Guest / Parent */}
         {(!isAuthenticated || role === 'guest' || role === 'parent') && (
           <div style={{
-            background: '#242424',
-            border: '1px solid #383838',
-            borderLeft: role === 'parent' ? '3px solid #5b5fc7' : '3px solid #0f6cbd',
-            borderRadius: '4px',
+            background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+            border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+            borderLeft: role === 'parent' ? '4px solid #8b5cf6' : '4px solid #6366f1',
+            borderRadius: '8px',
             padding: '12px',
             marginBottom: '16px'
           }}>
@@ -294,7 +294,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
                   {lang === 'ru' ? 'Ваше имя (ФИО) *' : lang === 'kk' ? 'Аты-жөніңіз *' : 'Your Full Name *'}
@@ -345,15 +345,15 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
         {activeDeptObj && activeDeptObj.subcategories && (
           <div style={{
             marginBottom: '16px',
-            background: '#242424',
-            border: '1px solid #383838',
-            borderRadius: '4px',
+            background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+            border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+            borderRadius: '8px',
             padding: '10px 12px'
           }}>
             <div style={{
               fontSize: '11px',
               fontWeight: '600',
-              color: '#f3f2f1',
+              color: 'var(--text-main, #f3f2f1)',
               marginBottom: '8px',
               display: 'flex',
               alignItems: 'center',
@@ -371,12 +371,12 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                     type="button"
                     onClick={() => handleSelectSubcategory(subcat)}
                     style={{
-                      background: isSelected ? '#0f6cbd' : '#1f1f1f',
-                      border: isSelected ? '1px solid #115ea3' : '1px solid #383838',
-                      color: isSelected ? '#ffffff' : '#adadad',
-                      fontWeight: isSelected ? '600' : '400',
-                      padding: '4px 8px',
-                      borderRadius: '3px',
+                      background: isSelected ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'var(--bg-card, rgba(255, 255, 255, 0.05))',
+                      border: isSelected ? '1px solid #6366f1' : '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                      color: isSelected ? '#ffffff' : 'var(--text-main, #adadad)',
+                      fontWeight: isSelected ? '600' : '500',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
                       fontSize: '11px',
                       cursor: 'pointer',
                       transition: 'all 0.12s ease'
@@ -445,7 +445,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#c4b5fd', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Truck size={14} /> {t.tickets.moveDetailsTitle} (For Furniture Moves)
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+              <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                 <div>
                   <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>{t.tickets.fromRoom}</label>
                   <input type="text" placeholder="e.g. Room 102" value={formData.fromRoom} onChange={e => setFormData({ ...formData, fromRoom: e.target.value })} style={{ ...inputStyle, padding: '8px 10px', fontSize: '12px' }} />
@@ -464,7 +464,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
           {/* Storage: qty + unit */}
           {department === 'storage' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
                 <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.quantity} *</label>
                 <input type="number" min="1" required value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} style={{ ...inputStyle, padding: '8px 12px' }} />

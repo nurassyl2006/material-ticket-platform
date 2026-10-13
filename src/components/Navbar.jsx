@@ -108,12 +108,12 @@ export const Navbar = ({
             >
               <Package size={18} color="#ffffff" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h1 style={{ fontSize: '16px', fontWeight: '800', color: '#ffffff', margin: 0, letterSpacing: '-0.3px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main, #ffffff)', margin: 0, letterSpacing: '-0.3px', whiteSpace: 'nowrap' }}>
                 {t.appName ? (t.appName.includes(' - ') ? t.appName.split(' - ')[0] : t.appName) : 'EduOps'}
               </h1>
-              <span style={{ height: '12px', width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
-              <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>
+              <span className="mobile-hide" style={{ height: '12px', width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
+              <span className="mobile-hide" style={{ fontSize: '12px', color: 'var(--text-muted, #94a3b8)', fontWeight: '500', whiteSpace: 'nowrap' }}>
                 {t.subtitle || 'Facilities & Operations'}
               </span>
             </div>
@@ -413,6 +413,7 @@ export const Navbar = ({
             {/* Database Status Pill */}
             <button
               type="button"
+              className="mobile-hide"
               onClick={onOpenServerModal || syncWithCloud}
               title={
                 cloudStatus === 'syncing'
@@ -526,6 +527,7 @@ export const Navbar = ({
                 {/* Logout Button */}
                 <button
                   type="button"
+                  className="mobile-hide"
                   onClick={() => logout()}
                   title={t.auth?.logout || 'Sign Out'}
                   style={{
@@ -559,6 +561,7 @@ export const Navbar = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {/* Guest / Parent Selector Pills */}
                 <div
+                  className="mobile-hide"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -627,7 +630,7 @@ export const Navbar = ({
                 <button
                   type="button"
                   onClick={onOpenRegister}
-                  className="fluent-btn-primary"
+                  className="fluent-btn-primary mobile-hide"
                   style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
                 >
                   <UserPlus size={13} />
@@ -638,6 +641,7 @@ export const Navbar = ({
 
             {/* Reset Demo Data Button */}
             <button
+              className="mobile-hide"
               onClick={() => {
                 if (window.confirm('Reset demo requests and roles to initial state?')) {
                   resetDemoData();
@@ -678,7 +682,7 @@ export const Navbar = ({
           onClick={() => setActiveTab('dashboard')}
           className={`mobile-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
         >
-          <LayoutDashboard size={18} />
+          <LayoutDashboard size={20} />
           <span>{t.nav.dashboard}</span>
         </button>
 
@@ -686,64 +690,56 @@ export const Navbar = ({
           onClick={() => setActiveTab('tickets')}
           className={`mobile-nav-item ${activeTab === 'tickets' ? 'active' : ''}`}
         >
-          <ClipboardList size={18} />
+          <ClipboardList size={20} />
           <span>{t.nav.tickets}</span>
         </button>
 
-        {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && (
-          <button
-            onClick={() => setActiveTab('inventory')}
-            className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
-          >
-            <Package size={18} />
-            <span>{t.nav.inventory}</span>
-          </button>
-        )}
-
-        {(role === 'director' || role === 'admin') && (
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
-          >
-            <Users size={18} />
-            <span>{t.nav?.users || 'Staff'}</span>
-          </button>
-        )}
-
+        {/* Elevated Floating Action Center Button */}
         <button
           onClick={onOpenNewTicket}
-          className="mobile-nav-item"
-          style={{ color: 'var(--primary, #4f46e5)' }}
+          className="mobile-nav-fab"
+          title={t.nav.newTicket}
         >
-          <Plus size={18} />
-          <span>{t.nav.newTicket}</span>
+          <div className="mobile-fab-circle">
+            <Plus size={22} color="#ffffff" />
+          </div>
+          <span className="mobile-fab-label">{lang === 'ru' ? 'Заявка' : lang === 'kk' ? 'Өтінім' : (t.nav.newTicket || 'New')}</span>
         </button>
 
-        <button
-          onClick={toggleTheme}
-          className="mobile-nav-item"
-          style={{ color: theme === 'light' ? '#d97706' : '#818cf8' }}
-          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-        >
-          {theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
-          <span>{theme === 'light' ? 'Light' : 'Dark'}</span>
-        </button>
+        {isAuthenticated && (
+          (role === 'director' || role === 'admin') ? (
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
+            >
+              <Users size={20} />
+              <span>{t.nav?.users || 'Staff'}</span>
+            </button>
+          ) : (role === 'storage_manager' || role === 'facilities_manager' || role === 'workerA') ? (
+            <button
+              onClick={() => setActiveTab('inventory')}
+              className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
+            >
+              <Package size={20} />
+              <span>{t.nav.inventory}</span>
+            </button>
+          ) : null
+        )}
 
         {isAuthenticated ? (
           <button
             onClick={onOpenProfile}
             className="mobile-nav-item"
           >
-            <User size={18} />
+            <User size={20} />
             <span>{t.nav.profile}</span>
           </button>
         ) : (
           <button
             onClick={onOpenLogin}
             className="mobile-nav-item"
-            style={{ color: 'var(--primary, #4f46e5)' }}
           >
-            <LogIn size={18} />
+            <LogIn size={20} />
             <span>{t.auth?.signIn || 'Sign In'}</span>
           </button>
         )}
