@@ -40,6 +40,7 @@ import {
   sendDeviceNotification
 } from './services/deviceNotifications';
 import { filterVisibleTickets, isUserRelatedToTicket } from './utils/ticketPermissions';
+import { resolveDepartment } from './departments';
 
 const AppContext = createContext();
 
@@ -297,6 +298,18 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('app_users_v3', JSON.stringify(users));
   }, [users]);
 
+  // Keep fresh references for background DB synchronization without re-triggering effects
+  const activeUserRef = React.useRef(activeUser);
+  activeUserRef.current = activeUser;
+  const roleRef = React.useRef(role);
+  roleRef.current = role;
+  const ticketsRef = React.useRef(tickets);
+  ticketsRef.current = tickets;
+  const myCreatedTicketIdsRef = React.useRef(myCreatedTicketIds);
+  myCreatedTicketIdsRef.current = myCreatedTicketIds;
+  const usersRef = React.useRef(users);
+  usersRef.current = users;
+
   // Synchronize state with SQLite database
   const syncWithDb = useCallback(async () => {
     try {
@@ -375,20 +388,65 @@ export const AppProvider = ({ children }) => {
             if (!seenNotifIdsRef.current.has(n.id)) {
               seenNotifIdsRef.current.add(n.id);
 
-              const myName = (activeUser?.name || users[role]?.name || '').toLowerCase();
-              const recip = (n.recipientName || '').toLowerCase();
-              const isForMe =
-                role === 'director' ||
-                role === 'admin' ||
-                recip === 'all' ||
-                (myName && recip.includes(myName)) ||
-                (myName && myName.includes(recip)) ||
-                (role === 'teacher' && recip.includes('teacher')) ||
-                (role === 'storage_manager' && (recip.includes('storage') || recip.includes('warehouse'))) ||
-                (role === 'facilities_manager' && (recip.includes('facilities') || recip.includes('deputy') || recip.includes('carpentry'))) ||
-                (role === 'it_specialist' && recip.includes('it')) ||
-                (role === 'cleaning' && recip.includes('clean')) ||
-                (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || recip.includes('ac')));
+              const curRole = roleRef.current;
+              const curUser = activeUserRef.current;
+              const curUsers = usersRef.current;
+              const curTickets = ticketsRef.current;
+              const curCreatedIds = myCreatedTicketIdsRef.current;
+
+              const myName = (curUser?.name || curUsers[curRole]?.name || '').trim().toLowerCase();
+              const myId = curUser?.id;
+              const myEmail = (curUser?.email || '').trim().toLowerCase();
+              const recip = (n.recipientName || '').trim().toLowerCase();
+              const genericRoles = ['teacher', 'staff', 'guest', 'user', 'parent', 'all', 'admin', 'director'];
+
+              let isForMe = false;
+              if (curRole === 'director' || curRole === 'admin') {
+                isForMe = true;
+              } else if (n.ticketId) {
+                if (Array.isArray(curCreatedIds) && curCreatedIds.includes(n.ticketId)) {
+                  isForMe = true;
+                } else {
+                  const relatedTicket = (curTickets || []).find(t => t.id === n.ticketId);
+                  if (relatedTicket) {
+                    const tTeacher = (relatedTicket.teacherName || '').trim().toLowerCase();
+                    const tEmail = (relatedTicket.teacherEmail || '').trim().toLowerCase();
+                    const tWorker = (relatedTicket.assignedWorker || '').trim().toLowerCase();
+                    const deptId = resolveDepartment(relatedTicket.department)?.id || relatedTicket.department;
+                    if ((myId && relatedTicket.createdById === myId) || (myEmail && tEmail === myEmail) || (myName && tTeacher === myName)) {
+                      isForMe = true;
+                    } else if (myName && tWorker && (tWorker === myName || tWorker.includes(myName))) {
+                      isForMe = true;
+                    } else if (curRole === 'cleaning' && deptId === 'cleaning') {
+                      isForMe = true;
+                    } else if (curRole === 'it_support' && (deptId === 'it_helpdesk' || deptId === 'it')) {
+                      isForMe = true;
+                    } else if (curRole === 'engineer' && ['plumbing', 'electrical', 'engineering'].includes(deptId)) {
+                      isForMe = true;
+                    } else if (curRole === 'facilities_manager' && ['carpentry', 'event_prep', 'grounds', 'facilities', 'cleaning', 'plumbing', 'electrical'].includes(deptId)) {
+                      isForMe = true;
+                    } else if ((curRole === 'storage_manager' || curRole === 'workerA') && ['storage', 'other'].includes(deptId)) {
+                      isForMe = true;
+                    }
+                  }
+                }
+              } else if (curRole === 'it_support' && (recip.includes('it') || recip.includes('helpdesk'))) {
+                isForMe = true;
+              } else if (curRole === 'cleaning' && recip.includes('clean')) {
+                isForMe = true;
+              } else if (curRole === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance'))) {
+                isForMe = true;
+              } else if ((curRole === 'storage_manager' || curRole === 'workerA') && (recip.includes('storage') || recip.includes('warehouse'))) {
+                isForMe = true;
+              } else if (curRole === 'facilities_manager' && recip.includes('facilities')) {
+                isForMe = true;
+              } else if (recip && myName) {
+                if (recip === myName) {
+                  isForMe = true;
+                } else if (!genericRoles.includes(recip) && !genericRoles.includes(myName) && recip.length > 3 && myName.length > 3) {
+                  if (recip.includes(myName) || myName.includes(recip)) isForMe = true;
+                }
+              }
 
               if (isForMe && !n.read) {
                 sendDeviceNotification({
@@ -421,6 +479,8 @@ export const AppProvider = ({ children }) => {
     }
     setAuthToken('');
     setActiveUser(null);
+    setMyCreatedTicketIds([]);
+    localStorage.removeItem('app_my_created_ticket_ids');
     localStorage.removeItem('app_auth_token');
     localStorage.removeItem('app_active_user');
     localStorage.setItem('app_auth', 'false');
@@ -488,13 +548,25 @@ export const AppProvider = ({ children }) => {
     setNotifications(prev => [newNotif, ...prev]);
     seenNotifIdsRef.current.add(newNotif.id);
 
-    // Send native device push notification + sound chime
-    sendDeviceNotification({
-      title,
-      message,
-      ticketId,
-      tag: newNotif.id
-    });
+    // Send native device push notification + sound chime only if current client is the intended recipient
+    const myName = (activeUser?.name || users[role]?.name || '').trim().toLowerCase();
+    const recip = (recipientName || '').trim().toLowerCase();
+    const isDirectedToMe = (role === 'director' || role === 'admin') ||
+      (myName && recip === myName) ||
+      (role === 'it_support' && recip.includes('it')) ||
+      (role === 'cleaning' && recip.includes('clean')) ||
+      (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance'))) ||
+      ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse'))) ||
+      (role === 'facilities_manager' && recip.includes('facilities'));
+
+    if (isDirectedToMe) {
+      sendDeviceNotification({
+        title,
+        message,
+        ticketId,
+        tag: newNotif.id
+      });
+    }
 
     // Save to DB in background
     createNotificationInDb(newNotif).catch(() => {});
@@ -720,6 +792,7 @@ export const AppProvider = ({ children }) => {
       completionPhotos: [],
       teacherName: authorName,
       teacherPhone: authorPhone,
+      teacherEmail: activeUser?.email || currentUser?.email || '',
       createdById: activeUser?.id || null,
       createdByRole: role,
       status: 'pending',
@@ -1029,26 +1102,69 @@ export const AppProvider = ({ children }) => {
     updateInventoryQtyInDb(id, { quantity: clampedQty }).catch(() => {});
   };
 
-  // Notifications visible to the current logged in user
+  // Notifications strictly visible to the current user (only connected users see them)
   const userNotifications = React.useMemo(() => {
     if (!currentUser?.name) return [];
     if (role === 'director' || role === 'admin') return notifications;
-    if (role === 'guest' || role === 'parent') {
-      return notifications.filter(n => {
-        const recip = (n.recipientName || '').toLowerCase();
-        return recip === 'all' || recip.includes('guest') || recip.includes('parent') || (n.title && n.title.toLowerCase().includes(role));
-      });
-    }
-    const myName = currentUser.name.toLowerCase();
-    return notifications.filter(n => 
-      n.recipientName && (
-        n.recipientName.toLowerCase().includes(myName) ||
-        myName.includes(n.recipientName.toLowerCase()) ||
-        n.recipientName.toLowerCase() === 'teacher' ||
-        role === 'teacher'
-      )
-    );
-  }, [notifications, currentUser, role]);
+
+    const myName = (currentUser?.name || '').trim().toLowerCase();
+    const myId = currentUser?.id;
+    const myEmail = (currentUser?.email || '').trim().toLowerCase();
+    const genericRoles = ['teacher', 'staff', 'guest', 'user', 'parent', 'all', 'admin', 'director'];
+
+    return notifications.filter(n => {
+      const recip = (n.recipientName || '').trim().toLowerCase();
+
+      // 1. If notification is tied to a specific ticket, verify direct connection
+      if (n.ticketId) {
+        if (Array.isArray(myCreatedTicketIds) && myCreatedTicketIds.includes(n.ticketId)) {
+          return true;
+        }
+        const relatedTicket = (tickets || []).find(t => t.id === n.ticketId);
+        if (relatedTicket) {
+          const tTeacher = (relatedTicket.teacherName || '').trim().toLowerCase();
+          const tEmail = (relatedTicket.teacherEmail || '').trim().toLowerCase();
+          const tWorker = (relatedTicket.assignedWorker || '').trim().toLowerCase();
+          const deptId = resolveDepartment(relatedTicket.department)?.id || relatedTicket.department;
+
+          // Ticket creator / author
+          if (myId && relatedTicket.createdById && relatedTicket.createdById === myId) return true;
+          if (myEmail && tEmail && myEmail === tEmail) return true;
+          if (myName && tTeacher && myName === tTeacher) return true;
+
+          // Assigned technician
+          if (myName && tWorker && (tWorker === myName || tWorker.includes(myName))) return true;
+          if (relatedTicket.assignedRole && relatedTicket.assignedRole === role) return true;
+
+          // Responsible department specialists
+          if (role === 'cleaning' && deptId === 'cleaning') return true;
+          if (role === 'it_support' && (deptId === 'it_helpdesk' || deptId === 'it')) return true;
+          if (role === 'engineer' && ['plumbing', 'electrical', 'engineering'].includes(deptId)) return true;
+          if (role === 'facilities_manager' && ['carpentry', 'event_prep', 'grounds', 'facilities', 'cleaning', 'plumbing', 'electrical'].includes(deptId)) return true;
+          if ((role === 'storage_manager' || role === 'workerA') && ['storage', 'other'].includes(deptId)) return true;
+
+          return false;
+        }
+      }
+
+      // 2. Department-level notifications
+      if (role === 'it_support' && (recip.includes('it') || recip.includes('helpdesk'))) return true;
+      if (role === 'cleaning' && recip.includes('clean')) return true;
+      if (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || recip.includes('electric') || recip.includes('plumb'))) return true;
+      if ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse'))) return true;
+      if (role === 'facilities_manager' && (recip.includes('facilities') || recip.includes('deputy') || recip.includes('carpentry'))) return true;
+
+      // 3. User name direct match
+      if (recip && myName) {
+        if (recip === myName) return true;
+        if (!genericRoles.includes(recip) && !genericRoles.includes(myName) && recip.length > 3 && myName.length > 3) {
+          if (recip.includes(myName) || myName.includes(recip)) return true;
+        }
+      }
+
+      return false;
+    });
+  }, [notifications, currentUser, role, myCreatedTicketIds, tickets]);
 
   const unreadCount = React.useMemo(() => {
     return userNotifications.filter(n => !n.read).length;

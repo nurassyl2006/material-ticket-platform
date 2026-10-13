@@ -63,12 +63,6 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
 
   if (!isOpen) return null;
 
-  // Quick fill helper for director test login
-  const handleQuickFillDirector = () => {
-    setLoginIdentifier('director@school.edu');
-    setLoginPassword('admin123');
-    setErrorMessage('');
-  };
 
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
@@ -380,7 +374,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                   type="text"
                   autoComplete="username"
                   required
-                  placeholder="e.g. director@school.edu"
+                  placeholder="user@school.edu"
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
                   style={{
@@ -463,40 +457,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
               <ArrowRight size={14} />
             </button>
 
-            {/* Quick Demo Helper */}
-            <div style={{
-              padding: '8px 12px',
-              borderRadius: '4px',
-              background: 'var(--bg-subtle, #242424)',
-              border: '1px solid var(--border-color, #383838)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '8px',
-              marginTop: '4px'
-            }}>
-              <div>
-                <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--primary, #0f6cbd)' }}>
-                  Director Demo Account:
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted, #adadad)' }}>
-                  director@school.edu / admin123
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleQuickFillDirector}
-                className="fluent-btn-secondary"
-                style={{
-                  height: '24px',
-                  padding: '0 8px',
-                  fontSize: '11px',
-                  borderRadius: '3px'
-                }}
-              >
-                Auto-fill
-              </button>
-            </div>
+
           </form>
         )}
 

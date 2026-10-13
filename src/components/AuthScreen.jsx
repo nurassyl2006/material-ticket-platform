@@ -40,12 +40,6 @@ export const AuthScreen = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [shake, setShake] = useState(false);
 
-  // Quick fill helper for director test login
-  const handleQuickFillDirector = () => {
-    setLoginIdentifier('director@school.edu');
-    setLoginPassword('admin123');
-    setErrorMessage('');
-  };
 
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
@@ -343,7 +337,7 @@ export const AuthScreen = () => {
                   type="text"
                   autoComplete="username"
                   required
-                  placeholder="e.g. director@school.edu"
+                  placeholder="user@school.edu"
                   value={loginIdentifier}
                   onChange={(e) => setLoginIdentifier(e.target.value)}
                   style={{
@@ -432,43 +426,7 @@ export const AuthScreen = () => {
               <ArrowRight size={16} />
             </button>
 
-            {/* Quick Demo Helper */}
-            <div style={{
-              marginTop: '12px',
-              padding: '12px',
-              borderRadius: '12px',
-              background: 'rgba(15, 23, 42, 0.5)',
-              border: '1px dashed var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '10px'
-            }}>
-              <div>
-                <div style={{ fontSize: '11px', fontWeight: '700', color: '#818cf8' }}>
-                  👑 Director Account:
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  director@school.edu / admin123
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleQuickFillDirector}
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: '8px',
-                  background: 'rgba(99, 102, 241, 0.2)',
-                  border: '1px solid rgba(99, 102, 241, 0.4)',
-                  color: '#818cf8',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                Auto-fill
-              </button>
-            </div>
+
           </form>
         )}
 

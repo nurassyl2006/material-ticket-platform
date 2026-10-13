@@ -1,4 +1,4 @@
-import { resolveDepartment } from '../departments';
+import { resolveDepartment } from '../departments.js';
 
 /**
  * Checks whether a given user/role is directly related to a ticket.
@@ -20,8 +20,10 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
 
   const myName = (currentUser?.name || '').trim().toLowerCase();
   const myId = currentUser?.id;
+  const myEmail = (currentUser?.email || '').trim().toLowerCase();
   const myPhone = (currentUser?.phone || '').trim().toLowerCase();
   const teacherName = (ticket.teacherName || '').trim().toLowerCase();
+  const teacherEmail = (ticket.teacherEmail || '').trim().toLowerCase();
   const teacherPhone = (ticket.teacherPhone || '').trim().toLowerCase();
   const assignedWorker = (ticket.assignedWorker || '').trim().toLowerCase();
 
@@ -29,7 +31,7 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
   if (myId && ticket.createdById && ticket.createdById === myId) {
     return true;
   }
-  if (myName && teacherName && (teacherName === myName || teacherName.includes(myName) || myName.includes(teacherName))) {
+  if (myEmail && teacherEmail && myEmail === teacherEmail) {
     return true;
   }
   if (myPhone && teacherPhone && myPhone === teacherPhone) {
@@ -39,9 +41,33 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
     return true;
   }
 
+  // Exact or safe name match (avoid loose matching on generic words like "teacher" matching "teacher one")
+  const genericTerms = ['teacher', 'staff', 'guest', 'user', 'parent', 'admin', 'director', 'worker'];
+  if (myName && teacherName) {
+    if (teacherName === myName) {
+      return true;
+    }
+    const isTeacherGeneric = genericTerms.includes(teacherName);
+    const isMeGeneric = genericTerms.includes(myName);
+    if (!isTeacherGeneric && !isMeGeneric && teacherName.length > 3 && myName.length > 3) {
+      if (teacherName.includes(myName) || myName.includes(teacherName)) {
+        return true;
+      }
+    }
+  }
+
   // 3. Is the ticket assigned directly to this user or role?
-  if (myName && assignedWorker && (assignedWorker === myName || assignedWorker.includes(myName) || myName.includes(assignedWorker))) {
-    return true;
+  if (myName && assignedWorker) {
+    if (assignedWorker === myName) {
+      return true;
+    }
+    const isWorkerGeneric = genericTerms.includes(assignedWorker);
+    const isMeGeneric = genericTerms.includes(myName);
+    if (!isWorkerGeneric && !isMeGeneric && assignedWorker.length > 3 && myName.length > 3) {
+      if (assignedWorker.includes(myName) || myName.includes(assignedWorker)) {
+        return true;
+      }
+    }
   }
   if (ticket.assignedRole && ticket.assignedRole === role) {
     return true;

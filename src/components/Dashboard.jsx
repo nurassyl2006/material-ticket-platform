@@ -23,7 +23,7 @@ import {
 import { resolveDepartment, DEPARTMENTS } from '../departments';
 
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
-  const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, inventory, lang } = useApp();
+  const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang } = useApp();
 
   // Scoped tickets that this user is authorized/related to see
   const scopedTickets = appScopedTickets || [];
@@ -44,8 +44,43 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
   const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
 
-  // Critical alerts scoped to tickets user is related/authorized to view
-  const criticalTickets = scopedTickets.filter(t => t.urgency === 'critical' && t.status !== 'completed' && t.status !== 'delivered');
+  // Critical alerts strictly visible only to people directly connected to them
+  const relevantCriticalTickets = React.useMemo(() => {
+    return scopedTickets.filter(ct => {
+      if (ct.urgency !== 'critical' || ct.status === 'completed' || ct.status === 'delivered') return false;
+
+      // 1. Executive leadership (Director, Admin)
+      if (role === 'director' || role === 'admin') return true;
+
+      const myName = (currentUser?.name || '').trim().toLowerCase();
+      const myId = currentUser?.id;
+      const myEmail = (currentUser?.email || '').trim().toLowerCase();
+      const teacherName = (ct.teacherName || '').trim().toLowerCase();
+      const teacherEmail = (ct.teacherEmail || '').trim().toLowerCase();
+      const assignedWorker = (ct.assignedWorker || '').trim().toLowerCase();
+      const deptId = resolveDepartment(ct.department)?.id || ct.department;
+
+      // 2. Creator/Author of this critical ticket
+      if (myId && ct.createdById && ct.createdById === myId) return true;
+      if (myEmail && teacherEmail && myEmail === teacherEmail) return true;
+      if (myName && teacherName && myName === teacherName) return true;
+      if (Array.isArray(myCreatedTicketIds) && myCreatedTicketIds.includes(ct.id)) return true;
+
+      // 3. Directly assigned technician/worker
+      if (myName && assignedWorker && (assignedWorker === myName || assignedWorker.includes(myName))) return true;
+      if (ct.assignedRole && ct.assignedRole === role) return true;
+
+      // 4. Responsible department specialists
+      if (role === 'cleaning' && deptId === 'cleaning') return true;
+      if (role === 'it_support' && (deptId === 'it_helpdesk' || deptId === 'it')) return true;
+      if (role === 'engineer' && ['plumbing', 'electrical', 'engineering'].includes(deptId)) return true;
+      if (role === 'facilities_manager' && ['carpentry', 'event_prep', 'grounds', 'facilities', 'cleaning', 'plumbing', 'electrical'].includes(deptId)) return true;
+      if ((role === 'storage_manager' || role === 'workerA') && ['storage', 'other'].includes(deptId)) return true;
+
+      return false;
+    });
+  }, [scopedTickets, role, currentUser, myCreatedTicketIds]);
+
   const lowStockItems = inventory.filter(item => item.quantity <= item.minLevel);
   const activeFurnitureMoves = facilitiesTickets.filter(t => t.moveDetails && t.status !== 'completed');
 
@@ -146,7 +181,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       </div>
 
       {/* Critical Alert Warning */}
-      {criticalTickets.length > 0 && (
+      {relevantCriticalTickets.length > 0 && (
         <div
           style={{ 
             padding: '12px 18px', 
@@ -166,10 +201,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             <Flame size={18} color="#f87171" />
             <div>
               <strong style={{ fontSize: '13px', color: 'var(--danger, #dc2626)', fontWeight: '700' }}>
-                {t.dashboard.urgentAlerts} ({criticalTickets.length})
+                {t.dashboard.urgentAlerts} ({relevantCriticalTickets.length})
               </strong>
               <p style={{ fontSize: '12px', color: 'var(--text-main, #0f172a)', margin: 0, fontWeight: '500' }}>
-                {criticalTickets.map(ct => `[${resolveDepartment(ct.department).emoji} ${ct.itemTitle}] (${ct.roomNumber || 'Campus'})`).join(' • ')}
+                {relevantCriticalTickets.map(ct => `[${resolveDepartment(ct.department).emoji} ${ct.itemTitle}] (${ct.roomNumber || 'Campus'})`).join(' • ')}
               </p>
             </div>
           </div>
@@ -178,7 +213,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             className="fluent-btn-primary"
             style={{ height: '30px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', fontSize: '12px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)' }}
           >
-            Review Tasks
+            {role === 'teacher' || role === 'parent' || role === 'guest' ? (t.nav?.myTickets || 'View My Request') : 'Review Tasks'}
           </button>
         </div>
       )}
@@ -561,7 +596,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       </div>
 
       {/* Low Stock Warning Card */}
-      {lowStockItems.length > 0 && (
+      {['storage_manager', 'facilities_manager', 'director', 'admin', 'workerA'].includes(role) && lowStockItems.length > 0 && (
         <div
           style={{
             padding: '12px 18px',
@@ -601,7 +636,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       <div style={{ marginTop: '8px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#f3f2f1', margin: 0 }}>
-            {role === 'teacher' ? (t.nav.myTickets || 'My Requests') : t.dashboard.allJobsOverview}
+            {(role === 'teacher' || role === 'parent' || role === 'guest') ? (t.nav?.myTickets || 'My Requests') : t.dashboard.allJobsOverview}
           </h3>
           <button
             onClick={() => setActiveTab('tickets')}
