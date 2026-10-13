@@ -17,8 +17,8 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "deploy:server": "npm run build && rsync -avz --delete dist/ service@10.1.13.50:~/material-ticket-platform/dist/",
-    "update:server": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git pull origin main && npm install && npm run build && (pm2 restart all 2>/dev/null || (pkill -f 'node.*server/index.js' || true && nohup node server/index.js > ~/server.log 2>&1 &))\"",
-    "autoupdate:install": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git pull origin main && bash scripts/install-autoupdate-cron.sh\"",
+    "update:server": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git fetch origin main && git reset --hard origin/main && npm install && npm run build && (pm2 restart all 2>/dev/null || (pkill -f 'node.*server/index.js' || true && nohup node server/index.js > ~/server.log 2>&1 &))\"",
+    "autoupdate:install": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git fetch origin main && git reset --hard origin/main && bash scripts/install-autoupdate-cron.sh\"",
     "autoupdate:logs": "ssh -t service@10.1.13.50 \"tail -n 50 -f ~/autoupdate.log\"",
     "autoupdate:run": "ssh -t service@10.1.13.50 \"bash ~/material-ticket-platform/scripts/autoupdate.sh\"",
     "tunnel": "node server/tunnel.js"
