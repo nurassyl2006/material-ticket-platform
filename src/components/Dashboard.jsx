@@ -165,10 +165,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Flame size={18} color="#f87171" />
             <div>
-              <strong style={{ fontSize: '13px', color: '#f87171', fontWeight: '600' }}>
+              <strong style={{ fontSize: '13px', color: 'var(--danger, #dc2626)', fontWeight: '700' }}>
                 {t.dashboard.urgentAlerts} ({criticalTickets.length})
               </strong>
-              <p style={{ fontSize: '12px', color: '#cbd5e1', margin: 0 }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-main, #0f172a)', margin: 0, fontWeight: '500' }}>
                 {criticalTickets.map(ct => `[${resolveDepartment(ct.department).emoji} ${ct.itemTitle}] (${ct.roomNumber || 'Campus'})`).join(' • ')}
               </p>
             </div>
@@ -508,8 +508,8 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-          <Layers size={16} color="#818cf8" />
-          <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', margin: 0 }}>
+          <Layers size={16} color="var(--primary, #818cf8)" />
+          <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main, #0f172a)', margin: 0 }}>
             {t.dashboard.quickActions || 'Submit Service Request by Department'}:
           </h3>
         </div>
@@ -523,8 +523,8 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 key={dept.id}
                 onClick={() => openNewRequestForDept(dept.id)}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.65)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'var(--bg-card, rgba(15, 23, 42, 0.65))',
+                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                   padding: '14px',
                   borderRadius: '10px',
                   textAlign: 'left',
@@ -535,25 +535,23 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                   transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = dept.color || '#6366f1';
-                  e.currentTarget.style.backgroundColor = 'rgba(30, 41, 59, 0.75)';
+                  e.currentTarget.style.borderColor = dept.color || 'var(--primary, #6366f1)';
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 20px -4px rgba(0, 0, 0, 0.4)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-depth-4)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.65)';
+                  e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.08))';
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#f8fafc', fontWeight: '600', fontSize: '13px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main, #f8fafc)', fontWeight: '600', fontSize: '13px' }}>
                   <span style={{ fontSize: '16px' }}>{dept.emoji}</span>
                   <span className="dashboard-service-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {localizedName}
                   </span>
                 </div>
-                <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0, lineHeight: 1.4 }}>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted, #94a3b8)', margin: 0, lineHeight: 1.4 }}>
                   {sampleSubcats}
                 </p>
               </button>

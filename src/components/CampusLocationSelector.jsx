@@ -349,16 +349,16 @@ export const CampusLocationSelector = ({
                         border: isSelected ? '1px solid #6366f1' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                         borderRadius: '6px',
                         padding: '6px 8px',
-                        color: isSelected ? '#ffffff' : 'var(--text-muted, #adadad)',
+                        color: isSelected ? '#ffffff' : 'var(--text-main, #1e293b)',
                         fontSize: '11px',
-                        fontWeight: isSelected ? '700' : '500',
+                        fontWeight: isSelected ? '700' : '600',
                         cursor: 'pointer',
                         textAlign: 'left',
                         transition: 'all 0.15s ease'
                       }}
                     >
-                      <div style={{ fontSize: '12px', fontWeight: '700' }}>{bMeta.name}</div>
-                      <div style={{ fontSize: '9px', opacity: isSelected ? 0.9 : 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: '12px', fontWeight: '700', color: isSelected ? '#ffffff' : 'var(--text-main)' }}>{bMeta.name}</div>
+                      <div style={{ fontSize: '9px', opacity: isSelected ? 0.95 : 0.85, color: isSelected ? '#ffffff' : 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {bMeta.title.split(' ')[0]}
                       </div>
                     </button>
@@ -386,9 +386,9 @@ export const CampusLocationSelector = ({
                         border: isSelected ? '1px solid #3b82f6' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                         borderRadius: '6px',
                         padding: '6px 8px',
-                        color: isSelected ? '#ffffff' : 'var(--text-muted, #adadad)',
+                        color: isSelected ? '#ffffff' : 'var(--text-main, #1e293b)',
                         fontSize: '11px',
-                        fontWeight: isSelected ? '700' : '500',
+                        fontWeight: isSelected ? '700' : '600',
                         cursor: 'pointer',
                         textAlign: 'center',
                         transition: 'all 0.15s ease'
@@ -450,12 +450,13 @@ export const CampusLocationSelector = ({
                         if (!isSelected) e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.08))';
                       }}
                     >
-                      <div style={{ fontWeight: '700', color: isSelected ? '#818cf8' : 'var(--text-main)', fontSize: '11px' }}>
+                      <div style={{ fontWeight: '700', color: isSelected ? 'var(--primary, #4f46e5)' : 'var(--text-main)', fontSize: '11px' }}>
                         {r.code}
                       </div>
                       <div style={{
                         fontSize: '10px',
-                        color: isSelected ? '#ffffff' : 'var(--text-muted, #94a3b8)',
+                        color: isSelected ? 'var(--text-main)' : 'var(--text-muted, #94a3b8)',
+                        fontWeight: isSelected ? '600' : 'normal',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis'

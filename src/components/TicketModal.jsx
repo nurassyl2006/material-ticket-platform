@@ -197,12 +197,12 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
             </div>
             <div>
               <h2 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: 'var(--text-main, #f8fafc)', letterSpacing: '-0.2px' }}>{t.tickets.createTitle}</h2>
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted, #94a3b8)' }}>
                 {role === 'parent' 
                   ? (lang === 'ru' ? 'Подача заявки: Родитель' : lang === 'kk' ? 'Өтінім беруші: Ата-ана' : 'Submitting as: School Parent')
                   : role === 'guest'
                   ? (lang === 'ru' ? 'Подача заявки: Гость школы' : lang === 'kk' ? 'Өтінім беруші: Мектеп қонағы' : 'Submitting as: Campus Guest')
-                  : <>Sender: <strong style={{ color: '#f8fafc' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
+                  : <>Sender: <strong style={{ color: 'var(--text-main, #f8fafc)' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
               </span>
             </div>
           </div>
@@ -271,7 +271,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   }}
                 >
                   <span style={{ fontSize: '20px', lineHeight: 1 }}>{dept.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '500', color: isSelected ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)', lineHeight: 1.2 }}>
+                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '600', color: isSelected ? 'var(--text-main, #ffffff)' : 'var(--text-main, #94a3b8)', lineHeight: 1.2 }}>
                     {deptTitle}
                   </span>
                 </button>
@@ -527,17 +527,17 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                     }
                   }}
                   style={{
-                    background: 'rgba(99, 102, 241, 0.15)',
-                    border: '1px solid rgba(99, 102, 241, 0.3)',
-                    color: '#818cf8',
-                    padding: '2px 8px',
+                    background: 'var(--primary-tint, rgba(99, 102, 241, 0.15))',
+                    border: '1px solid var(--border-color, rgba(99, 102, 241, 0.3))',
+                    color: 'var(--primary, #4f46e5)',
+                    padding: '3px 8px',
                     borderRadius: '6px',
                     fontSize: '11px',
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px',
-                    fontWeight: '600'
+                    fontWeight: '700'
                   }}
                 >
                   <Globe size={11} />

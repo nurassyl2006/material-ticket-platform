@@ -339,12 +339,12 @@ export const TicketCard = ({
           alignItems: 'center',
           gap: '8px',
           fontSize: '11px',
-          color: '#e2e8f0',
+          color: 'var(--text-main, #e2e8f0)',
           flexWrap: 'wrap'
         }}>
-          <Truck size={14} color="#a78bfa" />
-          <span><strong>Relocation:</strong> {ticket.moveDetails.fromRoom} ➔ <strong style={{ color: '#c4b5fd' }}>{ticket.moveDetails.toRoom}</strong></span>
-          {ticket.moveDetails.items && <span style={{ color: '#94a3b8' }}>({ticket.moveDetails.items})</span>}
+          <Truck size={14} color="#8b5cf6" />
+          <span><strong>Relocation:</strong> {ticket.moveDetails.fromRoom} ➔ <strong style={{ color: 'var(--primary, #6366f1)' }}>{ticket.moveDetails.toRoom}</strong></span>
+          {ticket.moveDetails.items && <span style={{ color: 'var(--text-muted, #94a3b8)' }}>({ticket.moveDetails.items})</span>}
         </div>
       )}
 
@@ -357,12 +357,12 @@ export const TicketCard = ({
           padding: '8px 12px',
           borderRadius: '8px',
           fontSize: '11px',
-          color: '#e2e8f0'
+          color: 'var(--text-main, #e2e8f0)'
         }}>
-          <span style={{ color: '#fbbf24', fontWeight: '600' }}>📦 Materials: </span>
+          <span style={{ color: 'var(--warning, #d97706)', fontWeight: '700' }}>📦 Materials: </span>
           <span>{ticket.requiredMaterials}</span>
           {ticket.estimatedCost && (
-            <span style={{ color: '#fbbf24', marginLeft: '6px', fontWeight: '600' }}>
+            <span style={{ color: 'var(--warning, #d97706)', marginLeft: '6px', fontWeight: '700' }}>
               (₸{ticket.estimatedCost.toLocaleString()})
             </span>
           )}

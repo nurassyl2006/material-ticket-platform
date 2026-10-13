@@ -434,7 +434,7 @@ export const UserManagement = () => {
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px' }}>
             {lang === 'ru' ? 'Всего сотрудников' : lang === 'kk' ? 'Барлық қызметкерлер' : 'Total Staff Accounts'}
           </div>
-          <div style={{ fontSize: '26px', fontWeight: '800', color: '#fff' }}>
+          <div style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-main, #fff)' }}>
             {totalUsers}
           </div>
           <div style={{ fontSize: '11px', color: '#818cf8', marginTop: '4px' }}>
@@ -619,7 +619,7 @@ export const UserManagement = () => {
                             {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                           </div>
                           <div>
-                            <div style={{ fontWeight: '700', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ fontWeight: '700', color: 'var(--text-main, #fff)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                               {user.name}
                               {isSelf && (
                                 <span style={{
@@ -782,7 +782,7 @@ export const UserManagement = () => {
                   <UserPlus size={20} color="#fff" />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#fff' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-main, #fff)' }}>
                     {lang === 'ru' ? 'Добавить нового сотрудника' : lang === 'kk' ? 'Жаңа қызметкерді қосу' : 'Add New Staff Member'}
                   </h3>
                   <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -995,8 +995,8 @@ export const UserManagement = () => {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <KeyRound size={22} color="#818cf8" />
-                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#fff' }}>
+                <KeyRound size={22} color="var(--primary, #818cf8)" />
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: 'var(--text-main, #fff)' }}>
                   Reset Staff Password
                 </h3>
               </div>
@@ -1009,7 +1009,7 @@ export const UserManagement = () => {
             </div>
 
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-              Set a new password for <strong style={{ color: '#fff' }}>{resetPwdUser.name}</strong> ({resetPwdUser.email}).
+              Set a new password for <strong style={{ color: 'var(--text-main, #fff)' }}>{resetPwdUser.name}</strong> ({resetPwdUser.email}).
             </p>
 
             <form onSubmit={handleResetPasswordSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

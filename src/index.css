@@ -452,7 +452,7 @@ body[data-theme="light"] {
   background: rgba(0, 0, 0, 0.32);
 }
 
-/* Light Theme Dashboard & Surface Overrides */
+/* Light Theme Comprehensive Contrast Overrides */
 [data-theme="light"] div[style*="background: rgba(18, 25, 44"],
 [data-theme="light"] div[style*="background: rgb(18, 25, 44"],
 [data-theme="light"] div[style*="background: #292929"],
@@ -483,32 +483,76 @@ body[data-theme="light"] {
   box-shadow: var(--shadow-depth-4) !important;
 }
 
-[data-theme="light"] div[style*="color: #f8fafc"],
-[data-theme="light"] div[style*="color: rgb(248, 250, 252)"],
-[data-theme="light"] div[style*="color: #f3f2f1"],
-[data-theme="light"] h1[style*="color: #f8fafc"],
-[data-theme="light"] h2[style*="color: #f8fafc"],
-[data-theme="light"] h3[style*="color: #f8fafc"],
-[data-theme="light"] h4[style*="color: #f8fafc"],
-[data-theme="light"] span[style*="color: #f8fafc"],
-[data-theme="light"] h1[style*="color: #f3f2f1"],
-[data-theme="light"] h2[style*="color: #f3f2f1"],
-[data-theme="light"] h3[style*="color: #f3f2f1"],
-[data-theme="light"] h4[style*="color: #f3f2f1"],
-[data-theme="light"] span[style*="color: #f3f2f1"] {
+/* Force dark text for any element with hardcoded light text colors */
+[data-theme="light"] *[style*="color: #f8fafc"],
+[data-theme="light"] *[style*="color:#f8fafc"],
+[data-theme="light"] *[style*="color: rgb(248, 250, 252)"],
+[data-theme="light"] *[style*="color:rgb(248, 250, 252)"],
+[data-theme="light"] *[style*="color: #f3f2f1"],
+[data-theme="light"] *[style*="color:#f3f2f1"],
+[data-theme="light"] *[style*="color: rgb(243, 242, 241)"],
+[data-theme="light"] *[style*="color:rgb(243, 242, 241)"],
+[data-theme="light"] *[style*="color: #ffffff"],
+[data-theme="light"] *[style*="color:#ffffff"],
+[data-theme="light"] *[style*="color: rgb(255, 255, 255)"],
+[data-theme="light"] *[style*="color:rgb(255, 255, 255)"],
+[data-theme="light"] *[style*="color: #fff"],
+[data-theme="light"] *[style*="color:#fff"],
+[data-theme="light"] *[style*="color: #e2e8f0"],
+[data-theme="light"] *[style*="color:#e2e8f0"],
+[data-theme="light"] *[style*="color: rgb(226, 232, 240)"],
+[data-theme="light"] *[style*="color:rgb(226, 232, 240)"],
+[data-theme="light"] *[style*="color: #cbd5e1"],
+[data-theme="light"] *[style*="color:#cbd5e1"],
+[data-theme="light"] *[style*="color: rgb(203, 213, 225)"],
+[data-theme="light"] *[style*="color:rgb(203, 213, 225)"],
+[data-theme="light"] *[style*="color: #f1f5f9"],
+[data-theme="light"] *[style*="color:rgb(241, 245, 249)"] {
   color: var(--text-main) !important;
 }
 
-[data-theme="light"] div[style*="color: #94a3b8"],
-[data-theme="light"] div[style*="color: rgb(148, 163, 184)"],
-[data-theme="light"] span[style*="color: #94a3b8"],
-[data-theme="light"] p[style*="color: #94a3b8"],
-[data-theme="light"] div[style*="color: #adadad"],
-[data-theme="light"] span[style*="color: #adadad"],
-[data-theme="light"] p[style*="color: #adadad"] {
+[data-theme="light"] *[style*="color: #94a3b8"],
+[data-theme="light"] *[style*="color:#94a3b8"],
+[data-theme="light"] *[style*="color: rgb(148, 163, 184)"],
+[data-theme="light"] *[style*="color: #adadad"],
+[data-theme="light"] *[style*="color:#adadad"],
+[data-theme="light"] *[style*="color: rgb(173, 173, 173)"] {
   color: var(--text-muted) !important;
 }
 
+/* Protect primary buttons, action buttons, and dark solid banners from text override */
+[data-theme="light"] .fluent-btn-primary,
+[data-theme="light"] .fluent-btn-primary *,
+[data-theme="light"] button[style*="linear-gradient"],
+[data-theme="light"] button[style*="linear-gradient"] *,
+[data-theme="light"] button[style*="background: #107c41"],
+[data-theme="light"] button[style*="background: #107c41"] *,
+[data-theme="light"] button[style*="background: rgb(16, 124, 65)"],
+[data-theme="light"] button[style*="background: rgb(16, 124, 65)"] *,
+[data-theme="light"] button[style*="background: #ef4444"],
+[data-theme="light"] button[style*="background: #ef4444"] *,
+[data-theme="light"] button[style*="background: #dc2626"],
+[data-theme="light"] button[style*="background: #dc2626"] *,
+[data-theme="light"] button[style*="background: #4f46e5"],
+[data-theme="light"] button[style*="background: #4f46e5"] *,
+[data-theme="light"] button[style*="background: #6366f1"],
+[data-theme="light"] button[style*="background: #6366f1"] *,
+[data-theme="light"] button[type="submit"]:not(.fluent-btn-secondary),
+[data-theme="light"] button[type="submit"]:not(.fluent-btn-secondary) * {
+  color: #ffffff !important;
+}
+
+/* Urgent Alert Banner high-contrast text in light theme */
+[data-theme="light"] div[style*="rgba(239, 68, 68"] p,
+[data-theme="light"] div[style*="background: rgba(239, 68, 68"] p {
+  color: #7f1d1d !important;
+}
+[data-theme="light"] div[style*="rgba(239, 68, 68"] strong,
+[data-theme="light"] div[style*="background: rgba(239, 68, 68"] strong {
+  color: #b91c1c !important;
+}
+
+/* Warning cards */
 [data-theme="light"] div[style*="background: #2a251b"],
 [data-theme="light"] div[style*="background: rgb(42, 37, 27)"] {
   background: rgba(245, 158, 11, 0.12) !important;

@@ -276,7 +276,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
         fontSize: '12px'
       }}>
         <LocIcon size={13} color={iconColor} />
-        <strong style={{ color: '#fff' }}>{locStr || 'Main Campus'}</strong>
+        <strong style={{ color: 'var(--text-main, #ffffff)' }}>{locStr || 'Main Campus'}</strong>
       </span>
     );
   };
