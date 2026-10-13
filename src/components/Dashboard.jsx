@@ -104,11 +104,11 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               </span>
             </div>
 
-            <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1', margin: '0 0 4px 0' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)', margin: '0 0 4px 0' }}>
               {t.dashboard.welcome} {currentUser?.name || 'Staff Member'}
             </h2>
 
-            <p style={{ fontSize: '12px', color: '#adadad', maxWidth: '720px', margin: 0, lineHeight: 1.5 }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted, #adadad)', maxWidth: '720px', margin: 0, lineHeight: 1.5 }}>
               {role === 'director' && t.dashboard.directorSummary}
               {role === 'facilities_manager' && t.dashboard.facilitiesSummary}
               {role === 'it_support' && t.dashboard.itSummary}

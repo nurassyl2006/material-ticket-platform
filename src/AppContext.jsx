@@ -1050,6 +1050,10 @@ export const AppProvider = ({ children }) => {
     );
   }, [notifications, currentUser, role]);
 
+  const unreadCount = React.useMemo(() => {
+    return userNotifications.filter(n => !n.read).length;
+  }, [userNotifications]);
+
   // Filter tickets: active tickets are NOT visible to users who are not related
   const scopedTickets = React.useMemo(() => {
     return filterVisibleTickets(tickets, activeUser || currentUser, role, myCreatedTicketIds);
