@@ -186,18 +186,17 @@ export const translations = {
         other: "Other Location"
       },
       blocks: {
-        blockA: "Block A (Main)",
-        blockB: "Block B (STEM / Senior)",
-        blockC: "Block C (Arts / Sports)",
-        blockD: "Block D (Admin / Warehouse)",
+        blockA: "Block A (Primary)",
+        blockB: "Block B (Languages & Maths)",
+        blockC: "Block C (Creative & Admin)",
+        blockD: "Block D (Sports, Dining & Library)",
         outdoor: "School Yard / Outdoors"
       },
       floors: {
         basement: "Basement (-1)",
         floor1: "1st Floor",
         floor2: "2nd Floor",
-        floor3: "3rd Floor",
-        floor4: "4th Floor"
+        floor3: "3rd Floor"
       },
       quickSpots: {
         boysRestroom: "Boys Restroom",
@@ -570,18 +569,17 @@ export const translations = {
         other: "Другое место"
       },
       blocks: {
-        blockA: "Блок А (Основной)",
-        blockB: "Блок Б (Старшая школа / STEM)",
-        blockC: "Блок В (Спорт / Творчество)",
-        blockD: "Блок Г (Адм / Склад)",
+        blockA: "Блок А (Начальная школа)",
+        blockB: "Блок B (Языки и математика)",
+        blockC: "Блок C (STEM и Дирекция)",
+        blockD: "Блок D (Спорт, Столовая и Библиотека)",
         outdoor: "Школьный двор / Территория"
       },
       floors: {
         basement: "Цоколь / Подвал (-1)",
         floor1: "1 этаж",
         floor2: "2 этаж",
-        floor3: "3 этаж",
-        floor4: "4 этаж"
+        floor3: "3 этаж"
       },
       quickSpots: {
         boysRestroom: "Мужской санузел",
@@ -954,18 +952,17 @@ export const translations = {
         other: "Басқа аймақ"
       },
       blocks: {
-        blockA: "А блогы (Негізгі)",
-        blockB: "Б блогы (Жоғары сынып / STEM)",
-        blockC: "В блогы (Спорт / Өнер)",
-        blockD: "Г блогы (Әкімшілік / Қойма)",
+        blockA: "А блогы (Бастауыш сыныптар)",
+        blockB: "B блогы (Тілдер және математика)",
+        blockC: "C блогы (STEM және Әкімшілік)",
+        blockD: "D блогы (Спорт, Асхана және Кітапхана)",
         outdoor: "Мектеп ауласы"
       },
       floors: {
         basement: "Жертөле (-1)",
         floor1: "1-қабат",
         floor2: "2-қабат",
-        floor3: "3-қабат",
-        floor4: "4-қабат"
+        floor3: "3-қабат"
       },
       quickSpots: {
         boysRestroom: "Ұлдар әжетханасы",

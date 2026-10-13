@@ -16,7 +16,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     quantity: 1,
     unit: 'pcs',
     urgency: 'medium',
-    roomNumber: 'Block A (Main) • 1st Floor • Room 101',
+    roomNumber: 'Block A • 1st Floor • A-1-2 (Year 1A)',
     description: '',
     fromRoom: '',
     toRoom: '',
@@ -41,7 +41,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
         subcategory: '',
         roomNumber: prev.roomNumber && prev.roomNumber !== 'Room 101'
           ? prev.roomNumber
-          : (resolved.id === 'cleaning' ? 'Block A (Main) • 2nd Floor • Corridor (North Wing)' : 'Block A (Main) • 1st Floor • Room 101')
+          : (resolved.id === 'cleaning' ? 'Block A • 1st Floor • A-1-10 (Toilets & Stairs)' : 'Block A • 1st Floor • A-1-2 (Year 1A)')
       }));
     }
   }, [isOpen, initialDepartment]);
@@ -56,15 +56,27 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
       let room = prev.roomNumber;
       const lower = subcat.toLowerCase();
       if (lower.includes('унитаз') || lower.includes('раковин') || lower.includes('смесител') || lower.includes('санузл') || lower.includes('полотенцесушител') || lower.includes('toilet') || lower.includes('sink') || lower.includes('faucet') || lower.includes('restroom') || lower.includes('әжетхана')) {
-        room = 'Block A (Main) • 1st Floor • Restroom (Girls Restroom)';
-      } else if (lower.includes('коридор') || lower.includes('холл') || lower.includes('турникет') || lower.includes('corridor') || lower.includes('hallway') || lower.includes('дәліз')) {
-        room = 'Block A (Main) • 1st Floor • Corridor (Central Hallway)';
-      } else if (lower.includes('снег') || lower.includes('лед') || lower.includes('дорожек') || lower.includes('крыльц') || lower.includes('подъездных') || lower.includes('территори') || lower.includes('snow') || lower.includes('ice') || lower.includes('pathway') || lower.includes('driveway') || lower.includes('қар') || lower.includes('мұз')) {
+        room = 'Block A • 1st Floor • A-1-10 (Toilets & Stairs)';
+      } else if (lower.includes('робот') || lower.includes('robot') || lower.includes('3d')) {
+        room = 'Block C • 1st Floor • C-1-5 (Robotics)';
+      } else if (lower.includes('компьютер') || lower.includes('ноутбук') || lower.includes('it') || lower.includes('принтер')) {
+        room = 'Block C • 1st Floor • C-1-6 (IT 1)';
+      } else if (lower.includes('бассейн') || lower.includes('pool') || lower.includes('жүзу')) {
+        room = 'Block D • 1st Floor • Swimming Pool';
+      } else if (lower.includes('столов') || lower.includes('буфет') || lower.includes('куллер') || lower.includes('dining') || lower.includes('canteen') || lower.includes('асхана')) {
+        room = 'Block D • 1st Floor • Dining Hall / Canteen';
+      } else if (lower.includes('спортзал') || lower.includes('gym') || lower.includes('спорт')) {
+        room = 'Block D • 2nd Floor • D-2-2 (Main Sports Hall)';
+      } else if (lower.includes('библиотек') || lower.includes('книг') || lower.includes('library') || lower.includes('кітапхана')) {
+        room = 'Block D • 3rd Floor • D-3-1 (Library)';
+      } else if (lower.includes('лаборатори') || lower.includes('хими') || lower.includes('физик') || lower.includes('science')) {
+        room = 'Block C • 3rd Floor • C-3-6 (Science Laboratory 1)';
+      } else if (lower.includes('актового зала') || lower.includes('assembly') || lower.includes('лектори') || lower.includes('lectorium')) {
+        room = 'Block D • 1st Floor • Lectorium';
+      } else if (lower.includes('снег') || lower.includes('лед') || lower.includes('дорожек') || lower.includes('крыльц') || lower.includes('территори') || lower.includes('snow') || lower.includes('қар')) {
         room = 'School Yard / Outdoors • Ground • Main Driveway';
-      } else if (lower.includes('актового зала') || lower.includes('assembly') || lower.includes('акт залы')) {
-        room = 'Block A (Main) • 1st Floor • Main Assembly Hall';
-      } else if (lower.includes('столов') || lower.includes('буфет') || lower.includes('куллер') || lower.includes('cafeteria') || lower.includes('canteen') || lower.includes('cooler') || lower.includes('су құтысы')) {
-        room = 'Block A (Main) • 1st Floor • Cafeteria (Dining Hall)';
+      } else if (lower.includes('коридор') || lower.includes('холл') || lower.includes('дәліз')) {
+        room = 'Block A • 1st Floor • Central Corridor';
       }
 
       return {
