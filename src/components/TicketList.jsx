@@ -121,38 +121,38 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     switch (status) {
       case 'pending':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#2d2314', border: '1px solid #573a11', color: '#f59e0b', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+          <span className="ticket-badge-status ticket-badge-status-pending">
             <Clock size={12} /> {t.tickets.status.pending}
           </span>
         );
       case 'in_progress':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#142436', border: '1px solid #154e7d', color: '#70b5f9', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+          <span className="ticket-badge-status ticket-badge-status-in_progress">
             <Clock size={12} /> {t.tickets.status.in_progress}
           </span>
         );
       case 'issued':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#122a1c', border: '1px solid #136136', color: '#62c789', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+          <span className="ticket-badge-status ticket-badge-status-issued">
             <CheckCircle2 size={12} /> {t.tickets.status.issued}
           </span>
         );
       case 'purchasing':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#231f2d', border: '1px solid #3d3154', color: '#c4b5fd', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+          <span className="ticket-badge-status ticket-badge-status-purchasing">
             <ShoppingBag size={12} /> {t.tickets.status.purchasing}
           </span>
         );
       case 'completed':
       case 'delivered':
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#122a1c', border: '1px solid #136136', color: '#62c789', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+          <span className="ticket-badge-status ticket-badge-status-completed">
             <CheckCircle size={12} /> {t.tickets.status.completed}
           </span>
         );
       default:
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#252525', border: '1px solid #383838', color: '#adadad', padding: '2px 8px', borderRadius: '3px', fontSize: '11px', fontWeight: '600' }}>
+          <span className="ticket-badge-status ticket-badge-status-default">
             {status}
           </span>
         );
@@ -165,31 +165,12 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     const d = resolveDepartment(rawDept);
     return (
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
-        <span style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          background: '#202020',
-          color: '#f3f2f1',
-          border: '1px solid #383838',
-          padding: '2px 6px',
-          borderRadius: '3px',
-          fontSize: '11px',
-          fontWeight: '600'
-        }}>
+        <span className="ticket-badge-dept">
           <span>{d.emoji}</span>
           <span>{d.translations?.[lang] || d.name}</span>
         </span>
         {subcat && (
-          <span style={{
-            background: '#252525',
-            border: '1px solid #383838',
-            color: '#adadad',
-            padding: '2px 6px',
-            borderRadius: '3px',
-            fontSize: '11px',
-            fontWeight: '500'
-          }}>
+          <span className="ticket-badge-subcat">
             {subcat}
           </span>
         )}
@@ -198,15 +179,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   };
 
   const getUrgencyBadge = (urgency) => {
-    const map = {
-      low: { bg: '#252525', border: '#383838', color: '#adadad' },
-      medium: { bg: '#142436', border: '#154e7d', color: '#70b5f9' },
-      high: { bg: '#2d2314', border: '#573a11', color: '#f59e0b' },
-      critical: { bg: '#331518', border: '#63181d', color: '#f87171' }
-    };
-    const style = map[urgency] || map.low;
+    const urgencyClass = `ticket-badge-urgency ticket-badge-urgency-${urgency || 'low'}`;
     return (
-      <span style={{ background: style.bg, border: `1px solid ${style.border}`, color: style.color, padding: '2px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+      <span className={urgencyClass}>
         {t.tickets.urgencies[urgency] || urgency}
       </span>
     );
@@ -243,40 +218,23 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   const renderLocationBadge = (locStr = '') => {
     const lower = locStr.toLowerCase();
     let LocIcon = MapPin;
-    let iconColor = '#38bdf8';
-    let badgeBg = 'rgba(56, 189, 248, 0.1)';
-    let badgeBorder = 'rgba(56, 189, 248, 0.25)';
+    let locType = 'default';
 
     if (lower.includes('restroom') || lower.includes('wc') || lower.includes('санузел') || lower.includes('туалет') || lower.includes('әжетхана')) {
       LocIcon = Droplets;
-      iconColor = '#a78bfa';
-      badgeBg = 'rgba(167, 139, 250, 0.12)';
-      badgeBorder = 'rgba(167, 139, 250, 0.3)';
+      locType = 'restroom';
     } else if (lower.includes('corridor') || lower.includes('hallway') || lower.includes('коридор') || lower.includes('дәліз')) {
       LocIcon = Footprints;
-      iconColor = '#34d399';
-      badgeBg = 'rgba(52, 211, 153, 0.12)';
-      badgeBorder = 'rgba(52, 211, 153, 0.3)';
+      locType = 'corridor';
     } else if (lower.includes('room') || lower.includes('кабинет') || lower.includes('lab') || lower.includes('класс')) {
       LocIcon = DoorOpen;
-      iconColor = '#60a5fa';
-      badgeBg = 'rgba(96, 165, 250, 0.12)';
-      badgeBorder = 'rgba(96, 165, 250, 0.3)';
+      locType = 'classroom';
     }
 
     return (
-      <span style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '5px',
-        background: badgeBg,
-        border: `1px solid ${badgeBorder}`,
-        padding: '3px 8px',
-        borderRadius: '6px',
-        fontSize: '12px'
-      }}>
-        <LocIcon size={13} color={iconColor} />
-        <strong style={{ color: 'var(--text-main, #ffffff)' }}>{locStr || 'Main Campus'}</strong>
+      <span className={`ticket-badge-location ticket-badge-location-${locType}`}>
+        <LocIcon size={13} />
+        <strong className="loc-text">{locStr || 'Main Campus'}</strong>
       </span>
     );
   };
@@ -390,8 +348,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
-            background: autoTranslateTickets ? 'rgba(99, 102, 241, 0.12)' : 'rgba(15, 23, 42, 0.75)',
-            border: autoTranslateTickets ? '1px solid rgba(99, 102, 241, 0.4)' : '1px solid var(--border-color)',
+            background: autoTranslateTickets ? 'var(--primary-tint, rgba(99, 102, 241, 0.12))' : 'var(--bg-card)',
+            border: autoTranslateTickets ? '1px solid var(--primary, #6366f1)' : '1px solid var(--border-color)',
             padding: '2px 8px',
             borderRadius: '8px',
             height: '36px'
@@ -402,7 +360,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: autoTranslateTickets ? '#a5b4fc' : 'var(--text-secondary)',
+                color: autoTranslateTickets ? 'var(--primary, #4f46e5)' : 'var(--text-muted)',
                 fontSize: '12px',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -412,12 +370,12 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               }}
               title={t.translator?.autoTranslateHelp || 'Auto-translates English teacher requests to Russian/Kazakh'}
             >
-              <Globe size={13} color={autoTranslateTickets ? '#818cf8' : 'var(--text-muted)'} />
+              <Globe size={13} color={autoTranslateTickets ? 'var(--primary, #4f46e5)' : 'var(--text-muted)'} />
               <span>{autoTranslateTickets ? 'Auto-Translate: ON' : 'Auto-Translate: OFF'}</span>
             </button>
 
             {/* Target language selector */}
-            <div style={{ display: 'flex', gap: '2px', background: 'rgba(255, 255, 255, 0.06)', borderRadius: '6px', padding: '2px' }}>
+            <div style={{ display: 'flex', gap: '2px', background: 'var(--bg-subtle)', borderRadius: '6px', padding: '2px', border: '1px solid var(--border-subtle, transparent)' }}>
               <button
                 type="button"
                 onClick={() => setTranslatorTargetLang('ru')}
@@ -567,9 +525,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                border: isSelected ? '1px solid var(--accent-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
-                background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'rgba(15, 23, 42, 0.5)',
-                color: isSelected ? '#ffffff' : 'var(--text-secondary)',
+                border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                background: isSelected ? 'var(--primary-tint, rgba(99, 102, 241, 0.15))' : 'var(--bg-card)',
+                color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
                 cursor: 'pointer',
                 transition: 'all 0.12s ease'
               }}

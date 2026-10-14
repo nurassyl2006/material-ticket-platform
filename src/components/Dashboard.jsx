@@ -691,31 +691,24 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted, #adadad)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span>{deptMeta.emoji}</span>
                     <span>{deptName}</span>
-                    <span style={{ color: 'var(--text-dim, #797775)' }}>• #{ticket.id}</span>
+                    <span className="ticket-id-badge">• #{ticket.id}</span>
                   </span>
                   <span
-                    style={{
-                      padding: '2px 6px',
-                      borderRadius: '2px',
-                      fontSize: '10px',
-                      fontWeight: '600',
-                      background: isDone ? 'rgba(16, 124, 65, 0.18)' : isProg ? 'rgba(15, 108, 189, 0.18)' : 'rgba(216, 59, 1, 0.18)',
-                      border: `1px solid ${isDone ? '#136136' : isProg ? '#115ea3' : '#8f2800'}`,
-                      color: isDone ? '#62c789' : isProg ? '#70b5f9' : '#f59e0b'
-                    }}
+                    className={`ticket-badge-status ticket-badge-status-${ticket.status}`}
+                    style={{ fontSize: '10px', padding: '1px 6px' }}
                   >
                     {ticket.status}
                   </span>
                 </div>
 
-                <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)' }}>
                   {ticket.itemTitle}
                 </div>
 
-                <div style={{ fontSize: '11px', color: 'var(--text-muted, #adadad)' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   📍 {ticket.roomNumber || 'Campus'} • By: {ticket.teacherName || 'Staff'}
                 </div>
               </div>

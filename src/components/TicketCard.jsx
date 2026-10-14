@@ -175,39 +175,18 @@ export const TicketCard = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 200px', minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {getDepartmentBadge(ticket)}
-            <span style={{ fontSize: '11px', color: '#797775', fontWeight: '600' }}>#{ticket.id}</span>
+            <span className="ticket-id-badge">#{ticket.id}</span>
             {getUrgencyBadge(ticket.urgency)}
 
             {/* Translation Badge & Toggle */}
             {isShowingTranslation && (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: '#142436',
-                border: '1px solid #154e7d',
-                color: '#70b5f9',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontSize: '10px',
-                fontWeight: '600'
-              }}>
+              <span className="ticket-badge-translated">
                 <Globe size={11} /> {t.translator?.translatedTo || 'Translated to'} {currentLangLabel}
               </span>
             )}
 
             {isTranslating && (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: '#2d2314',
-                color: '#f59e0b',
-                padding: '2px 6px',
-                borderRadius: '3px',
-                fontSize: '10px',
-                fontWeight: '600'
-              }}>
+              <span className="ticket-badge-translating">
                 <Sparkles size={11} className="animate-spin" /> {t.translator?.translating || 'Translating...'}
               </span>
             )}
@@ -215,14 +194,14 @@ export const TicketCard = ({
 
           {/* Ticket Title */}
           <div>
-            <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)', margin: 0, lineHeight: 1.3 }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main)', margin: 0, lineHeight: 1.3 }}>
               {displayTitle}
               {ticket.quantity ? ` (${ticket.quantity} ${ticket.unit})` : ''}
             </h3>
 
             {/* Show Original English underneath if translated and requested */}
             {isShowingTranslation && showOriginal && ticket.itemTitle && (
-              <div style={{ fontSize: '12px', color: 'var(--text-muted, #adadad)', fontStyle: 'italic', marginTop: '2px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
                 Original: "{ticket.itemTitle}"
               </div>
             )}
@@ -236,29 +215,12 @@ export const TicketCard = ({
           </div>
 
           {/* Language Selector Buttons */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: 'var(--bg-subtle, #202020)',
-            border: '1px solid var(--border-color, #383838)',
-            borderRadius: '6px',
-            padding: '1px',
-            gap: '1px'
-          }}>
+          <div className="ticket-lang-switch">
             <button
               type="button"
               title="Перевести на русский"
               onClick={() => handleTranslateTo('ru')}
-              style={{
-                background: activeLang === 'ru' ? 'var(--primary, #0f6cbd)' : 'transparent',
-                border: 'none',
-                color: activeLang === 'ru' ? '#fff' : 'var(--text-muted, #adadad)',
-                borderRadius: '4px',
-                padding: '2px 5px',
-                fontSize: '10px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
+              className={`ticket-lang-btn ${activeLang === 'ru' ? 'active' : ''}`}
             >
               RU
             </button>
@@ -266,16 +228,7 @@ export const TicketCard = ({
               type="button"
               title="Қазақшаға аудару"
               onClick={() => handleTranslateTo('kk')}
-              style={{
-                background: activeLang === 'kk' ? 'var(--primary, #0f6cbd)' : 'transparent',
-                border: 'none',
-                color: activeLang === 'kk' ? '#fff' : 'var(--text-muted, #adadad)',
-                borderRadius: '4px',
-                padding: '2px 5px',
-                fontSize: '10px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
+              className={`ticket-lang-btn ${activeLang === 'kk' ? 'active' : ''}`}
             >
               KK
             </button>
@@ -283,16 +236,7 @@ export const TicketCard = ({
               type="button"
               title="Original text"
               onClick={() => handleTranslateTo('orig')}
-              style={{
-                background: activeLang === 'orig' ? 'var(--bg-card-hover, #333333)' : 'transparent',
-                border: 'none',
-                color: activeLang === 'orig' ? 'var(--text-main, #fff)' : 'var(--text-muted, #adadad)',
-                borderRadius: '4px',
-                padding: '2px 5px',
-                fontSize: '10px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
+              className={`ticket-lang-btn ${activeLang === 'orig' ? 'active-orig' : ''}`}
             >
               EN
             </button>
@@ -302,15 +246,7 @@ export const TicketCard = ({
                 type="button"
                 onClick={() => setShowOriginal(prev => !prev)}
                 title={showOriginal ? (t.translator?.showTranslation || 'Hide original') : (t.translator?.showOriginal || 'Show original')}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: showOriginal ? '#0f6cbd' : '#797775',
-                  padding: '2px 4px',
-                  fontSize: '10px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
+                className="ticket-lang-btn-toggle"
               >
                 {showOriginal ? 'Hide' : 'Orig'}
               </button>
@@ -322,7 +258,7 @@ export const TicketCard = ({
 
       {/* Description */}
       {displayDesc && (
-        <p style={{ fontSize: '13px', color: 'var(--text-muted, #adadad)', margin: 0, lineHeight: 1.45 }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.45 }}>
           {displayDesc}
         </p>
       )}
@@ -372,7 +308,7 @@ export const TicketCard = ({
       {/* Photos Preview (if any) */}
       {ticket.photos && ticket.photos.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-          <div style={{ fontSize: '10px', color: '#8a8a8a', fontWeight: '600', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
             Attachments ({ticket.photos.length})
           </div>
           <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
@@ -387,7 +323,7 @@ export const TicketCard = ({
                   height: '44px',
                   borderRadius: '3px',
                   objectFit: 'cover',
-                  border: '1px solid #383838',
+                  border: '1px solid var(--border-color)',
                   cursor: 'pointer'
                 }}
               />
@@ -424,10 +360,10 @@ export const TicketCard = ({
       )}
 
       {/* Bottom Row: Metadata & Action Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderTop: '1px solid var(--border-color, #383838)', paddingTop: '8px', marginTop: '2px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', marginTop: '2px' }}>
         
         {/* Left: Room, Requesting Teacher, Date */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '11px', color: 'var(--text-muted, #adadad)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '11px', color: 'var(--text-muted)' }}>
           {renderLocationBadge(ticket.roomNumber)}
 
           {(() => {
@@ -438,33 +374,17 @@ export const TicketCard = ({
             return (
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {isParentTicket ? (
-                  <span style={{
-                    background: '#231f2d',
-                    color: '#c4b5fd',
-                    border: '1px solid #3d3154',
-                    padding: '1px 5px',
-                    borderRadius: '2px',
-                    fontSize: '10px',
-                    fontWeight: '600'
-                  }}>
+                  <span className="ticket-tag-parent">
                     👨‍👩‍👧 {t.auth?.parentTag || 'Parent'}
                   </span>
                 ) : isGuestTicket ? (
-                  <span style={{
-                    background: '#142436',
-                    color: '#70b5f9',
-                    border: '1px solid #154e7d',
-                    padding: '1px 5px',
-                    borderRadius: '2px',
-                    fontSize: '10px',
-                    fontWeight: '600'
-                  }}>
+                  <span className="ticket-tag-guest">
                     👤 {t.auth?.guestTag || 'Guest'}
                   </span>
                 ) : (
-                  <User size={12} color="#adadad" />
+                  <User size={12} color="var(--text-muted)" />
                 )}
-                <span>{ticket.teacherName}</span>
+                <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{ticket.teacherName}</span>
                 {cleanPhone && (
                   <span style={{ display: 'inline-flex', gap: '4px', marginLeft: '2px' }}>
                     <a href={`tel:${cleanPhone}`} title={t.profile?.call || 'Call'} style={{ color: '#107c41', padding: '1px', display: 'flex', alignItems: 'center' }}>
@@ -479,15 +399,15 @@ export const TicketCard = ({
             );
           })()}
 
-          <span>{t.tickets.createdAt}: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+          <span style={{ color: 'var(--text-muted)' }}>{t.tickets.createdAt}: {new Date(ticket.createdAt).toLocaleDateString()}</span>
         </div>
 
         {/* Right: Handled by & Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           
           {ticket.assignedWorker && (
-            <div style={{ fontSize: '11px', color: 'var(--text-muted, #adadad)', background: 'var(--bg-subtle, #202020)', border: '1px solid var(--border-color, #383838)', padding: '3px 6px', borderRadius: '4px' }}>
-              Assigned: <strong style={{ color: 'var(--text-main, #f3f2f1)' }}>{ticket.assignedWorker}</strong>
+            <div className="ticket-assigned-pill">
+              Assigned: <strong style={{ color: 'var(--text-main)' }}>{ticket.assignedWorker}</strong>
               {ticket.purchaseCost ? ` (Cost: ₸${ticket.purchaseCost.toLocaleString()})` : ''}
             </div>
           )}
@@ -521,7 +441,7 @@ export const TicketCard = ({
 
       {/* Handler Notes Banner (if any) */}
       {displayNotes && (
-        <div style={{ fontSize: '11px', color: 'var(--text-muted, #adadad)', fontStyle: 'italic', background: 'var(--bg-subtle, #202020)', border: '1px solid var(--border-color, #383838)', padding: '6px 10px', borderRadius: '6px' }}>
+        <div className="ticket-note-banner">
           Note: "{displayNotes}"
         </div>
       )}
