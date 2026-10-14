@@ -488,17 +488,6 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
             </div>
           )}
 
-          {/* Urgency */}
-          <div>
-            <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.urgency}</label>
-            <select value={formData.urgency} onChange={e => setFormData({ ...formData, urgency: e.target.value })} style={{ ...inputStyle, padding: '9px' }}>
-              <option value="low">{t.tickets.urgencies.low}</option>
-              <option value="medium">{t.tickets.urgencies.medium}</option>
-              <option value="high">{t.tickets.urgencies.high}</option>
-              <option value="critical">{t.tickets.urgencies.critical}</option>
-            </select>
-          </div>
-
           {/* Campus Location (Block, Floor & Area: Corridors, Restrooms, Classrooms) */}
           <CampusLocationSelector
             value={formData.roomNumber}

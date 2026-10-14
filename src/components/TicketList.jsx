@@ -178,15 +178,6 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     );
   };
 
-  const getUrgencyBadge = (urgency) => {
-    const urgencyClass = `ticket-badge-urgency ticket-badge-urgency-${urgency || 'low'}`;
-    return (
-      <span className={urgencyClass}>
-        {t.tickets.urgencies[urgency] || urgency}
-      </span>
-    );
-  };
-
   const filteredTickets = authorizedTickets.filter(ticket => {
     const term = searchTerm.toLowerCase();
     const matchesSearch = (ticket.itemTitle || '').toLowerCase().includes(term) ||
@@ -561,7 +552,6 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               getProcessButtonLabel={getProcessButtonLabel}
               getStatusBadge={getStatusBadge}
               getDepartmentBadge={getDepartmentBadge}
-              getUrgencyBadge={getUrgencyBadge}
               renderLocationBadge={renderLocationBadge}
               onSelectTicket={setSelectedTicket}
               onCompleteTicket={completeTicketDelivery}

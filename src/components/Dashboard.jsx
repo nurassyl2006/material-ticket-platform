@@ -14,7 +14,6 @@ import {
   Clock, 
   DollarSign, 
   TrendingUp, 
-  Flame, 
   CheckCircle, 
   Users,
   Layers,
@@ -44,42 +43,6 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
   const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
 
-  // Critical alerts strictly visible only to people directly connected to them
-  const relevantCriticalTickets = React.useMemo(() => {
-    return scopedTickets.filter(ct => {
-      if (ct.urgency !== 'critical' || ct.status === 'completed' || ct.status === 'delivered') return false;
-
-      // 1. Executive leadership (Director, Admin)
-      if (role === 'director' || role === 'admin') return true;
-
-      const myName = (currentUser?.name || '').trim().toLowerCase();
-      const myId = currentUser?.id;
-      const myEmail = (currentUser?.email || '').trim().toLowerCase();
-      const teacherName = (ct.teacherName || '').trim().toLowerCase();
-      const teacherEmail = (ct.teacherEmail || '').trim().toLowerCase();
-      const assignedWorker = (ct.assignedWorker || '').trim().toLowerCase();
-      const deptId = resolveDepartment(ct.department)?.id || ct.department;
-
-      // 2. Creator/Author of this critical ticket
-      if (myId && ct.createdById && ct.createdById === myId) return true;
-      if (myEmail && teacherEmail && myEmail === teacherEmail) return true;
-      if (myName && teacherName && myName === teacherName) return true;
-      if (Array.isArray(myCreatedTicketIds) && myCreatedTicketIds.includes(ct.id)) return true;
-
-      // 3. Directly assigned technician/worker
-      if (myName && assignedWorker && (assignedWorker === myName || assignedWorker.includes(myName))) return true;
-      if (ct.assignedRole && ct.assignedRole === role) return true;
-
-      // 4. Responsible department specialists
-      if (role === 'cleaning' && deptId === 'cleaning') return true;
-      if (role === 'it_support' && (deptId === 'it_helpdesk' || deptId === 'it')) return true;
-      if (role === 'engineer' && ['plumbing', 'electrical', 'engineering'].includes(deptId)) return true;
-      if (role === 'facilities_manager' && ['carpentry', 'event_prep', 'grounds', 'facilities', 'cleaning', 'plumbing', 'electrical'].includes(deptId)) return true;
-      if ((role === 'storage_manager' || role === 'workerA') && ['storage', 'other'].includes(deptId)) return true;
-
-      return false;
-    });
-  }, [scopedTickets, role, currentUser, myCreatedTicketIds]);
 
   const lowStockItems = inventory.filter(item => item.quantity <= item.minLevel);
   const activeFurnitureMoves = facilitiesTickets.filter(t => t.moveDetails && t.status !== 'completed');
@@ -180,43 +143,6 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
         </div>
       </div>
 
-      {/* Critical Alert Warning */}
-      {relevantCriticalTickets.length > 0 && (
-        <div
-          style={{ 
-            padding: '12px 18px', 
-            background: 'rgba(239, 68, 68, 0.12)', 
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderLeft: '4px solid #ef4444',
-            borderRadius: '12px',
-            backdropFilter: 'blur(12px)',
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            flexWrap: 'wrap', 
-            gap: '12px' 
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Flame size={18} color="#f87171" />
-            <div>
-              <strong style={{ fontSize: '13px', color: 'var(--danger, #dc2626)', fontWeight: '700' }}>
-                {t.dashboard.urgentAlerts} ({relevantCriticalTickets.length})
-              </strong>
-              <p style={{ fontSize: '12px', color: 'var(--text-main, #0f172a)', margin: 0, fontWeight: '500' }}>
-                {relevantCriticalTickets.map(ct => `[${resolveDepartment(ct.department).emoji} ${ct.itemTitle}] (${ct.roomNumber || 'Campus'})`).join(' • ')}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setActiveTab('tickets')}
-            className="fluent-btn-primary"
-            style={{ height: '30px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', fontSize: '12px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)' }}
-          >
-            {role === 'teacher' || role === 'parent' || role === 'guest' ? (t.nav?.myTickets || 'View My Request') : 'Review Tasks'}
-          </button>
-        </div>
-      )}
 
       {/* ============================================================== */}
       {/* 1. EXECUTIVE KPI CARDS GRID */}

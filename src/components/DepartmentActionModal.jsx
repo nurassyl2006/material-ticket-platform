@@ -481,17 +481,6 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 </div>
               )}
             </div>
-            <span style={{ 
-              background: ticket.urgency === 'critical' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)', 
-              color: ticket.urgency === 'critical' ? '#f87171' : '#60a5fa', 
-              padding: '2px 8px', 
-              borderRadius: '6px', 
-              fontSize: '11px', 
-              fontWeight: '700',
-              textTransform: 'uppercase'
-            }}>
-              {ticket.urgency}
-            </span>
           </div>
 
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>

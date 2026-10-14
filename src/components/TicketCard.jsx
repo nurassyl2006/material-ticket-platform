@@ -176,7 +176,6 @@ export const TicketCard = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {getDepartmentBadge(ticket)}
             <span className="ticket-id-badge">#{ticket.id}</span>
-            {getUrgencyBadge(ticket.urgency)}
 
             {/* Translation Badge & Toggle */}
             {isShowingTranslation && (
