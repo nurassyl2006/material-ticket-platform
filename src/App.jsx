@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AppProvider, useApp } from './AppContext';
 import { AuthModal } from './components/AuthModal';
 import { Navbar } from './components/Navbar';
@@ -12,11 +12,22 @@ import { DeviceToastAlert } from './components/DeviceToastAlert';
 import ServerStatusModal from './components/ServerStatusModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ShieldCheck, LogIn, UserPlus, Compass, Users } from 'lucide-react';
+import { parseCurrentRoute, navigate, buildUrl, updatePageTitle } from './router';
 import './index.css';
 
 function MainApp() {
   const { isAuthenticated, role, setRole, lang, t } = useApp();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [route, setRoute] = useState(() => parseCurrentRoute());
+  const activeTab = route.tab;
+
+  const setActiveTab = useCallback((newTabOrPath, params = {}) => {
+    if (typeof newTabOrPath === 'string' && newTabOrPath.startsWith('/')) {
+      navigate(newTabOrPath);
+    } else {
+      navigate(buildUrl(newTabOrPath, params));
+    }
+  }, []);
+
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
   const [newTicketDept, setNewTicketDept] = useState('engineering');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -43,23 +54,76 @@ function MainApp() {
   };
 
   const handleSelectTicketFromNotification = (ticketId) => {
-    setActiveTab('tickets');
+    setActiveTab('tickets', { id: ticketId });
     setTargetTicketId(ticketId);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     window.__onSelectTicketGlobal = handleSelectTicketFromNotification;
     return () => {
       window.__onSelectTicketGlobal = null;
     };
   }, []);
 
+  // Sync route on browser navigation (Back, Forward, Refresh, URL change)
+  useEffect(() => {
+    const handlePopState = () => {
+      const newRoute = parseCurrentRoute();
+      setRoute(newRoute);
+      updatePageTitle(newRoute.tab, lang);
+      if (newRoute.params.id) {
+        setTargetTicketId(newRoute.params.id);
+      }
+      if (newRoute.params.new === '1') {
+        setIsNewTicketOpen(true);
+      }
+      if (newRoute.tab === 'profile') {
+        setIsProfileOpen(true);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    updatePageTitle(route.tab, lang);
+
+    // Initial check for params from first page load
+    if (route.params.id) {
+      setTargetTicketId(route.params.id);
+    }
+    if (route.params.new === '1') {
+      setIsNewTicketOpen(true);
+    }
+    if (route.tab === 'profile') {
+      setIsProfileOpen(true);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [lang, route.tab]);
+
+  // Update title when language changes
+  useEffect(() => {
+    updatePageTitle(activeTab, lang);
+  }, [activeTab, lang]);
+
+  const handleOpenProfile = () => {
+    setIsProfileOpen(true);
+    navigate('/profile');
+  };
+
+  const handleCloseProfile = () => {
+    setIsProfileOpen(false);
+    if (activeTab === 'profile') {
+      setActiveTab('dashboard');
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', paddingBottom: '70px' }}>
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
-        onOpenProfile={() => setIsProfileOpen(true)}
+        onOpenProfile={handleOpenProfile}
         onOpenNewTicket={() => handleOpenNewTicket('engineering')}
         onSelectTicket={handleSelectTicketFromNotification}
         onOpenLogin={handleOpenLogin}
@@ -166,7 +230,7 @@ function MainApp() {
         {activeTab === 'tickets' && (
           <TicketList 
             onOpenNewTicket={handleOpenNewTicket}
-            initialSearchTerm={targetTicketId || ''}
+            initialSearchTerm={targetTicketId || route.params.id || route.params.search || ''}
           />
         )}
         {activeTab === 'inventory' && (
@@ -240,7 +304,7 @@ function MainApp() {
 
       <UserProfileModal 
         isOpen={isProfileOpen} 
-        onClose={() => setIsProfileOpen(false)} 
+        onClose={handleCloseProfile} 
       />
 
       {/* Authentication Modal */}

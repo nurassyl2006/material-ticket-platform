@@ -21,6 +21,7 @@ import {
   Moon
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
+import { Link } from '../router';
 
 export const Navbar = ({ 
   activeTab, 
@@ -90,9 +91,9 @@ export const Navbar = ({
           }}
         >
           {/* Left: Brand Logo & Title */}
-          <div
-            style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-            onClick={() => setActiveTab('dashboard')}
+          <Link
+            to="dashboard"
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}
           >
             <div
               style={{
@@ -117,7 +118,7 @@ export const Navbar = ({
                 {t.subtitle || 'Facilities & Operations'}
               </span>
             </div>
-          </div>
+          </Link>
 
           {/* Center: Modern Navigation Tabs */}
           <nav
@@ -129,8 +130,8 @@ export const Navbar = ({
               gap: '4px'
             }}
           >
-            <button
-              onClick={() => setActiveTab('dashboard')}
+            <Link
+              to="dashboard"
               style={{
                 height: '36px',
                 padding: '0 14px',
@@ -144,7 +145,8 @@ export const Navbar = ({
                 border: activeTab === 'dashboard' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease'
+                transition: 'all 0.15s ease',
+                textDecoration: 'none'
               }}
               onMouseEnter={(e) => {
                 if (activeTab !== 'dashboard') {
@@ -161,10 +163,10 @@ export const Navbar = ({
             >
               <LayoutDashboard size={15} color={activeTab === 'dashboard' ? '#818cf8' : 'currentColor'} />
               <span>{t.nav.dashboard}</span>
-            </button>
+            </Link>
 
-            <button
-              onClick={() => setActiveTab('tickets')}
+            <Link
+              to="tickets"
               style={{
                 height: '36px',
                 padding: '0 14px',
@@ -178,7 +180,8 @@ export const Navbar = ({
                 border: activeTab === 'tickets' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease'
+                transition: 'all 0.15s ease',
+                textDecoration: 'none'
               }}
               onMouseEnter={(e) => {
                 if (activeTab !== 'tickets') {
@@ -195,11 +198,11 @@ export const Navbar = ({
             >
               <ClipboardList size={15} color={activeTab === 'tickets' ? '#818cf8' : 'currentColor'} />
               <span>{t.nav.tickets}</span>
-            </button>
+            </Link>
 
             {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && (
-              <button
-                onClick={() => setActiveTab('inventory')}
+              <Link
+                to="inventory"
                 style={{
                   height: '36px',
                   padding: '0 14px',
@@ -213,7 +216,8 @@ export const Navbar = ({
                   border: activeTab === 'inventory' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  textDecoration: 'none'
                 }}
                 onMouseEnter={(e) => {
                   if (activeTab !== 'inventory') {
@@ -230,12 +234,12 @@ export const Navbar = ({
               >
                 <Package size={15} color={activeTab === 'inventory' ? '#818cf8' : 'currentColor'} />
                 <span>{t.nav.inventory}</span>
-              </button>
+              </Link>
             )}
 
             {(role === 'director' || role === 'admin') && (
-              <button
-                onClick={() => setActiveTab('users')}
+              <Link
+                to="users"
                 style={{
                   height: '36px',
                   padding: '0 14px',
@@ -249,7 +253,8 @@ export const Navbar = ({
                   border: activeTab === 'users' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  textDecoration: 'none'
                 }}
                 onMouseEnter={(e) => {
                   if (activeTab !== 'users') {
@@ -266,7 +271,7 @@ export const Navbar = ({
               >
                 <Users size={15} color={activeTab === 'users' ? '#818cf8' : 'currentColor'} />
                 <span>{t.nav?.users || 'Staff & Roles'}</span>
-              </button>
+              </Link>
             )}
 
             {/* "+ New Request" Primary Button */}
@@ -458,8 +463,8 @@ export const Navbar = ({
             {isAuthenticated ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 {/* Account Avatar & Role */}
-                <button
-                  type="button"
+                <Link
+                  to="profile"
                   onClick={onOpenProfile}
                   title={`${currentUser?.name || 'User'} (${t.roles[role]})`}
                   style={{
@@ -471,7 +476,8 @@ export const Navbar = ({
                     padding: '4px 10px 4px 5px',
                     borderRadius: '8px',
                     cursor: 'pointer',
-                    transition: 'all 0.15s ease'
+                    transition: 'all 0.15s ease',
+                    textDecoration: 'none'
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)')}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)')}
@@ -522,7 +528,7 @@ export const Navbar = ({
                       {t.roles[role]}
                     </span>
                   </div>
-                </button>
+                </Link>
 
                 {/* Logout Button */}
                 <button
@@ -678,21 +684,21 @@ export const Navbar = ({
 
       {/* Mobile Bottom Navigation Bar (Fluent Mobile) */}
       <nav className="mobile-bottom-nav">
-        <button
-          onClick={() => setActiveTab('dashboard')}
+        <Link
+          to="dashboard"
           className={`mobile-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
         >
           <LayoutDashboard size={20} />
           <span>{t.nav.dashboard}</span>
-        </button>
+        </Link>
 
-        <button
-          onClick={() => setActiveTab('tickets')}
+        <Link
+          to="tickets"
           className={`mobile-nav-item ${activeTab === 'tickets' ? 'active' : ''}`}
         >
           <ClipboardList size={20} />
           <span>{t.nav.tickets}</span>
-        </button>
+        </Link>
 
         {/* Elevated Floating Action Center Button */}
         <button
@@ -708,32 +714,33 @@ export const Navbar = ({
 
         {isAuthenticated && (
           (role === 'director' || role === 'admin') ? (
-            <button
-              onClick={() => setActiveTab('users')}
+            <Link
+              to="users"
               className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
             >
               <Users size={20} />
               <span>{t.nav?.users || 'Staff'}</span>
-            </button>
+            </Link>
           ) : (role === 'storage_manager' || role === 'facilities_manager' || role === 'workerA') ? (
-            <button
-              onClick={() => setActiveTab('inventory')}
+            <Link
+              to="inventory"
               className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
             >
               <Package size={20} />
               <span>{t.nav.inventory}</span>
-            </button>
+            </Link>
           ) : null
         )}
 
         {isAuthenticated ? (
-          <button
+          <Link
+            to="profile"
             onClick={onOpenProfile}
-            className="mobile-nav-item"
+            className={`mobile-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
           >
             <User size={20} />
             <span>{t.nav.profile}</span>
-          </button>
+          </Link>
         ) : (
           <button
             onClick={onOpenLogin}

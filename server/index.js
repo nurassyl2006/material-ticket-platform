@@ -1259,8 +1259,8 @@ if (fs.existsSync(distDir)) {
   app.use('/material-ticket-platform', express.static(distDir));
   app.use(express.static(distDir));
   app.use((req, res, next) => {
-    // If request is a GET and does not start with /api, serve index.html
-    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    // If request is a GET/HEAD and does not start with /api, serve index.html
+    if ((req.method === 'GET' || req.method === 'HEAD') && !req.path.startsWith('/api')) {
       return res.sendFile(path.resolve(distDir, 'index.html'));
     }
     next();
