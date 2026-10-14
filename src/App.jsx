@@ -10,6 +10,7 @@ import { TicketModal } from './components/TicketModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { DeviceToastAlert } from './components/DeviceToastAlert';
 import ServerStatusModal from './components/ServerStatusModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { ShieldCheck, LogIn, UserPlus, Compass, Users } from 'lucide-react';
 import './index.css';
 
@@ -260,8 +261,10 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <MainApp />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <MainApp />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

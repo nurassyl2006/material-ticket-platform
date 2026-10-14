@@ -41,6 +41,13 @@ import {
 } from './services/deviceNotifications';
 import { filterVisibleTickets, isUserRelatedToTicket } from './utils/ticketPermissions';
 import { resolveDepartment } from './departments';
+import {
+  safeGetItem,
+  safeSetItem,
+  safeRemoveItem,
+  cleanupObsoleteStorage,
+  sanitizeTicketsForStorage
+} from './utils/storage';
 
 const AppContext = createContext();
 
@@ -51,14 +58,19 @@ const OLD_MOCK_IDS = new Set([
 ]);
 
 export const AppProvider = ({ children }) => {
+  // Purge obsolete and legacy caches on startup to protect browser quota
+  useEffect(() => {
+    cleanupObsoleteStorage();
+  }, []);
+
   // Theme state ('dark' | 'light')
   const [theme, setThemeState] = useState(() => {
-    return localStorage.getItem('app_theme') || 'dark';
+    return safeGetItem('app_theme', 'dark');
   });
 
   const setTheme = useCallback((newTheme) => {
     setThemeState(newTheme);
-    localStorage.setItem('app_theme', newTheme);
+    safeSetItem('app_theme', newTheme);
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', newTheme);
       document.body.setAttribute('data-theme', newTheme);
@@ -68,7 +80,7 @@ export const AppProvider = ({ children }) => {
   const toggleTheme = useCallback(() => {
     setThemeState(prev => {
       const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('app_theme', next);
+      safeSetItem('app_theme', next);
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', next);
         document.body.setAttribute('data-theme', next);
@@ -87,7 +99,7 @@ export const AppProvider = ({ children }) => {
   // Track ticket IDs authored in this browser session
   const [myCreatedTicketIds, setMyCreatedTicketIds] = useState(() => {
     try {
-      const saved = localStorage.getItem('app_my_created_ticket_ids');
+      const saved = safeGetItem('app_my_created_ticket_ids');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -95,9 +107,7 @@ export const AppProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    try {
-      localStorage.setItem('app_my_created_ticket_ids', JSON.stringify(myCreatedTicketIds));
-    } catch {}
+    safeSetItem('app_my_created_ticket_ids', myCreatedTicketIds);
   }, [myCreatedTicketIds]);
 
   // Language state
@@ -253,49 +263,49 @@ export const AppProvider = ({ children }) => {
   // Database Connection Status: 'connected' | 'syncing' | 'offline'
   const [dbStatus, setDbStatus] = useState('syncing');
 
-  // Persistence to localStorage for instant startup and offline resilience
+  // Persistence to localStorage for instant startup and offline resilience (with quota protection)
   useEffect(() => {
-    localStorage.setItem('app_notifications_v3', JSON.stringify(notifications));
+    safeSetItem('app_notifications_v3', notifications);
   }, [notifications]);
 
   useEffect(() => {
-    localStorage.setItem('app_lang', lang);
+    safeSetItem('app_lang', lang);
   }, [lang]);
 
   useEffect(() => {
-    localStorage.setItem('app_role', role);
+    safeSetItem('app_role', role);
   }, [role]);
 
   useEffect(() => {
-    localStorage.setItem('app_auth', isAuthenticated ? 'true' : 'false');
+    safeSetItem('app_auth', isAuthenticated ? 'true' : 'false');
   }, [isAuthenticated]);
 
   useEffect(() => {
     if (authToken) {
-      localStorage.setItem('app_auth_token', authToken);
+      safeSetItem('app_auth_token', authToken);
     } else {
-      localStorage.removeItem('app_auth_token');
+      safeRemoveItem('app_auth_token');
     }
   }, [authToken]);
 
   useEffect(() => {
     if (activeUser) {
-      localStorage.setItem('app_active_user', JSON.stringify(activeUser));
+      safeSetItem('app_active_user', activeUser);
     } else {
-      localStorage.removeItem('app_active_user');
+      safeRemoveItem('app_active_user');
     }
   }, [activeUser]);
 
   useEffect(() => {
-    localStorage.setItem('app_inventory_v3', JSON.stringify(inventory));
+    safeSetItem('app_inventory_v3', inventory);
   }, [inventory]);
 
   useEffect(() => {
-    localStorage.setItem('app_tickets_v3', JSON.stringify(tickets));
+    safeSetItem('app_tickets_v3', sanitizeTicketsForStorage(tickets));
   }, [tickets]);
 
   useEffect(() => {
-    localStorage.setItem('app_users_v3', JSON.stringify(users));
+    safeSetItem('app_users_v3', users);
   }, [users]);
 
   // Keep fresh references for background DB synchronization without re-triggering effects
@@ -479,13 +489,12 @@ export const AppProvider = ({ children }) => {
     }
     setAuthToken('');
     setActiveUser(null);
-    setMyCreatedTicketIds([]);
-    localStorage.removeItem('app_my_created_ticket_ids');
-    localStorage.removeItem('app_auth_token');
-    localStorage.removeItem('app_active_user');
-    localStorage.setItem('app_auth', 'false');
+    safeRemoveItem('app_my_created_ticket_ids');
+    safeRemoveItem('app_auth_token');
+    safeRemoveItem('app_active_user');
+    safeSetItem('app_auth', 'false');
     setIsAuthenticated(false);
-    const fallbackRole = localStorage.getItem('app_unregistered_role') === 'parent' ? 'parent' : 'guest';
+    const fallbackRole = safeGetItem('app_unregistered_role') === 'parent' ? 'parent' : 'guest';
     setRoleState(fallbackRole);
   }, []);
 
@@ -615,9 +624,9 @@ export const AppProvider = ({ children }) => {
       const res = await loginUserApi({ identifier, password });
       if (res && res.token && res.user) {
         setAuthToken(res.token);
-        localStorage.setItem('app_auth_token', res.token);
+        safeSetItem('app_auth_token', res.token);
         setActiveUser(res.user);
-        localStorage.setItem('app_active_user', JSON.stringify(res.user));
+        safeSetItem('app_active_user', res.user);
         setRole(res.user.role || res.user.roleKey);
         setUsers(prev => ({
           ...prev,
@@ -668,9 +677,9 @@ export const AppProvider = ({ children }) => {
     const res = await registerUserApi(userData);
     if (res && res.token && res.user) {
       setAuthToken(res.token);
-      localStorage.setItem('app_auth_token', res.token);
+      safeSetItem('app_auth_token', res.token);
       setActiveUser(res.user);
-      localStorage.setItem('app_active_user', JSON.stringify(res.user));
+      safeSetItem('app_active_user', res.user);
       setRole(res.user.role || res.user.roleKey);
       setIsAuthenticated(true);
       syncWithDb();
@@ -742,7 +751,7 @@ export const AppProvider = ({ children }) => {
     if (currentUser?.id) {
       const merged = { ...currentUser, ...updatedProfileData };
       setActiveUser(merged);
-      localStorage.setItem('app_active_user', JSON.stringify(merged));
+      safeSetItem('app_active_user', merged);
       updateUserProfileInDb(currentUser.id, updatedProfileData).catch(() => {});
     }
     setUsers(prev => ({
