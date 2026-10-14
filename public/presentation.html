@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduOps — Презентация для учителей и сотрудников школы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0f1d;
+      --bg-card: rgba(18, 25, 44, 0.85);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.18) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.15) 0px, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Top Progress Bar */
+    .progress-bar-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      z-index: 1000;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--primary-gradient);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Presentation Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(10, 15, 29, 0.8);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: var(--primary-gradient);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    .header-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      border: none;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.92;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
+    }
+
+    /* Slide Viewport */
+    .viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1100px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 44px 50px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Slide Typography */
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .slide-title {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .slide-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* Presentation Grids & Elements */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .card-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Step Workflow List */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+
+    .step-num {
+      background: var(--primary-gradient);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+
+    .step-content h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+
+    .step-content p {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Status Badges */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pill-yellow { background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; }
+    .pill-blue   { background: rgba(56, 189, 248, 0.18); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; }
+    .pill-green  { background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; }
+
+    /* Speaker Notes Box */
+    .speaker-notes {
+      margin-top: 24px;
+      background: rgba(99, 102, 241, 0.08);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #c7d2fe;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .speaker-notes.visible {
+      display: block;
+    }
+
+    .speaker-notes-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      color: #818cf8;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Bottom Navigation Bar */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      border-top: 1px solid var(--border-color);
+      background: rgba(10, 15, 29, 0.9);
+      backdrop-filter: blur(12px);
+    }
+
+    .slide-counter {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Print Styles for Direct Handout Export */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        overflow: visible !important;
+      }
+      header, footer, .progress-bar-container {
+        display: none !important;
+      }
+      .viewport {
+        padding: 0 !important;
+        display: block !important;
+        overflow: visible !important;
+      }
+      .slide {
+        display: block !important;
+        page-break-after: always;
+        background: #fff !important;
+        border: 1px solid #ccc !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        margin-bottom: 30px !important;
+        max-width: 100% !important;
+      }
+      .card, .step-item {
+        background: #f8fafc !important;
+        border: 1px solid #ddd !important;
+        color: #000 !important;
+      }
+      .card-title, .step-content h4 {
+        color: #000 !important;
+      }
+      .speaker-notes {
+        display: block !important;
+        background: #f0f4ff !important;
+        color: #333 !important;
+        border-left: 4px solid #4f46e5 !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .slide {
+        padding: 24px 20px;
+      }
+      .slide-title {
+        font-size: 24px;
+      }
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+      header, footer {
+        padding: 10px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-logo">
+      <div class="logo-badge">E</div>
+      <div>
+        <div class="header-title">EduOps — Обучение персонала</div>
+        <div class="header-subtitle">Ardingly College Kazakhstan • Инструкция для учителей и мастеров</div>
+      </div>
+    </div>
+    <div class="header-controls">
+      <button class="btn" id="toggleNotesBtn" title="Показать подсказки докладчика (Клавиша S)">
+        🗣️ Подсказки спикера
+      </button>
+      <button class="btn" id="fullscreenBtn" title="Полноэкранный режим (Клавиша F)">
+        ⛶ Экран
+      </button>
+      <button class="btn btn-primary" onclick="window.print()" title="Распечатать или сохранить в PDF">
+        🖨️ В PDF / Печать
+      </button>
+      <a href="/" class="btn">
+        ✕ На платформу
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Slide Viewport -->
+  <main class="viewport">
+
+    <!-- SLIDE 1: Title -->
+    <section class="slide active" data-slide="1">
+      <div class="slide-badge">🏫 Официальный запуск • Ardingly College Kazakhstan</div>
+      <h1 class="slide-title">EduOps — Единая платформа заявок и сервиса кампуса</h1>
+      <p class="slide-subtitle">
+        Интерактивное руководство для учителей, воспитателей и технических специалистов (IT, Инженерия, Клининг, АХЧ, Склад)
+      </p>
+
+      <div class="grid-3" style="margin-bottom: 24px;">
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">Быстрота</div>
+          <div class="card-text">Подача любой заявки за 30 секунд со смартфона или ПК прямо из класса.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🎯</div>
+          <div class="card-title">Точность</div>
+          <div class="card-text">Заявка сразу попадает нужному профильному мастеру с фото поломки.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">✅</div>
+          <div class="card-title">Прозрачность</div>
+          <div class="card-text">Учитель видит статус и фото результата. Никаких потерянных сообщений в чатах.</div>
+        </div>
+      </div>
+
+      <div class="card" style="background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3);">
+        <strong style="color: #fff;">🌐 Доступ:</strong> 
+        <span style="color: #a5b4fc; font-family: monospace;">http://10.1.13.50:5001</span> или 
+        <span style="color: #a5b4fc; font-family: monospace;">http://ardingly.service.kz</span>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Коллеги, добрый день! Сегодня мы запускаем платформу EduOps. Больше не нужно искать завхоза на перемене, писать в личку в WhatsApp или передавать просьбы через третьих лиц. Отныне любая проблема в кабинете фиксируется официально и решается по четкому регламенту.»
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Why EduOps? -->
+    <section class="slide" data-slide="2">
+      <div class="slide-badge">Сравнение процессов</div>
+      <h2 class="slide-title">Зачем нам новая система?</h2>
+      <p class="slide-subtitle">
+        Как изменится работа каждого сотрудника школы с переходом на цифровую платформу:
+      </p>
+
+      <div class="grid-2">
+        <div class="card" style="border-left: 4px solid var(--danger);">
+          <div class="card-title" style="color: #f87171;">❌ Как было раньше:</div>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--text-muted); margin-top: 12px;">
+            <li>• Заявки терялись в общих группах WhatsApp и забывались</li>
+            <li>• Учитель не знал, придет мастер сегодня или через неделю</li>
+            <li>• Мастер приходил в класс без нужной детали или инструмента</li>
+            <li>• Сложно доказать факт выполнения работы при спорах</li>
+            <li>• Учет расходных материалов велся «на глаз» на бумаге</li>
+          </ul>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--success);">
+          <div class="card-title" style="color: #4ade80;">✅ Как работает EduOps:</div>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--text-muted); margin-top: 12px;">
+            <li>• Каждая заявка получает номер тикета и видна руководству</li>
+            <li>• Видно, кто из мастеров назначен и когда выехал</li>
+            <li>• Фотография поломки позволяет мастеру сразу взять запчасти</li>
+            <li>• Обязательный фотоотчет после окончания ремонта</li>
+            <li>• Списание лампочек, кабелей и материалов со склада в 1 клик</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Посмотрите на левую колонку: хаос в WhatsApp отнимает нервы и у учителей, и у мастеров. Правая колонка — это порядок. Вы подали заявку, занимаетесь уроком, мастер всё сделал и прикрепил фото. Полная прозрачность и взаимное уважение времени друг друга.»
+      </div>
+    </section>
+
+    <!-- SLIDE 3: Campus Map & Rooms -->
+    <section class="slide" data-slide="3">
+      <div class="slide-badge">Навигация по школе</div>
+      <h2 class="slide-title">Ориентация по кампусу: Блоки и Кабинеты</h2>
+      <p class="slide-subtitle">
+        В системе настроен быстрый выбор кабинетов в 1 касание без ручного ввода:
+      </p>
+
+      <div class="grid-4" style="margin-bottom: 20px;">
+        <div class="card" style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 800; color: #818cf8; margin-bottom: 4px;">БЛОК A</div>
+          <div class="card-text">Старшая школа<br>Администрация кампуса</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 800; color: #38bdf8; margin-bottom: 4px;">БЛОК B</div>
+          <div class="card-text">Средняя школа<br>Младшие классы (Primary)</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 800; color: #34d399; margin-bottom: 4px;">БЛОК C</div>
+          <div class="card-text">Спортивный комплекс<br>Столовая, Актовый зал</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div style="font-size: 24px; font-weight: 800; color: #fbbf24; margin-bottom: 4px;">БЛОК D</div>
+          <div class="card-text">Лаборатории & STEM<br>Искусство, Мастерские</div>
+        </div>
+      </div>
+
+      <div class="card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div>
+          <strong style="color: #fff; font-size: 14px;">Структура этажей:</strong>
+          <span style="color: var(--text-muted); font-size: 13px; margin-left: 10px;">
+            <span class="pill pill-blue">0 (Basement / Цоколь)</span>
+            <span class="pill pill-blue">1 этаж</span>
+            <span class="pill pill-blue">2 этаж</span>
+            <span class="pill pill-blue">3 этаж</span>
+          </span>
+        </div>
+        <div style="font-size: 13px; color: #a5b4fc;">
+          Пример: <strong>A-101</strong>, <strong>B-204</strong>, <strong>C-002</strong>, <strong>D-305</strong>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Здание школы разделено на четыре основных блока: A, B, C и D, а также четыре уровня: цоколь и три этажа. При создании заявки вы просто нажимаете кнопку нужного блока — система сама предложит список кабинетов. Никаких опечаток!»
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Departments -->
+    <section class="slide" data-slide="4">
+      <div class="slide-badge">Зоны ответственности</div>
+      <h2 class="slide-title">В какой отдел направлять заявку?</h2>
+      <p class="slide-subtitle">
+        Правильный выбор отдела гарантирует, что заявка сразу придет нужному специалисту:
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">💻</div>
+          <div class="card-title">IT Helpdesk</div>
+          <div class="card-text">Проектор, интерактивная доска, Wi-Fi, принтеры, аудио/видео аппаратура, ноутбуки учителей.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">Инженерия & Свет</div>
+          <div class="card-text">Освещение, розетки, кондиционеры, отопление, вентиляция, выключатели, щитки.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🚰</div>
+          <div class="card-title">Сантехника</div>
+          <div class="card-text">Засор раковины, капает кран, неисправность слива, слабый напор, бойлеры.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧹</div>
+          <div class="card-title">Клининг & Чистота</div>
+          <div class="card-text">Разлита жидкость, помыть доску, закончилось жидкое мыло или полотенца в санузле, вынос мусора.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🪑</div>
+          <div class="card-title">АХЧ & Мебель</div>
+          <div class="card-text">Сломана ножка стула/парты, заедает замок двери, перестановка шкафа, жалюзи, окна.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📦</div>
+          <div class="card-title">Складской учет</div>
+          <div class="card-text">Выдача бумаги А4, маркеров для белых досок, батареек, канцелярских наборов.</div>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Пожалуйста, обращайте внимание на эти 6 категорий. Если не работает проектор — это IT. Если погас свет в классе — Инженерия. Если оторвалась ручка на двери — АХЧ. Если сомневаетесь, выбирайте самый близкий вариант — координатор перенаправит.»
+      </div>
+    </section>
+
+    <!-- SLIDE 5: Teacher Guide -->
+    <section class="slide" data-slide="5">
+      <div class="slide-badge">Часть 1 • Для учителей</div>
+      <h2 class="slide-title">Как учителю подать заявку за 30 секунд</h2>
+      <p class="slide-subtitle">
+        Простой пошаговый алгоритм без бюрократии и очередей:
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Нажмите «+ Подать заявку»</h4>
+            <p>Большая синяя кнопка в правом верхнем углу (на телефоне — круглый «+» внизу по центру).</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Выберите категорию и кабинет</h4>
+            <p>Кликните по отделу (IT, Клининг, Инженерия и т.д.) и выберите номер своего класса (например, B-204).</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Кратко напишите суть и сделайте фото 📷</h4>
+            <p>Достаточно одной фразы: <em>«Кабель HDMI поврежден, проектор не видит ноутбук»</em>. Фотографируйте прямо с камеры смартфона!</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Нажмите синюю кнопку «Подать заявку»</h4>
+            <p>Заявка мгновенно появляется на планшетах дежурных мастеров. Вы можете продолжать урок!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Уважаемые учителя! Обратите внимание на Шаг 3: фото поломки. Фотография экономит огромное количество времени. Мастеру не нужно сначала приходить, смотреть, уходить на склад за кабелем и возвращаться. Он сразу берет с собой нужную модель кабеля или лампы.»
+      </div>
+    </section>
+
+    <!-- SLIDE 6: Status Tracking -->
+    <section class="slide" data-slide="6">
+      <div class="slide-badge">Контроль и связь</div>
+      <h2 class="slide-title">Отслеживание статуса и прямая связь</h2>
+      <p class="slide-subtitle">
+        Учитель всегда знает, что происходит с его обращением:
+      </p>
+
+      <div class="grid-3" style="margin-bottom: 24px;">
+        <div class="card" style="border-top: 3px solid var(--warning);">
+          <div class="pill pill-yellow" style="margin-bottom: 10px;">🟡 Новая (Pending)</div>
+          <div class="card-title">Заявка принята</div>
+          <div class="card-text">Обращение появилось в очереди соответствующего отдела. Диспетчер видит задачу.</div>
+        </div>
+        <div class="card" style="border-top: 3px solid var(--info);">
+          <div class="pill pill-blue" style="margin-bottom: 10px;">🔵 В работе (In Progress)</div>
+          <div class="card-title">Мастер выехал</div>
+          <div class="card-text">Конкретный мастер нажал кнопку. В карточке указано его ФИО и должность.</div>
+        </div>
+        <div class="card" style="border-top: 3px solid var(--success);">
+          <div class="pill pill-green" style="margin-bottom: 10px;">🟢 Выполнено (Resolved)</div>
+          <div class="card-title">Работа завершена</div>
+          <div class="card-text">Мастер устранил неисправность и прикрепил фотоотчет готовой работы.</div>
+        </div>
+      </div>
+
+      <div class="card" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+        <strong style="color: #4ade80;">📞 Связь в 1 клик:</strong>
+        <span style="color: var(--text-muted); font-size: 13px; margin-left: 8px;">
+          В карточке каждой заявки есть иконки <strong>Звонка</strong> и чата <strong>WhatsApp</strong>. Мастер и учитель могут связаться без поиска номера в контактах.
+        </span>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Вам больше не нужно гадать: видели ли вашу заявку? Вся информация обновляется в реальном времени. Если статус "В работе" — значит специалист уже идет к вам. Когда всё готово, статус становится зеленым.»
+      </div>
+    </section>
+
+    <!-- SLIDE 7: Multilingual -->
+    <section class="slide" data-slide="7">
+      <div class="slide-badge">Языковая доступность</div>
+      <h2 class="slide-title">Многоязычность и Умный автоперевод</h2>
+      <p class="slide-subtitle">
+        Стираем языковой барьер между иностранными преподавателями и технической службой:
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="color: #818cf8;">🌐 3 языка интерфейса:</div>
+          <p class="card-text" style="margin-bottom: 14px;">
+            Вся платформа переведена на три языка. Переключение в 1 клик по значку языка в шапке:
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <span class="pill pill-blue">Русский</span>
+            <span class="pill pill-blue">Қазақша</span>
+            <span class="pill pill-blue">English</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: #38bdf8;">⚡ Автоперевод текстов заявок:</div>
+          <p class="card-text">
+            Учитель-экспат пишет заявку на английском:<br>
+            <em style="color: #e2e8f0;">"Smartboard is freezing when connecting HDMI cable."</em>
+          </p>
+          <div style="margin-top: 10px; font-size: 13px; color: #4ade80;">
+            Мастер читает в один клик:<br>
+            <strong>«Смартборд зависает при подключении HDMI-кабеля.»</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «В нашей школе работают преподаватели из разных стран. Теперь иностранным учителям не нужно просить коллег перевести заявку. Пишите на английском — система сама переведет текст для дежурного мастера.»
+      </div>
+    </section>
+
+    <!-- SLIDE 8: Worker Guide -->
+    <section class="slide" data-slide="8">
+      <div class="slide-badge">Часть 2 • Для мастеров и рабочих</div>
+      <h2 class="slide-title">Как мастеру принимать и вести заявку</h2>
+      <p class="slide-subtitle">
+        Простые правила для инженеров, сантехников, электриков и клининга:
+      </p>
+
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Откройте сайт под своим логином сотрудника</h4>
+            <p>Войдите со своего смартфона или служебного планшета. Во вкладке «Все заявки» включите фильтр своего отдела.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Нажмите синюю кнопку «В работу»</h4>
+            <p><strong>Обязательно!</strong> Как только вы берете заявку — нажмите кнопку. Это исключит ситуацию, когда на одну заявку приходят два мастера.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Посмотрите прикрепленные фото и номер кабинета</h4>
+            <p>Заранее возьмите нужный инструмент, лампу или моющее средство на складе.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Уважаемые мастера! Главное требование к нам с вами — нажимать "В работу". Когда вы нажимаете эту кнопку, директор видит, что служба работает, а учитель в кабинете спокоен, потому что знает: к нему уже идет мастер.»
+      </div>
+    </section>
+
+    <!-- SLIDE 9: Completion & Proof -->
+    <section class="slide" data-slide="9">
+      <div class="slide-badge">Завершение и отчетность</div>
+      <h2 class="slide-title">Закрытие заявки и фотоотчет мастера</h2>
+      <p class="slide-subtitle">
+        Качественное выполнение и фиксация результата за пару секунд:
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-icon">📷</div>
+          <div class="card-title">Фотографируйте результат!</div>
+          <div class="card-text" style="margin-bottom: 12px;">
+            После устранения поломки нажмите иконку камеры прямо в карточке заявки:
+          </div>
+          <ul style="list-style: none; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+            <li>✓ Горящий отремонтированный светильник</li>
+            <li>✓ Сухой и чистый пол в классе</li>
+            <li>✓ Исправно работающий замок двери</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📦</div>
+          <div class="card-title">Списание расходных материалов</div>
+          <div class="card-text" style="margin-bottom: 12px;">
+            Если при ремонте вы взяли деталь со склада — укажите её:
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; font-size: 12px; color: #a5b4fc;">
+            Пример: <em>«Списано: Лампа LED E27 — 2 шт.»</em><br>
+            Остаток на складе спишется автоматически!
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; text-align: center;">
+        <span class="pill pill-green" style="font-size: 14px; padding: 10px 24px;">
+          Нажмите зеленую кнопку «Выполнено» — заявка успешно закрыта! ✅
+        </span>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Фотография после ремонта защищает самого мастера! Никто не сможет сказать "к нам никто не приходил", потому что в системе есть время, дата и фото исправной работы.»
+      </div>
+    </section>
+
+    <!-- SLIDE 10: Inventory -->
+    <section class="slide" data-slide="10">
+      <div class="slide-badge">Склад и запасы</div>
+      <h2 class="slide-title">Складской учет материалов (`/inventory`)</h2>
+      <p class="slide-subtitle">
+        Раздел для Завхоза, Заведующего складом и начальника эксплуатации:
+      </p>
+
+      <div class="grid-3" style="margin-bottom: 20px;">
+        <div class="card">
+          <div class="card-title" style="color: #4ade80;">🟢 В наличии (OK)</div>
+          <div class="card-text">Материала достаточно для ежедневных нужд школы.</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: #fbbf24;">🟡 Заканчивается (Low)</div>
+          <div class="card-text">Остаток приблизился к минимальному лимиту. Пора подавать заявку на закупку.</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color: #f87171;">🔴 Закончилось (Out)</div>
+          <div class="card-text">Срочно требуется пополнение. Позиция подсвечена красным.</div>
+        </div>
+      </div>
+
+      <div class="card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div>
+          <strong style="color: #fff;">Быстрые кнопки изменения:</strong>
+          <span style="color: var(--text-muted); font-size: 13px; margin-left: 8px;">
+            Кнопка <strong>[ - ]</strong> для списания и <strong>[ + ]</strong> для оприходования партии в один клик.
+          </span>
+        </div>
+        <button class="btn btn-primary" style="pointer-events: none;">+ Добавить материал</button>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Складской раздел позволяет заранее видеть, когда заканчивается бумага А4 или чистящие средства. Мы не ждем, пока всё закончится в ноль, а заблаговременно формируем закупку.»
+      </div>
+    </section>
+
+    <!-- SLIDE 11: Mobile Usage -->
+    <section class="slide" data-slide="11">
+      <div class="slide-badge">Смартфоны & Планшеты</div>
+      <h2 class="slide-title">Работа с телефона на бегу (Mobile First)</h2>
+      <p class="slide-subtitle">
+        Платформа работает на смартфонах так же удобно, как на компьютере:
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-icon">📱</div>
+          <div class="card-title">Иконка на экран Домой</div>
+          <div class="card-text">Нажмите в браузере Safari/Chrome «Поделиться» ➔ «На экран Домой». Сайт откроется как приложение.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔘</div>
+          <div class="card-title">Кнопка «+» под палец</div>
+          <div class="card-text">Внизу экрана всегда доступна круглая кнопка быстрого создания заявки.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📸</div>
+          <div class="card-title">Прямой доступ к камере</div>
+          <div class="card-text">Не нужно сохранять файлы в галерею: щелкнули поломку — фото сразу в заявке.</div>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Рекомендую каждому прямо сегодня добавить иконку сайта на экран своего телефона. Это занимает ровно 10 секунд. И тогда в любой момент, идя по коридору, вы сможете вызвать мастера в два клика.»
+      </div>
+    </section>
+
+    <!-- SLIDE 12: Golden Rules & FAQ -->
+    <section class="slide" data-slide="12">
+      <div class="slide-badge">Памятка • Безопасность</div>
+      <h2 class="slide-title">Золотые правила и экстренные случаи</h2>
+      <p class="slide-subtitle">
+        Что делать в нестандартных и критических ситуациях:
+      </p>
+
+      <div class="card" style="border-left: 4px solid var(--danger); margin-bottom: 20px; background: rgba(239, 68, 68, 0.08);">
+        <strong style="color: #f87171; font-size: 15px;">⚠️ При аварийных ЧП (прорыв трубы, искры, запах гари):</strong>
+        <p style="font-size: 13px; color: var(--text-main); margin-top: 6px; line-height: 1.5;">
+          1. <strong>Сначала безопасность:</strong> обесточьте прибор / перекройте вентиль или вызовите дежурного по рации/телефону голосом!<br>
+          2. После устранения непосредственной угрозы создайте тикет в EduOps для фиксации ремонта.
+        </p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">❓ Забыли пароль?</div>
+          <div class="card-text">Воспользуйтесь быстрым входом без пароля (режим Гостя/Родителя) или обратитесь к IT администратору за мгновенным сбросом.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">❓ 1 кабинет = 1 заявка</div>
+          <div class="card-text">Пожалуйста, не объединяйте в одну заявку проектор в B-201 и раковину в B-105. Создайте две разные заявки для разных мастеров.</div>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Главное правило: при авариях — сначала безопасность людей, затем оформление тикета. А в обычной жизни помните: чем точнее описана проблема, тем быстрее она будет решена!»
+      </div>
+    </section>
+
+    <!-- SLIDE 13: Summary & Contacts -->
+    <section class="slide" data-slide="13">
+      <div class="slide-badge">Готовы к работе!</div>
+      <h2 class="slide-title">Вместе делаем школу Ardingly лучше!</h2>
+      <p class="slide-subtitle">
+        Платформа запущена и готова к приему ваших обращений прямо сейчас.
+      </p>
+
+      <div class="card" style="text-align: center; padding: 36px; background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.35); margin-bottom: 24px;">
+        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px;">
+          Адрес платформы:
+        </div>
+        <div style="font-size: 28px; font-weight: 800; color: #818cf8; letter-spacing: -0.5px; font-family: monospace;">
+          http://10.1.13.50:5001
+        </div>
+        <div style="font-size: 14px; color: var(--text-muted); margin-top: 8px;">
+          (Также доступно по корпоративному адресу: <strong>ardingly.service.kz</strong>)
+        </div>
+      </div>
+
+      <div class="grid-3" style="text-align: center;">
+        <div class="card">
+          <strong style="color: #fff;">IT поддержка:</strong><br>
+          <span style="font-size: 13px; color: var(--text-muted);">Кабинет A-108 • Внутр. тел: 108</span>
+        </div>
+        <div class="card">
+          <strong style="color: #fff;">Служба АХЧ:</strong><br>
+          <span style="font-size: 13px; color: var(--text-muted);">Кабинет A-004 • Внутр. тел: 104</span>
+        </div>
+        <div class="card">
+          <strong style="color: #fff;">Заведующий складом:</strong><br>
+          <span style="font-size: 13px; color: var(--text-muted);">Блок C (Склад) • Внутр. тел: 112</span>
+        </div>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «Спасибо за внимание! Давайте перейдем к вопросам. Сейчас я готов показать на интерактивной доске, как создать тестовую заявку прямо с телефона любого из вас.»
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation & Counter -->
+  <footer>
+    <div class="slide-counter" id="slideCounter">Слайд 1 из 13</div>
+    <div class="nav-buttons">
+      <button class="btn" id="prevBtn" title="Предыдущий слайд (Стрелка влево)">
+        ← Назад
+      </button>
+      <button class="btn btn-primary" id="nextBtn" title="Следующий слайд (Стрелка вправо или Пробел)">
+        Вперед →
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      const slides = document.querySelectorAll('.slide');
+      const progressBar = document.getElementById('progressBar');
+      const slideCounter = document.getElementById('slideCounter');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const toggleNotesBtn = document.getElementById('toggleNotesBtn');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+      let currentSlide = 0;
+      let notesVisible = false;
+
+      function updateSlide(index) {
+        if (index < 0) index = 0;
+        if (index >= slides.length) index = slides.length - 1;
+        currentSlide = index;
+
+        slides.forEach((s, idx) => {
+          if (idx === currentSlide) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('active');
+          }
+        });
+
+        // Update progress bar
+        const progress = ((currentSlide + 1) / slides.length) * 100;
+        progressBar.style.width = progress + '%';
+
+        // Update counter
+        slideCounter.textContent = `Слайд ${currentSlide + 1} из ${slides.length}`;
+
+        // Update buttons state
+        prevBtn.disabled = currentSlide === 0;
+        prevBtn.style.opacity = currentSlide === 0 ? '0.4' : '1';
+        nextBtn.textContent = currentSlide === slides.length - 1 ? 'Завершить 🏁' : 'Вперед →';
+
+        // Scroll top in case slide is tall
+        document.querySelector('.viewport').scrollTop = 0;
+      }
+
+      function nextSlide() {
+        if (currentSlide < slides.length - 1) {
+          updateSlide(currentSlide + 1);
+        }
+      }
+
+      function prevSlide() {
+        if (currentSlide > 0) {
+          updateSlide(currentSlide - 1);
+        }
+      }
+
+      function toggleNotes() {
+        notesVisible = !notesVisible;
+        document.querySelectorAll('.speaker-notes').forEach(el => {
+          if (notesVisible) {
+            el.classList.add('visible');
+          } else {
+            el.classList.remove('visible');
+          }
+        });
+        toggleNotesBtn.style.background = notesVisible ? 'rgba(99, 102, 241, 0.3)' : 'rgba(255, 255, 255, 0.08)';
+      }
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          fullscreenBtn.textContent = '✕ Окно';
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+            fullscreenBtn.textContent = '⛶ Экран';
+          }
+        }
+      }
+
+      // Event Listeners
+      nextBtn.addEventListener('click', nextSlide);
+      prevBtn.addEventListener('click', prevSlide);
+      toggleNotesBtn.addEventListener('click', toggleNotes);
+      fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+      // Keyboard Controls
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+          e.preventDefault();
+          nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          prevSlide();
+        } else if (e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы') {
+          toggleNotes();
+        } else if (e.key === 'f' || e.key === 'F' || e.key === 'а' || e.key === 'А') {
+          toggleFullscreen();
+        } else if (e.key === 'Home') {
+          updateSlide(0);
+        } else if (e.key === 'End') {
+          updateSlide(slides.length - 1);
+        }
+      });
+
+      // Initialize
+      updateSlide(0);
+    })();
+  </script>
+</body>
+</html>
