@@ -29,6 +29,7 @@ export default function ServerStatusModal({ isOpen, onClose }) {
 
   const [currentUrl, setCurrentUrl] = useState('');
   const [customInput, setCustomInput] = useState('');
+  const [detectedTunnel, setDetectedTunnel] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [isTestingUrl, setIsTestingUrl] = useState(false);
   const [healthData, setHealthData] = useState(null);
@@ -71,6 +72,25 @@ export default function ServerStatusModal({ isOpen, onClose }) {
       setCustomInput(active);
       setTestResult(null);
       handleVerify();
+
+      // Check for actively running tunnel
+      fetch('/api/tunnel-status')
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.active && data.url) {
+            setDetectedTunnel(data.url);
+          } else {
+            fetch('/active_tunnel.json')
+              .then(r => r.json())
+              .then(tun => {
+                if (tun && tun.active && tun.url) {
+                  setDetectedTunnel(tun.url);
+                }
+              })
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
     }
   }, [isOpen]);
 
@@ -412,6 +432,38 @@ export default function ServerStatusModal({ isOpen, onClose }) {
               <label style={{ fontSize: '12px', fontWeight: '700', color: '#cbd5e1' }}>
                 {trans.serverUrlLabel}
               </label>
+
+              {/* Detected Tunnel Banner (if available) */}
+              {detectedTunnel && (
+                <div style={{
+                  background: 'rgba(99, 102, 241, 0.15)',
+                  border: '1px solid rgba(99, 102, 241, 0.35)',
+                  borderRadius: '10px',
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '10px',
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#c7d2fe' }}>
+                    ⚡ Обнаружен активный туннель: <strong style={{ color: '#fff' }}>{detectedTunnel}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomInput(detectedTunnel);
+                      setCustomApiServerUrl(detectedTunnel);
+                      setCurrentUrl(detectedTunnel);
+                      handleVerify();
+                    }}
+                    className="fluent-btn-primary"
+                    style={{ height: '26px', padding: '0 12px', fontSize: '11px', whiteSpace: 'nowrap' }}
+                  >
+                    Подключиться
+                  </button>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <input

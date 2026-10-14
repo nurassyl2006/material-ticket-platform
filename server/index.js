@@ -1251,6 +1251,20 @@ app.post('/api/reset', (req, res) => {
   }
 });
 
+// Tunnel Status Endpoint (checks if active public tunnel is running)
+app.get('/api/tunnel-status', (req, res) => {
+  try {
+    const tunnelFile = path.resolve(__dirname, 'data/tunnel_url.txt');
+    if (fs.existsSync(tunnelFile)) {
+      const url = fs.readFileSync(tunnelFile, 'utf8').trim();
+      if (url) {
+        return res.json({ active: true, url });
+      }
+    }
+  } catch (e) {}
+  res.json({ active: false, url: '' });
+});
+
 // -------------------------------------------------------------
 // Production Static Serving
 // -------------------------------------------------------------

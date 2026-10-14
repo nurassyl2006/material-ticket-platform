@@ -9,9 +9,55 @@
 
 import { spawn } from 'child_process';
 import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 5001;
 const TARGET_URL = `http://127.0.0.1:${PORT}`;
+
+function saveTunnelUrl(url) {
+  try {
+    const dataDir = path.resolve(__dirname, 'data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(path.resolve(dataDir, 'tunnel_url.txt'), url, 'utf8');
+
+    const payload = JSON.stringify({ active: true, url, updatedAt: new Date().toISOString() }, null, 2);
+    const publicDir = path.resolve(__dirname, '../public');
+    if (fs.existsSync(publicDir)) {
+      fs.writeFileSync(path.resolve(publicDir, 'active_tunnel.json'), payload, 'utf8');
+    }
+    const distDir = path.resolve(__dirname, '../dist');
+    if (fs.existsSync(distDir)) {
+      fs.writeFileSync(path.resolve(distDir, 'active_tunnel.json'), payload, 'utf8');
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+function clearTunnelUrl() {
+  try {
+    const dataDir = path.resolve(__dirname, 'data');
+    const txt = path.resolve(dataDir, 'tunnel_url.txt');
+    if (fs.existsSync(txt)) fs.unlinkSync(txt);
+
+    const payload = JSON.stringify({ active: false, url: '', updatedAt: new Date().toISOString() }, null, 2);
+    const publicDir = path.resolve(__dirname, '../public');
+    if (fs.existsSync(publicDir)) {
+      fs.writeFileSync(path.resolve(publicDir, 'active_tunnel.json'), payload, 'utf8');
+    }
+    const distDir = path.resolve(__dirname, '../dist');
+    if (fs.existsSync(distDir)) {
+      fs.writeFileSync(path.resolve(distDir, 'active_tunnel.json'), payload, 'utf8');
+    }
+  } catch (e) {
+    // ignore
+  }
+}
 
 console.log('\n================================================================');
 console.log('       🏫 EDUOPS REMOTE SCHOOL SERVER TUNNEL LAUNCHER');
@@ -117,6 +163,8 @@ function startLocaltunnelFallback() {
 }
 
 function printSuccessBanner(url) {
+  saveTunnelUrl(url);
+
   console.log('\n================================================================');
   console.log('  🎉 SUCCESS! YOUR SCHOOL SERVER IS NOW ACCESSIBLE FROM ANYWHERE');
   console.log('================================================================\n');
@@ -129,8 +177,20 @@ function printSuccessBanner(url) {
   console.log('  3. In the "Remote Server URL" box, paste:');
   console.log(`     ${url}`);
   console.log('  4. Click "Save & Connect".\n');
-  console.log('  💡 The badge will turn GREEN (DB Synced) from anywhere in the world,');
+  console.log('  💡 The badge will turn GREEN (Connected) from anywhere in the world,');
   console.log('     and all tickets & updates will save directly to your SQLite database!');
   console.log('================================================================\n');
-  console.log('  Press Ctrl+C at any time to stop this tunnel.\n');
+  console.log('  ⚠️  IMPORTANT: KEEP THIS TERMINAL OPEN!');
+  console.log('  Closing this window or pressing Ctrl+C will terminate the tunnel.');
+  console.log('  To keep it running in the background permanently, run:');
+  console.log('    nohup npm run tunnel > ~/tunnel.log 2>&1 &\n');
 }
+
+const cleanup = () => {
+  clearTunnelUrl();
+  process.exit(0);
+};
+
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);
+process.on('exit', clearTunnelUrl);

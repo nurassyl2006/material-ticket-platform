@@ -84,6 +84,27 @@ async function request(endpoint, options = {}) {
     return await res.json();
   } catch (err) {
     clearTimeout(timeoutId);
+
+    // If a custom external URL failed, but app is on a server serving /api, automatically fallback
+    if (apiBase !== '/api' && typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+      try {
+        const localUrl = `/api${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+        const localRes = await fetch(localUrl, {
+          ...options,
+          headers: {
+            ...defaultHeaders,
+            ...options.headers
+          }
+        });
+        if (localRes.ok) {
+          console.warn(`[EduOps] Remote URL ${apiBase} failed, fell back to local /api`);
+          return await localRes.json();
+        }
+      } catch (fallbackErr) {
+        // continue throwing original error
+      }
+    }
+
     throw err;
   }
 }
