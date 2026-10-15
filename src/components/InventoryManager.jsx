@@ -3,7 +3,7 @@ import { useApp } from '../AppContext';
 import { Plus, MapPin } from 'lucide-react';
 
 export const InventoryManager = () => {
-  const { t, inventory, addInventoryItem, updateInventoryQty, role } = useApp();
+  const { t, inventory, addInventoryItem, updateInventoryQty, role, lang } = useApp();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [newItem, setNewItem] = useState({
@@ -16,7 +16,7 @@ export const InventoryManager = () => {
   });
 
   const canManageStock = role === 'storage_manager' || 
-                         role === 'facilities_manager' || 
+                         role === 'engineer' || 
                          role === 'director' || 
                          role === 'workerA' || 
                          role === 'admin';
@@ -63,10 +63,14 @@ export const InventoryManager = () => {
       <div className="glass-panel" style={{ padding: '48px 24px', textAlign: 'center', maxWidth: '600px', margin: '40px auto' }}>
         <div style={{ fontSize: '36px', marginBottom: '12px' }}>🔒</div>
         <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>
-          Access Restricted / Доступ ограничен
+          {lang === 'ru' ? 'Доступ ограничен' : lang === 'kk' ? 'Қолжетімділік шектелген' : 'Access Restricted'}
         </h3>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-          Warehouse stock and campus assets can only be viewed and managed by designated Storage and Facilities staff.
+          {lang === 'ru'
+            ? 'Складской каталог и остатки доступны только заведующему складом, инженерам и администрации школы.'
+            : lang === 'kk'
+            ? 'Қойма каталогы мен қалдықтар тек қойма меңгерушісіне, инженерлерге және мектеп әкімшілігіне қолжетімді.'
+            : 'Warehouse catalog and stock can only be viewed and managed by designated Storage Managers, Engineers, and School Administration.'}
         </p>
       </div>
     );

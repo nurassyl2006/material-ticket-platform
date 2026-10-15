@@ -200,7 +200,7 @@ export const Navbar = ({
               <span>{t.nav.tickets}</span>
             </Link>
 
-            {(role === 'storage_manager' || role === 'facilities_manager' || role === 'director' || role === 'workerA' || role === 'admin') && (
+            {(role === 'storage_manager' || role === 'engineer' || role === 'director' || role === 'workerA' || role === 'admin') && (
               <Link
                 to="inventory"
                 style={{
@@ -721,7 +721,7 @@ export const Navbar = ({
               <Users size={20} />
               <span>{t.nav?.users || 'Staff'}</span>
             </Link>
-          ) : (role === 'storage_manager' || role === 'facilities_manager' || role === 'workerA') ? (
+          ) : (role === 'storage_manager' || role === 'engineer' || role === 'workerA') ? (
             <Link
               to="inventory"
               className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}

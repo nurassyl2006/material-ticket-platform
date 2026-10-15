@@ -50,6 +50,9 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   const activeDeptObj = resolveDepartment(department);
   const departmentList = Object.values(DEPARTMENTS);
 
+  // Catalog & Inventory stock visibility: only storage_manager, engineer, and school leadership
+  const canAccessCatalog = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role));
+
   const handleSelectSubcategory = (subcat) => {
     setFormData(prev => {
       let room = prev.roomNumber;
@@ -447,8 +450,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
           </div>
         )}
 
-        {/* Storage Catalog & Live Warehouse Inventory Picker */}
-        {department === 'storage' && (
+        {/* Storage Catalog & Live Warehouse Inventory Picker - Visible only to Storage Manager, Engineer, and School Admin */}
+        {department === 'storage' && canAccessCatalog && (
           <div style={{
             marginBottom: '16px',
             background: 'rgba(245, 158, 11, 0.07)',
@@ -569,6 +572,44 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                 {lang === 'ru' ? 'Товар не найден в каталоге. Вы можете ввести название вручную ниже, и завхоз закажет его!' : 'Item not found in catalog. You can still type custom item below and warehouse will procure it!'}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Classroom Supplies Guidance - Visible to Teachers & Regular Staff (Without revealing internal catalog/stock counts) */}
+        {department === 'storage' && !canAccessCatalog && (
+          <div style={{
+            marginBottom: '16px',
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '8px',
+              background: 'rgba(245, 158, 11, 0.15)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Package size={20} color="#fbbf24" />
+            </div>
+            <div style={{ fontSize: '12px', color: '#e2e8f0', lineHeight: 1.45 }}>
+              <strong style={{ color: '#fbbf24', display: 'block', marginBottom: '2px' }}>
+                {lang === 'ru' ? 'Заказ канцтоваров и расходных материалов' : lang === 'kk' ? 'Кеңсе тауарлары мен материалдарға сұраныс' : 'Classroom Supplies & Materials Request'}
+              </strong>
+              {lang === 'ru'
+                ? 'Выберите категорию или укажите предмет, требуемое количество и кабинет. Заведующий складом подготовит и доставит заказ.'
+                : lang === 'kk'
+                ? 'Қажетті санатты таңдаңыз немесе затты, санын және кабинетіңізді көрсетіңіз. Қойма меңгерушісі дайындап жеткізеді.'
+                : 'Choose a category or specify the item, required quantity, and your room. The storage manager will prepare and deliver your request.'}
+            </div>
           </div>
         )}
 
@@ -743,8 +784,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                 </div>
               </div>
 
-              {/* Stock availability indicator */}
-              {matchedStockItem && (
+              {/* Stock availability indicator - visible only to Storage Manager, Engineer, and School Leadership */}
+              {canAccessCatalog && matchedStockItem && (
                 <div style={{
                   marginTop: '10px',
                   padding: '6px 10px',

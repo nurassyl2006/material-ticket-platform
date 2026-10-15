@@ -11,7 +11,7 @@ import { UserProfileModal } from './components/UserProfileModal';
 import { DeviceToastAlert } from './components/DeviceToastAlert';
 import ServerStatusModal from './components/ServerStatusModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { ShieldCheck, LogIn, UserPlus, Compass, Users } from 'lucide-react';
+import { ShieldCheck, LogIn, UserPlus, Compass, Users, Lock, Package, ClipboardList } from 'lucide-react';
 import { parseCurrentRoute, navigate, buildUrl, updatePageTitle } from './router';
 import './index.css';
 
@@ -19,6 +19,7 @@ function MainApp() {
   const { isAuthenticated, role, setRole, lang, t } = useApp();
   const [route, setRoute] = useState(() => parseCurrentRoute());
   const activeTab = route.tab;
+  const canAccessCatalog = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role));
 
   const setActiveTab = useCallback((newTabOrPath, params = {}) => {
     if (typeof newTabOrPath === 'string' && newTabOrPath.startsWith('/')) {
@@ -234,9 +235,7 @@ function MainApp() {
           />
         )}
         {activeTab === 'inventory' && (
-          isAuthenticated ? (
-            <InventoryManager />
-          ) : (
+          !isAuthenticated ? (
             <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '6px', background: '#252525', border: '1px solid #383838' }}>
               <ShieldCheck size={40} color="#0f6cbd" style={{ margin: '0 auto 12px' }} />
               <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#f3f2f1', marginBottom: '8px' }}>
@@ -244,10 +243,10 @@ function MainApp() {
               </h3>
               <p style={{ fontSize: '13px', color: '#adadad', marginBottom: '20px', lineHeight: 1.5 }}>
                 {lang === 'ru' 
-                  ? 'Складской учет и активы доступны для завскладом, завхоза и директора. Войдите со своей учетной записью сотрудника.'
+                  ? 'Складской учет и каталог доступны для завскладом, инженеров и администрации. Войдите со своей учетной записью.'
                   : lang === 'kk'
-                  ? 'Қойма есебі мен активтер қойма меңгерушісіне, завхозға және директорға қолжетімді. Қызметкер ретінде кіріңіз.'
-                  : 'Inventory and stock operations are restricted to school staff. Please sign in or register to access.'}
+                  ? 'Қойма есебі мен каталогы қойма меңгерушісіне, инженерлерге және әкімшілікке қолжетімді. Тіркелгіңізбен кіріңіз.'
+                  : 'Warehouse inventory catalog is restricted to Storage Manager, Engineers, and School Leadership. Please sign in to access.'}
               </p>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                 <button
@@ -266,6 +265,42 @@ function MainApp() {
                 </button>
               </div>
             </div>
+          ) : !canAccessCatalog ? (
+            <div className="glass-panel" style={{ padding: '44px 28px', textAlign: 'center', maxWidth: '560px', margin: '36px auto', borderRadius: '12px', background: 'rgba(30, 41, 59, 0.7)', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(16px)' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <Lock size={26} color="#f87171" />
+              </div>
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>
+                {lang === 'ru' ? 'Доступ к каталогу склада ограничен' : lang === 'kk' ? 'Қойма каталогына кіру шектелген' : 'Warehouse Catalog Access Restricted'}
+              </h3>
+              <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '22px', lineHeight: 1.6 }}>
+                {lang === 'ru' 
+                  ? 'Просмотр каталога склада и остатков товаров разрешен только заведующему складом, инженерам и администрации школы. Учителя и сотрудники могут заказывать нужные материалы через раздел заявок.'
+                  : lang === 'kk'
+                  ? 'Қойма каталогы мен тауар қалдықтарын қарау тек қойма меңгерушісіне, инженерлерге және мектеп әкімшілігіне рұқсат етілген. Мұғалімдер өтінімдер бөлімі арқылы қажетті заттарға сұраныс бере алады.'
+                  : 'Viewing the warehouse catalog and live stock counts is restricted to the Storage Manager, Engineers, and School Administration. Teachers and staff can request needed supplies directly from the Requests page.'}
+              </p>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setActiveTab('tickets')}
+                  className="fluent-btn-primary"
+                  style={{ height: '36px', padding: '0 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <ClipboardList size={16} />
+                  <span>{t.nav?.tickets || 'View Requests'}</span>
+                </button>
+                <button
+                  onClick={() => handleOpenNewTicket('storage')}
+                  className="fluent-btn-secondary"
+                  style={{ height: '36px', padding: '0 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Package size={16} />
+                  <span>{lang === 'ru' ? 'Заказать материалы' : lang === 'kk' ? 'Материалдарға тапсырыс беру' : 'Request Supplies'}</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <InventoryManager />
           )
         )}
         {activeTab === 'users' && (

@@ -17,7 +17,8 @@ import {
   CheckCircle, 
   Users,
   Layers,
-  ChevronRight
+  ChevronRight,
+  Wrench
 } from 'lucide-react';
 import { resolveDepartment, DEPARTMENTS } from '../departments';
 
@@ -402,14 +403,102 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {(role === 'storage_manager' || role === 'workerA') && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #fbbf24', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <Package size={20} color="#fbbf24" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Storage Requests</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{storageTickets.length}</div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #0f6cbd', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <Clock size={20} color="#70b5f9" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Pending Delivery</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#70b5f9' }}>
+                {storageTickets.filter(t => t.status === 'in_progress' || t.status === 'purchasing').length}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #107c41', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <CheckCircle2 size={20} color="#107c41" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Issued & Delivered</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#62c789' }}>
+                {storageTickets.filter(t => t.status === 'completed' || t.status === 'delivered' || t.status === 'issued').length}
+              </div>
+            </div>
+          </div>
 
           <div style={{ background: '#292929', border: '1px solid #383838', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('inventory')}>
             <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Package size={20} color="#0f6cbd" />
+              <Package size={20} color="#fbbf24" />
             </div>
             <div>
               <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Warehouse Inventory</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f6cbd', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                View Catalog <ChevronRight size={14} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {role === 'engineer' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #f97316', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <Wrench size={20} color="#f97316" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Engineering Tasks</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{engineeringTickets.length}</div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #0f6cbd', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <Clock size={20} color="#70b5f9" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>In Repair</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#70b5f9' }}>
+                {engineeringTickets.filter(t => t.status === 'in_progress').length}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #107c41', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <CheckCircle2 size={20} color="#107c41" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Resolved Maintenance</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#62c789' }}>
+                {engineeringTickets.filter(t => t.status === 'completed').length}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('inventory')}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <Package size={20} color="#f97316" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Warehouse Inventory</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#f97316', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 View Catalog <ChevronRight size={14} />
               </div>
             </div>
@@ -522,7 +611,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       </div>
 
       {/* Low Stock Warning Card */}
-      {['storage_manager', 'facilities_manager', 'director', 'admin', 'workerA'].includes(role) && lowStockItems.length > 0 && (
+      {['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role) && lowStockItems.length > 0 && (
         <div
           style={{
             padding: '12px 18px',
