@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useApp } from '../AppContext';
-import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, Sparkles, User, Users } from 'lucide-react';
+import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, Sparkles, User, Users, Package, Search, Minus, Plus, Check, ShoppingBag, AlertCircle } from 'lucide-react';
 import { CampusLocationSelector } from './CampusLocationSelector';
 import { DEPARTMENTS, resolveDepartment, getSubcategories } from '../departments';
 import { translateText } from '../services/translator';
@@ -26,6 +26,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     studentClass: ''
   });
   const [photos, setPhotos] = useState([]);
+  const [storageSearchTerm, setStorageSearchTerm] = useState('');
   const [translatedPreview, setTranslatedPreview] = useState(null);
   const [isTranslatingPreview, setIsTranslatingPreview] = useState(false);
   const fileInputRef = useRef(null);
@@ -45,8 +46,6 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
       }));
     }
   }, [isOpen, initialDepartment]);
-
-  if (!isOpen) return null;
 
   const activeDeptObj = resolveDepartment(department);
   const departmentList = Object.values(DEPARTMENTS);
@@ -79,10 +78,31 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
         room = 'Block A • 1st Floor • Central Corridor';
       }
 
+      // If in storage department, check if this subcategory matches any inventory item
+      let matchedItem = null;
+      if (department === 'storage' && inventory) {
+        const subLower = subcat.toLowerCase();
+        matchedItem = inventory.find(i => {
+          const iName = i.name.toLowerCase();
+          return iName.includes(subLower) || subLower.includes(iName) ||
+            (subLower.includes('бумага') && iName.includes('paper')) ||
+            (subLower.includes('paper') && iName.includes('paper')) ||
+            (subLower.includes('маркер') && iName.includes('marker')) ||
+            (subLower.includes('marker') && iName.includes('marker')) ||
+            (subLower.includes('губка') && iName.includes('board')) ||
+            (subLower.includes('ноутбук') && iName.includes('laptop')) ||
+            (subLower.includes('адаптер') && iName.includes('adapter')) ||
+            (subLower.includes('стул') && iName.includes('chair')) ||
+            (subLower.includes('стол') && iName.includes('desk'));
+        });
+      }
+
       return {
         ...prev,
-        itemTitle: subcat,
+        itemTitle: matchedItem ? matchedItem.name : subcat,
         subcategory: subcat,
+        category: matchedItem ? matchedItem.category : prev.category,
+        unit: matchedItem ? matchedItem.unit : prev.unit,
         roomNumber: room
       };
     });
@@ -92,10 +112,33 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     setFormData(prev => ({
       ...prev,
       itemTitle: item.name,
-      category: item.category,
-      unit: item.unit
+      subcategory: item.name,
+      category: item.category || 'other',
+      unit: item.unit || 'pcs',
+      quantity: prev.quantity || 1
     }));
   };
+
+  const filteredInventory = useMemo(() => {
+    if (!inventory || !Array.isArray(inventory)) return [];
+    if (!storageSearchTerm.trim()) return inventory;
+    const term = storageSearchTerm.toLowerCase();
+    return inventory.filter(item => 
+      (item.name || '').toLowerCase().includes(term) ||
+      (item.category || '').toLowerCase().includes(term) ||
+      (item.location || '').toLowerCase().includes(term)
+    );
+  }, [inventory, storageSearchTerm]);
+
+  const matchedStockItem = useMemo(() => {
+    if (!inventory || !formData.itemTitle) return null;
+    const title = formData.itemTitle.trim().toLowerCase();
+    return inventory.find(i => 
+      i.name.toLowerCase() === title ||
+      title.includes(i.name.toLowerCase()) ||
+      i.name.toLowerCase().includes(title)
+    );
+  }, [inventory, formData.itemTitle]);
 
   // ── Photo helpers ──────────────────────────────────────────────────────────
   const processFiles = (files) => {
@@ -185,6 +228,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     boxSizing: 'border-box'
   };
 
+  if (!isOpen) return null;
+
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '12px' }}>
       <div className="fluent-card animate-fade-in modal-dialog-responsive" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-dialog, #111827)', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))', boxShadow: 'var(--shadow-depth-16)' }}>
@@ -202,7 +247,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   ? (lang === 'ru' ? 'Подача заявки: Родитель' : lang === 'kk' ? 'Өтінім беруші: Ата-ана' : 'Submitting as: School Parent')
                   : role === 'guest'
                   ? (lang === 'ru' ? 'Подача заявки: Гость школы' : lang === 'kk' ? 'Өтінім беруші: Мектеп қонағы' : 'Submitting as: Campus Guest')
-                  : <>Sender: <strong style={{ color: 'var(--text-main, #f8fafc)' }}>{currentUser.name}</strong> ({currentUser.department || 'Staff'})</>}
+                  : <>Sender: <strong style={{ color: 'var(--text-main, #f8fafc)' }}>{currentUser?.name || 'Staff'}</strong> ({currentUser?.department || 'Staff'})</>}
               </span>
             </div>
           </div>
@@ -402,34 +447,128 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
           </div>
         )}
 
-        {/* Storage Catalog Quick Picker */}
+        {/* Storage Catalog & Live Warehouse Inventory Picker */}
         {department === 'storage' && (
-          <div style={{ marginBottom: '16px', background: 'rgba(245, 158, 11, 0.08)', padding: '10px 12px', borderRadius: '10px', border: '1px dashed rgba(245, 158, 11, 0.3)' }}>
-            <span style={{ fontSize: '11px', color: '#fbbf24', display: 'block', marginBottom: '6px', fontWeight: '600' }}>
-              📦 Pick From Warehouse Catalog:
-            </span>
-            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-              {inventory.slice(0, 5).map(item => (
+          <div style={{
+            marginBottom: '16px',
+            background: 'rgba(245, 158, 11, 0.07)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
+            borderRadius: '12px',
+            padding: '12px 14px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24', fontSize: '12px', fontWeight: '700' }}>
+                <Package size={16} />
+                <span>
+                  {lang === 'ru' ? 'Каталог школьного склада (в наличии):' : lang === 'kk' ? 'Мектеп қоймасының каталогы (қолда бар):' : 'School Warehouse Inventory (In Stock):'}
+                </span>
+              </div>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                {(inventory || []).length} {lang === 'ru' ? 'позиций на складе' : lang === 'kk' ? 'қоймадағы заттар' : 'items cataloged'}
+              </span>
+            </div>
+
+            {/* Quick Search in Warehouse Catalog */}
+            <div style={{ position: 'relative', marginBottom: '10px' }}>
+              <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                type="text"
+                placeholder={lang === 'ru' ? 'Быстрый поиск по складу (бумага, маркеры, кабель, папки...)' : lang === 'kk' ? 'Қоймадан іздеу (қағаз, маркер, сым, папка...)' : 'Quick search warehouse supplies...'}
+                value={storageSearchTerm}
+                onChange={e => setStorageSearchTerm(e.target.value)}
+                style={{
+                  ...inputStyle,
+                  padding: '7px 10px 7px 30px',
+                  fontSize: '12px',
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  borderColor: 'rgba(245, 158, 11, 0.2)'
+                }}
+              />
+              {storageSearchTerm && (
                 <button
-                  key={item.id}
                   type="button"
-                  onClick={() => handleSelectCatalogItem(item)}
+                  onClick={() => setStorageSearchTerm('')}
                   style={{
-                    background: formData.itemTitle === item.name ? '#fbbf24' : 'rgba(30, 41, 59, 0.8)',
-                    color: formData.itemTitle === item.name ? '#000' : '#fff',
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    fontSize: '11px',
-                    whiteSpace: 'nowrap',
-                    border: '1px solid var(--border-color)',
+                    position: 'absolute',
+                    right: '8px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#94a3b8',
                     cursor: 'pointer',
-                    fontWeight: '600'
+                    fontSize: '12px'
                   }}
                 >
-                  {item.name} ({item.quantity} {item.unit})
+                  ✕
                 </button>
-              ))}
+              )}
             </div>
+
+            {/* Scrollable list of items */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+              gap: '8px',
+              maxHeight: '150px',
+              overflowY: 'auto',
+              paddingRight: '4px'
+            }}>
+              {filteredInventory.map(item => {
+                const isSelected = formData.itemTitle === item.name;
+                const isLow = item.quantity <= item.minLevel;
+                const isOut = item.quantity === 0;
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleSelectCatalogItem(item)}
+                    style={{
+                      background: isSelected ? 'rgba(245, 158, 11, 0.22)' : 'rgba(30, 41, 59, 0.7)',
+                      border: isSelected ? '1.5px solid #fbbf24' : '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '8px 10px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      gap: '4px',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '600', color: isSelected ? '#fbbf24' : '#fff', lineHeight: 1.25 }}>
+                      {isSelected ? '✓ ' : ''}{item.name}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
+                      <span style={{
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        fontWeight: '700',
+                        background: isOut ? 'rgba(239, 68, 68, 0.2)' : isLow ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                        color: isOut ? '#f87171' : isLow ? '#fbbf24' : '#34d399'
+                      }}>
+                        {isOut 
+                          ? (lang === 'ru' ? 'Под заказ' : 'Out of stock')
+                          : `${item.quantity} ${item.unit}`}
+                      </span>
+                      {item.location && (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>
+                          {item.location.split('-')[0]}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {filteredInventory.length === 0 && (
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', padding: '12px' }}>
+                {lang === 'ru' ? 'Товар не найден в каталоге. Вы можете ввести название вручную ниже, и завхоз закажет его!' : 'Item not found in catalog. You can still type custom item below and warehouse will procure it!'}
+              </div>
+            )}
           </div>
         )}
 
@@ -474,17 +613,174 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
             </div>
           )}
 
-          {/* Storage: qty + unit */}
+          {/* Storage: qty stepper + unit */}
           {department === 'storage' && (
-            <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.quantity} *</label>
-                <input type="number" min="1" required value={formData.quantity} onChange={e => setFormData({ ...formData, quantity: e.target.value })} style={{ ...inputStyle, padding: '8px 12px' }} />
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: '10px',
+              padding: '12px'
+            }}>
+              <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', alignItems: 'flex-start' }}>
+                <div>
+                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                    {t.tickets.quantity} *
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(p => ({ ...p, quantity: Math.max(1, (Number(p.quantity) || 1) - 1) }))}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#fff',
+                        fontSize: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Minus size={15} />
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      value={formData.quantity}
+                      onChange={e => setFormData({ ...formData, quantity: Math.max(1, parseInt(e.target.value) || 1) })}
+                      style={{
+                        ...inputStyle,
+                        width: '64px',
+                        textAlign: 'center',
+                        fontWeight: '700',
+                        fontSize: '15px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(p => ({ ...p, quantity: (Number(p.quantity) || 1) + 1 }))}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        color: '#fff',
+                        fontSize: '18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Plus size={15} />
+                    </button>
+
+                    {/* Quick increment pills */}
+                    <div style={{ display: 'flex', gap: '4px', marginLeft: '4px' }}>
+                      {[2, 5, 10].map(amt => (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => setFormData(p => ({ ...p, quantity: amt }))}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            background: formData.quantity === amt ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                            border: formData.quantity === amt ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.1)',
+                            color: formData.quantity === amt ? '#fbbf24' : '#94a3b8',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {amt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                    {t.tickets.unit}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="пачка / pack / шт / box"
+                    value={formData.unit}
+                    onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                    style={{ ...inputStyle, padding: '8px 12px' }}
+                  />
+                  {/* Preset unit pills */}
+                  <div style={{ display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' }}>
+                    {['пачка (pack)', 'шт (pcs)', 'коробка (box)', 'набор (set)'].map(uStr => {
+                      const uCode = uStr.split(' ')[0];
+                      return (
+                        <button
+                          key={uStr}
+                          type="button"
+                          onClick={() => setFormData(p => ({ ...p, unit: uCode }))}
+                          style={{
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: formData.unit === uCode ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                            border: formData.unit === uCode ? '1px solid #6366f1' : '1px solid rgba(255, 255, 255, 0.08)',
+                            color: formData.unit === uCode ? '#fff' : '#94a3b8',
+                            fontSize: '10px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {uStr}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-              <div>
-                <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>{t.tickets.unit}</label>
-                <input type="text" placeholder="pcs / box / pack" value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} style={{ ...inputStyle, padding: '8px 12px' }} />
-              </div>
+
+              {/* Stock availability indicator */}
+              {matchedStockItem && (
+                <div style={{
+                  marginTop: '10px',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  background: (Number(formData.quantity) || 1) <= matchedStockItem.quantity ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                  border: (Number(formData.quantity) || 1) <= matchedStockItem.quantity ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+                  fontSize: '11px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  {(Number(formData.quantity) || 1) <= matchedStockItem.quantity ? (
+                    <>
+                      <Check size={14} color="#10b981" />
+                      <span style={{ color: '#10b981', fontWeight: '600' }}>
+                        {lang === 'ru'
+                          ? `✓ В наличии на складе: ${matchedStockItem.quantity} ${matchedStockItem.unit} (${matchedStockItem.location})`
+                          : lang === 'kk'
+                          ? `✓ Қоймада бар: ${matchedStockItem.quantity} ${matchedStockItem.unit}`
+                          : `✓ In stock: ${matchedStockItem.quantity} ${matchedStockItem.unit} (${matchedStockItem.location})`}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle size={14} color="#f59e0b" />
+                      <span style={{ color: '#fbbf24', fontWeight: '600' }}>
+                        {lang === 'ru'
+                          ? `⚠️ На складе сейчас ${matchedStockItem.quantity} ${matchedStockItem.unit}. Завхоз выдаст имеющееся и докупит остальное.`
+                          : lang === 'kk'
+                          ? `⚠️ Қоймада тек ${matchedStockItem.quantity} ${matchedStockItem.unit} бар. Қалғаны қосымша сатып алынады.`
+                          : `⚠️ Only ${matchedStockItem.quantity} ${matchedStockItem.unit} in stock. Remainder will be ordered by storage manager.`}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

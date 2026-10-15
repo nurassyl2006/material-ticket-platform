@@ -243,16 +243,25 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const targetDept = deptMeta.id;
 
   // Check matching stock level for storage requests
-  const stockItem = inventory.find(i => i.name.toLowerCase() === ticket.itemTitle.toLowerCase());
+  const stockItem = inventory.find(i => {
+    const iName = (i.name || '').toLowerCase();
+    const tTitle = (ticket.itemTitle || '').toLowerCase();
+    const tSub = (ticket.subcategory || '').toLowerCase();
+    return iName === tTitle || iName.includes(tTitle) || tTitle.includes(iName) ||
+      (tSub && (iName.includes(tSub) || tSub.includes(iName)));
+  });
   const availableQty = stockItem ? stockItem.quantity : 0;
   const isEnoughStock = availableQty >= (ticket.quantity || 1);
 
   const cleanPhone = (ticket.teacherPhone || '').replace(/[^\d+]/g, '');
 
-  const handleStorageSubmit = (e) => {
+  const handleStorageSubmit = (e, andDeliver = false) => {
     e.preventDefault();
     if (storageActionType === 'stock') {
       issueTicketFromStock(ticket.id, notes);
+      if (andDeliver) {
+        completeTicketDelivery(ticket.id, notes || `Delivered directly to room ${ticket.roomNumber}.`);
+      }
     } else {
       markTicketToPurchase(ticket.id, purchaseCost, supplier, notes);
     }
@@ -576,6 +585,57 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
         {/* 1. STORAGE MANAGER WORKFLOW */}
         {targetDept === 'storage' && (
           <div>
+            {/* Delivery reminder card */}
+            <div style={{
+              background: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: '10px',
+              padding: '10px 14px',
+              marginBottom: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '8px'
+            }}>
+              <div>
+                <span style={{ fontSize: '11px', color: '#fbbf24', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'block' }}>
+                  🚚 {lang === 'ru' ? 'Кабинет доставки' : lang === 'kk' ? 'Жеткізу кабинеті' : 'Classroom Destination'}
+                </span>
+                <strong style={{ fontSize: '13px', color: '#ffffff' }}>
+                  {ticket.roomNumber || 'Main Campus'}
+                </strong>
+                <span style={{ fontSize: '12px', color: '#fbbf24', marginLeft: '8px', fontWeight: '700' }}>
+                  ({ticket.quantity || 1} {ticket.unit || 'pcs'})
+                </span>
+              </div>
+
+              {ticket.status === 'issued' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    completeTicketDelivery(ticket.id, notes || `Delivered to classroom ${ticket.roomNumber}`);
+                    onClose();
+                  }}
+                  style={{
+                    background: '#107c41',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Truck size={14} /> {lang === 'ru' ? '✓ Подтвердить доставку' : '✓ Confirm Delivered'}
+                </button>
+              )}
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
               <button
                 type="button"
@@ -595,6 +655,11 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   In Stock: <strong style={{ color: isEnoughStock ? 'var(--success)' : 'var(--danger)' }}>{availableQty} {ticket.unit}</strong>
+                  {stockItem?.location && (
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      📍 {stockItem.location}
+                    </div>
+                  )}
                 </div>
               </button>
 
@@ -688,10 +753,31 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
                 <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
                   {t.common.cancel}
                 </button>
+                {storageActionType === 'stock' && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleStorageSubmit(e, true)}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <Truck size={14} /> {lang === 'ru' ? '✓ Выдать и доставить в кабинет' : lang === 'kk' ? '✓ Беріп, кабинетке жеткізу' : '✓ Issue & Deliver to Room'}
+                  </button>
+                )}
                 <button type="submit" style={{ background: storageActionType === 'stock' ? '#107c41' : 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
                   {storageActionType === 'stock' ? '✓ Confirm Give from Stock' : '🛒 Confirm Purchase Order'}
                 </button>

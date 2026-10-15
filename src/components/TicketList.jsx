@@ -71,7 +71,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'plumbing' || d.id === 'electrical');
     }
     if (role === 'storage_manager' || role === 'workerA') {
-      return allDepartments.filter(d => d.id === 'all' || d.id === 'other');
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'storage' || d.id === 'other');
     }
     if (role === 'facilities_manager') {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'carpentry' || d.id === 'event_prep' || d.id === 'grounds');
@@ -90,6 +90,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     if (role === 'cleaning') return 'cleaning';
     if (role === 'engineer') return 'plumbing';
     if (role === 'facilities_manager') return 'carpentry';
+    if (role === 'storage_manager' || role === 'workerA') return 'storage';
     return 'all';
   });
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -108,6 +109,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     else if (role === 'cleaning') setDeptFilter('cleaning');
     else if (role === 'engineer') setDeptFilter('plumbing');
     else if (role === 'facilities_manager') setDeptFilter('carpentry');
+    else if (role === 'storage_manager' || role === 'workerA') setDeptFilter('storage');
     else setDeptFilter('all');
   }, [role]);
 
@@ -244,17 +246,17 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     if (role === 'cleaning') return dept === 'cleaning';
     if (role === 'engineer') return dept === 'plumbing' || dept === 'electrical';
     if (role === 'facilities_manager') return dept === 'carpentry' || dept === 'event_prep' || dept === 'grounds';
-    if (role === 'storage_manager' || role === 'workerA') return dept === 'other';
+    if (role === 'storage_manager' || role === 'workerA') return dept === 'storage' || dept === 'other';
     return false;
   };
 
   const getProcessButtonLabel = (ticket) => {
-    const dept = ticket.department || 'storage';
-    if (dept === 'it') return '⚡ Troubleshoot (IT)';
-    if (dept === 'cleaning') return '🧹 Accept & Clean';
-    if (dept === 'facilities') return '🚚 Move Furniture / Repair';
-    if (dept === 'engineering') return '🔧 Repair (Engineer)';
-    if (dept === 'storage') return '📦 Issue / Buy Stock';
+    const deptId = resolveDepartment(ticket.department).id;
+    if (deptId === 'it_helpdesk') return '⚡ Troubleshoot (IT)';
+    if (deptId === 'cleaning') return '🧹 Accept & Clean';
+    if (deptId === 'carpentry' || deptId === 'event_prep' || deptId === 'grounds') return '🚚 Move Furniture / Repair';
+    if (deptId === 'plumbing' || deptId === 'electrical') return '🔧 Repair (Engineer)';
+    if (deptId === 'storage') return lang === 'ru' ? '📦 Выдать / Доставить' : lang === 'kk' ? '📦 Қоймадан беру / Жеткізу' : '📦 Issue / Deliver';
     return '⚡ Process Request';
   };
 

@@ -157,9 +157,11 @@ export const CampusLocationSelector = ({
       {/* Header with Mode Toggle */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <MapPin size={16} color="var(--primary, #6366f1)" />
-          <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main, #f3f2f1)' }}>
-            {t?.tickets?.locationTitle || 'School Campus Location (Official Floor Plan)'} *
+          <MapPin size={16} color={department === 'storage' ? '#f59e0b' : 'var(--primary, #6366f1)'} />
+          <label style={{ fontSize: '12px', fontWeight: '700', color: department === 'storage' ? '#f59e0b' : 'var(--text-main, #f3f2f1)' }}>
+            {department === 'storage'
+              ? (t?.tickets?.storageDeliveryRoom || 'Кабинет доставки (куда принести заказ со склада)')
+              : (t?.tickets?.locationTitle || 'School Campus Location (Official Floor Plan)')} *
           </label>
         </div>
 

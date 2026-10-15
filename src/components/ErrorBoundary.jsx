@@ -69,9 +69,26 @@ export class ErrorBoundary extends React.Component {
             <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px', color: '#fff' }}>
               EduOps Platform
             </h2>
-            <p style={{ fontSize: '14px', color: '#94a3b8', lineHeight: 1.5, marginBottom: '24px' }}>
+            <p style={{ fontSize: '14px', color: '#94a3b8', lineHeight: 1.5, marginBottom: '16px' }}>
               The application encountered a temporary storage or runtime issue. Your records on the server are completely safe.
             </p>
+            {this.state.error && (
+              <pre style={{
+                background: 'rgba(0,0,0,0.4)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                fontSize: '11px',
+                color: '#f87171',
+                textAlign: 'left',
+                overflowX: 'auto',
+                marginBottom: '16px',
+                maxHeight: '120px'
+              }}>
+                {this.state.error.toString()}
+                {this.state.error.stack ? '\n' + this.state.error.stack : ''}
+              </pre>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button

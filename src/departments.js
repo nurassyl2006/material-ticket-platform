@@ -292,6 +292,76 @@ export const DEPARTMENTS = {
       ]
     }
   },
+  "storage": {
+    id: "storage",
+    key: "storage",
+    name: "Склад (Заказ в кабинет)",
+    emoji: "📦",
+    color: "#f59e0b",
+    translations: {
+      en: "Warehouse & Supplies",
+      ru: "Склад (Заказ в кабинет)",
+      kk: "Қойма (Кабинетке зат тапсырыс)"
+    },
+    subcategories: [
+      "Бумага А4 (пачки)",
+      "Маркеры для досок",
+      "Губка / спрей для доски",
+      "Канцелярский набор",
+      "Тетради / блокноты",
+      "Файлы и папки",
+      "Батарейки (AA, AAA)",
+      "Удлинитель / переходник",
+      "Салфетки / мыло / антисептик",
+      "Мел / меловые маркеры",
+      "Картридж для принтера",
+      "Прочие канцтовары и материалы"
+    ],
+    subcategoriesLocalized: {
+      en: [
+        "A4 Paper (packs)",
+        "Whiteboard markers",
+        "Board eraser / cleaning spray",
+        "Stationery kit (pens, pencils, clips)",
+        "Notebooks / Notepads",
+        "Document folders & sheet protectors",
+        "Batteries (AA, AAA)",
+        "Extension cord / power strip",
+        "Wipes / Soap / Hand sanitizer",
+        "Chalk / Liquid chalk markers",
+        "Printer toner / ink cartridge",
+        "Other classroom supplies"
+      ],
+      ru: [
+        "Бумага А4 (пачки)",
+        "Маркеры для досок",
+        "Губка / спрей для доски",
+        "Канцелярский набор",
+        "Тетради / блокноты",
+        "Файлы и папки",
+        "Батарейки (AA, AAA)",
+        "Удлинитель / переходник",
+        "Салфетки / мыло / антисептик",
+        "Мел / меловые маркеры",
+        "Картридж для принтера",
+        "Прочие канцтовары и материалы"
+      ],
+      kk: [
+        "А4 қағазы (бума)",
+        "Тақтаға арналған маркерлер",
+        "Тақта губкасы / тазартқыш спрей",
+        "Кеңсе тауарлары жинағы",
+        "Дәптерлер / блокноттар",
+        "Файлдар мен папкалар",
+        "Батареялар (AA, AAA)",
+        "Ұзартқыш / өткізгіш",
+        "Майлықтар / сабын / антисептик",
+        "Бор / бор маркерлері",
+        "Принтер картриджі",
+        "Басқа кеңсе тауарлары мен материалдар"
+      ]
+    }
+  },
   "event_prep": {
     id: "event_prep",
     key: "event_prep",
@@ -517,8 +587,15 @@ export const DEPARTMENT_ALIASES = {
   "it": "it_helpdesk",
   "engineering": "electrical",
   "facilities": "carpentry",
-  "storage": "other",
+  "storage": "storage",
   "IT Helpdesk": "it_helpdesk",
+  "Склад": "storage",
+  "Склад (Заказ в кабинет)": "storage",
+  "Склад материалов": "storage",
+  "Warehouse & Supplies": "storage",
+  "Қойма": "storage",
+  "Қойма (Кабинетке зат тапсырыс)": "storage",
+  "Материалдар қоймасы": "storage",
   "Сантехнические работы": "plumbing",
   "Электротехнические работы": "electrical",
   "Плотницкие работы": "carpentry",

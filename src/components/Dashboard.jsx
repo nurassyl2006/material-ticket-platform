@@ -39,8 +39,8 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   // Department specific stats based on scoped tickets
   const itTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'it_helpdesk');
   const cleaningTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'cleaning');
-  const storageTickets = scopedTickets.filter(t => (t.department || 'storage') === 'storage' || resolveDepartment(t.department).id === 'other');
-  const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id) || (t.department || 'storage') === 'facilities');
+  const storageTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'storage');
+  const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id));
   const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
 
 

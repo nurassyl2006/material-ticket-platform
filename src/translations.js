@@ -167,6 +167,7 @@ export const translations = {
         critical: "Critical (Immediate class disruption / Safety)"
       },
       roomNumber: "Target Classroom / Location",
+      storageDeliveryRoom: "Delivery Destination Room (where to bring supplies)",
       locationTitle: "Campus Location (Block, Floor & Area)",
       areaType: "Area Type",
       block: "Building / Block",
@@ -550,6 +551,7 @@ export const translations = {
         critical: "Критическая (Срыв занятий / ЧП)"
       },
       roomNumber: "Кабинет / Место назначения",
+      storageDeliveryRoom: "Кабинет доставки (куда принести заказ со склада)",
       locationTitle: "Местоположение (Корпус, Этаж и Зона)",
       areaType: "Тип помещения",
       block: "Корпус / Блок",
@@ -933,6 +935,7 @@ export const translations = {
         critical: "Критикалық (Сабақ тоқтау қаупі / Апатты)"
       },
       roomNumber: "Кабинет / Орналасқан жері",
+      storageDeliveryRoom: "Жеткізу кабинеті (заттарды қоймадан қайда әкелу керек)",
       locationTitle: "Орналасқан жері (Блок, Қабат және Аймақ)",
       areaType: "Аймақ түрі",
       block: "Ғимарат / Блок",
