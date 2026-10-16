@@ -33,6 +33,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
     devicePermission,
     enableDeviceNotifications,
     sendDeviceNotification,
+    sendTestDeviceNotification,
     playNotificationSound
   } = useApp();
 
@@ -68,12 +69,16 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
 
   const handleTestNotification = async () => {
     setTestSent(true);
-    await sendDeviceNotification({
-      title: '🔔 EduOps Test Alert',
-      message: 'Device push notifications and audio alerts are working properly!',
-      tag: 'test-alert'
-    });
-    setTimeout(() => setTestSent(false), 2000);
+    if (sendTestDeviceNotification) {
+      await sendTestDeviceNotification();
+    } else {
+      await sendDeviceNotification({
+        title: '🔔 EduOps Test Alert',
+        message: 'Device push notifications and audio alerts are working properly!',
+        tag: 'test-alert'
+      });
+    }
+    setTimeout(() => setTestSent(false), 2500);
   };
 
   if (!isOpen) return null;
@@ -207,16 +212,20 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
         gap: '10px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Smartphone size={15} color={devicePermission === 'granted' ? '#107c41' : '#0f6cbd'} />
+          <Smartphone size={15} color={devicePermission === 'granted' ? '#107c41' : devicePermission === 'denied' ? '#ef4444' : '#0f6cbd'} />
           <div style={{ fontSize: '11px', lineHeight: 1.2 }}>
             <div style={{ fontWeight: '600', color: '#f3f2f1' }}>
               {devicePermission === 'granted'
                 ? (lang === 'ru' ? 'Уведомления на устройстве активны' : lang === 'kk' ? 'Құрылғы хабарландырулары белсенді' : 'Device Push Active')
+                : devicePermission === 'denied'
+                ? (lang === 'ru' ? 'Уведомления заблокированы браузером' : 'Browser Blocked Alerts')
                 : (lang === 'ru' ? 'Уведомления на устройство' : lang === 'kk' ? 'Құрылғыға хабарландырулар' : 'Device Push Alerts')}
             </div>
             <div style={{ color: '#8a8a8a', fontSize: '10px' }}>
               {devicePermission === 'granted'
-                ? (lang === 'ru' ? 'Получайте пуш-алерты даже в фоне' : lang === 'kk' ? 'Фондық режимде де пуш келеді' : 'Popups & sounds delivered to this device')
+                ? (lang === 'ru' ? 'Звук, вибрация и пуши на экран' : 'Chime, vibration & popups active')
+                : devicePermission === 'denied'
+                ? (lang === 'ru' ? 'Разрешите в настройках сайта или подключите TG' : 'Allow in browser URL bar or use Telegram')
                 : (lang === 'ru' ? 'Включите пуши для телефона и ПК' : lang === 'kk' ? 'Телефон мен компьютерге пуш қосыңыз' : 'Allow notifications for phone & laptop')}
             </div>
           </div>
@@ -266,6 +275,30 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               <span>TG</span>
             </button>
           </div>
+        ) : devicePermission === 'denied' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              type="button"
+              onClick={() => setShowTelegramModal(true)}
+              title="Use Telegram for Guaranteed Delivery"
+              style={{
+                padding: '4px 10px',
+                borderRadius: '3px',
+                background: 'rgba(2, 132, 199, 0.25)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                color: '#38bdf8',
+                fontSize: '11px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <MessageCircle size={12} />
+              <span>{lang === 'ru' ? 'Telegram' : 'Use TG'}</span>
+            </button>
+          </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <button
@@ -285,8 +318,8 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               onClick={() => setShowTelegramModal(true)}
               title="Configure Telegram Phone Alerts"
               style={{
-                padding: '5px 8px',
-                borderRadius: '8px',
+                padding: '4px 8px',
+                borderRadius: '3px',
                 background: 'rgba(2, 132, 199, 0.2)',
                 border: '1px solid rgba(56, 189, 248, 0.35)',
                 color: '#38bdf8',

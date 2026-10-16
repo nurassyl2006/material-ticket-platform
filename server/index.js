@@ -43,6 +43,12 @@ function formatTicket(row) {
     photos: safeJsonParse(row.photos, []),
     completionPhotos: safeJsonParse(row.completionPhotos, []),
     moveDetails: safeJsonParse(row.moveDetails, null),
+    isReturnable: Boolean(row.isReturnable),
+    returnStatus: row.returnStatus || 'none',
+    borrowedAt: row.borrowedAt || null,
+    returnedAt: row.returnedAt || null,
+    returnConfirmedAt: row.returnConfirmedAt || null,
+    returnConfirmedBy: row.returnConfirmedBy || null,
     createdById: row.createdById || null,
     createdByRole: row.createdByRole || null
   };
@@ -55,7 +61,8 @@ function formatInventory(row) {
     ...row,
     quantity: Number(row.quantity) || 0,
     minLevel: Number(row.minLevel) || 5,
-    photos: safeJsonParse(row.photos, [])
+    photos: safeJsonParse(row.photos, []),
+    isReturnable: Boolean(row.isReturnable)
   };
 }
 
@@ -422,6 +429,12 @@ app.post('/api/tickets', (req, res) => {
       description: body.description || '',
       photos: Array.isArray(body.photos) ? JSON.stringify(body.photos) : '[]',
       completionPhotos: Array.isArray(body.completionPhotos) ? JSON.stringify(body.completionPhotos) : '[]',
+      isReturnable: body.isReturnable ? 1 : 0,
+      returnStatus: body.returnStatus || (body.isReturnable ? 'pending_issue' : 'none'),
+      borrowedAt: body.borrowedAt || null,
+      returnedAt: body.returnedAt || null,
+      returnConfirmedAt: body.returnConfirmedAt || null,
+      returnConfirmedBy: body.returnConfirmedBy || null,
       teacherName: body.teacherName || '',
       teacherPhone: body.teacherPhone || '',
       createdById: body.createdById || null,
@@ -440,13 +453,17 @@ app.post('/api/tickets', (req, res) => {
     const stmt = db.prepare(`
       INSERT INTO tickets (
         id, department, itemTitle, subcategory, category, quantity, unit, urgency, roomNumber,
-        moveDetails, description, photos, completionPhotos, teacherName, teacherPhone,
+        moveDetails, description, photos, completionPhotos,
+        isReturnable, returnStatus, borrowedAt, returnedAt, returnConfirmedAt, returnConfirmedBy,
+        teacherName, teacherPhone,
         createdById, createdByRole,
         status, assignedWorker, assignedRole, handledAction, purchaseCost, supplier, notes,
         createdAt, updatedAt
       ) VALUES (
         @id, @department, @itemTitle, @subcategory, @category, @quantity, @unit, @urgency, @roomNumber,
-        @moveDetails, @description, @photos, @completionPhotos, @teacherName, @teacherPhone,
+        @moveDetails, @description, @photos, @completionPhotos,
+        @isReturnable, @returnStatus, @borrowedAt, @returnedAt, @returnConfirmedAt, @returnConfirmedBy,
+        @teacherName, @teacherPhone,
         @createdById, @createdByRole,
         @status, @assignedWorker, @assignedRole, @handledAction, @purchaseCost, @supplier, @notes,
         @createdAt, @updatedAt
@@ -510,6 +527,7 @@ app.patch('/api/tickets/:id', (req, res) => {
     const allowedFields = [
       'department', 'itemTitle', 'subcategory', 'category', 'quantity', 'unit', 'urgency',
       'roomNumber', 'moveDetails', 'description', 'photos', 'completionPhotos',
+      'isReturnable', 'returnStatus', 'borrowedAt', 'returnedAt', 'returnConfirmedAt', 'returnConfirmedBy',
       'teacherName', 'teacherPhone', 'createdById', 'createdByRole', 'status',
       'assignedWorker', 'assignedRole', 'handledAction', 'purchaseCost', 'supplier', 'notes'
     ];
@@ -524,6 +542,8 @@ app.patch('/api/tickets/:id', (req, res) => {
           values[field] = typeof updates[field] === 'object' ? JSON.stringify(updates[field]) : updates[field];
         } else if (field === 'quantity' || field === 'purchaseCost') {
           values[field] = Number(updates[field]);
+        } else if (field === 'isReturnable') {
+          values[field] = updates[field] ? 1 : 0;
         } else {
           values[field] = updates[field];
         }
@@ -572,6 +592,124 @@ app.patch('/api/tickets/:id', (req, res) => {
   }
 });
 
+// POST mark ticket item returned by teacher (awaiting storage manager confirmation)
+app.post('/api/tickets/:id/return-by-teacher', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+    const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const now = new Date().toISOString();
+    const updatedNotes = notes 
+      ? (ticket.notes ? `${ticket.notes} | Teacher note: ${notes}` : `Teacher note: ${notes}`)
+      : (ticket.notes || 'Teacher returned borrowed item to warehouse.');
+
+    db.prepare(`
+      UPDATE tickets 
+      SET returnStatus = 'returned_by_teacher', returnedAt = ?, notes = ?, updatedAt = ?
+      WHERE id = ?
+    `).run(now, updatedNotes, now, id);
+
+    // Notify storage manager and leadership
+    const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    db.prepare(`
+      INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, 0, ?)
+    `).run(
+      notifId,
+      'Storage Manager',
+      id,
+      'Equipment Return Awaiting Confirmation',
+      `${ticket.teacherName || 'Teacher'} has returned "${ticket.itemTitle}". Please inspect and confirm receipt in warehouse.`,
+      'returned_by_teacher',
+      now
+    );
+
+    sendTelegramAlert(
+      `🔄 <b>Equipment Return Reported in EduOps</b>\n` +
+      `<b>Item:</b> ${ticket.itemTitle}\n` +
+      `<b>Teacher:</b> ${ticket.teacherName || 'Staff'}\n` +
+      `<b>Status:</b> Awaiting Warehouse Confirmation\n` +
+      (notes ? `<b>Note:</b> ${notes}\n` : '')
+    ).catch(() => {});
+
+    const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
+    res.json(formatTicket(updated));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST confirm return of borrowed item by storage manager (restores warehouse stock!)
+app.post('/api/tickets/:id/confirm-return', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { confirmedBy, notes } = req.body;
+    const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const now = new Date().toISOString();
+    const who = confirmedBy || 'Storage Manager';
+    const updatedNotes = notes 
+      ? (ticket.notes ? `${ticket.notes} | Return confirmed by ${who}: ${notes}` : `Return confirmed by ${who}: ${notes}`)
+      : (ticket.notes ? `${ticket.notes} | Return confirmed by ${who}.` : `Return confirmed by ${who} - item received back in warehouse.`);
+
+    db.prepare(`
+      UPDATE tickets 
+      SET returnStatus = 'returned', status = 'completed', returnConfirmedAt = ?, returnConfirmedBy = ?, notes = ?, updatedAt = ?
+      WHERE id = ?
+    `).run(now, who, updatedNotes, now, id);
+
+    // Automatically restore warehouse inventory stock (+quantity)
+    const matchingItem = db.prepare(`
+      SELECT * FROM inventory 
+      WHERE LOWER(name) = LOWER(?) OR LOWER(?) LIKE '%' || LOWER(name) || '%' OR LOWER(name) LIKE '%' || LOWER(?) || '%'
+      LIMIT 1
+    `).get(ticket.itemTitle, ticket.itemTitle, ticket.itemTitle);
+
+    if (matchingItem) {
+      const restoredQty = Number(matchingItem.quantity || 0) + (Number(ticket.quantity) || 1);
+      db.prepare('UPDATE inventory SET quantity = ?, updatedAt = ? WHERE id = ?')
+        .run(restoredQty, now, matchingItem.id);
+    }
+
+    // Send confirmation notification to requesting teacher
+    if (ticket.teacherName) {
+      const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      db.prepare(`
+        INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, 0, ?)
+      `).run(
+        notifId,
+        ticket.teacherName,
+        id,
+        'Equipment Return Receipt Confirmed',
+        `Storage Manager confirmed return of "${ticket.itemTitle}". Stock restored to warehouse. Thank you!`,
+        'completed',
+        now
+      );
+    }
+
+    sendTelegramAlert(
+      `✅ <b>Equipment Return Confirmed in Warehouse</b>\n` +
+      `<b>Item:</b> ${ticket.itemTitle}\n` +
+      `<b>Confirmed By:</b> ${who}\n` +
+      `<b>Teacher:</b> ${ticket.teacherName || 'Staff'}\n` +
+      `<b>Warehouse Stock Restored:</b> +${Number(ticket.quantity) || 1}\n`
+    ).catch(() => {});
+
+    const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
+    res.json(formatTicket(updated));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // DELETE ticket
 app.delete('/api/tickets/:id', (req, res) => {
   try {
@@ -597,13 +735,17 @@ app.post('/api/tickets/bulk', (req, res) => {
     const upsertStmt = db.prepare(`
       INSERT INTO tickets (
         id, department, itemTitle, subcategory, category, quantity, unit, urgency, roomNumber,
-        moveDetails, description, photos, completionPhotos, teacherName, teacherPhone,
+        moveDetails, description, photos, completionPhotos,
+        isReturnable, returnStatus, borrowedAt, returnedAt, returnConfirmedAt, returnConfirmedBy,
+        teacherName, teacherPhone,
         createdById, createdByRole,
         status, assignedWorker, assignedRole, handledAction, purchaseCost, supplier, notes,
         createdAt, updatedAt
       ) VALUES (
         @id, @department, @itemTitle, @subcategory, @category, @quantity, @unit, @urgency, @roomNumber,
-        @moveDetails, @description, @photos, @completionPhotos, @teacherName, @teacherPhone,
+        @moveDetails, @description, @photos, @completionPhotos,
+        @isReturnable, @returnStatus, @borrowedAt, @returnedAt, @returnConfirmedAt, @returnConfirmedBy,
+        @teacherName, @teacherPhone,
         @createdById, @createdByRole,
         @status, @assignedWorker, @assignedRole, @handledAction, @purchaseCost, @supplier, @notes,
         @createdAt, @updatedAt
@@ -621,6 +763,12 @@ app.post('/api/tickets/bulk', (req, res) => {
         description = excluded.description,
         photos = excluded.photos,
         completionPhotos = excluded.completionPhotos,
+        isReturnable = excluded.isReturnable,
+        returnStatus = excluded.returnStatus,
+        borrowedAt = excluded.borrowedAt,
+        returnedAt = excluded.returnedAt,
+        returnConfirmedAt = excluded.returnConfirmedAt,
+        returnConfirmedBy = excluded.returnConfirmedBy,
         teacherName = excluded.teacherName,
         teacherPhone = excluded.teacherPhone,
         createdById = COALESCE(excluded.createdById, tickets.createdById),
@@ -643,6 +791,7 @@ app.post('/api/tickets/bulk', (req, res) => {
           id: t.id,
           department: t.department || 'storage',
           itemTitle: t.itemTitle || '',
+          subcategory: t.subcategory || '',
           category: t.category || 'other',
           quantity: Number(t.quantity) || 1,
           unit: t.unit || 'pcs',
@@ -652,6 +801,12 @@ app.post('/api/tickets/bulk', (req, res) => {
           description: t.description || '',
           photos: Array.isArray(t.photos) ? JSON.stringify(t.photos) : (typeof t.photos === 'string' ? t.photos : '[]'),
           completionPhotos: Array.isArray(t.completionPhotos) ? JSON.stringify(t.completionPhotos) : (typeof t.completionPhotos === 'string' ? t.completionPhotos : '[]'),
+          isReturnable: t.isReturnable ? 1 : 0,
+          returnStatus: t.returnStatus || (t.isReturnable ? 'pending_issue' : 'none'),
+          borrowedAt: t.borrowedAt || null,
+          returnedAt: t.returnedAt || null,
+          returnConfirmedAt: t.returnConfirmedAt || null,
+          returnConfirmedBy: t.returnConfirmedBy || null,
           teacherName: t.teacherName || '',
           teacherPhone: t.teacherPhone || '',
           createdById: t.createdById || null,
@@ -733,13 +888,14 @@ app.post('/api/inventory', (req, res) => {
       minLevel: Number(body.minLevel) || 5,
       location: body.location || '',
       photos: Array.isArray(body.photos) ? JSON.stringify(body.photos) : (typeof body.photos === 'string' ? body.photos : '[]'),
+      isReturnable: body.isReturnable ? 1 : 0,
       createdAt: now,
       updatedAt: now
     };
 
     db.prepare(`
-      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
-      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
+      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, isReturnable, createdAt, updatedAt)
+      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @isReturnable, @createdAt, @updatedAt)
     `).run(newItem);
 
     const created = db.prepare('SELECT * FROM inventory WHERE id = ?').get(id);
@@ -760,7 +916,7 @@ app.patch('/api/inventory/:id', (req, res) => {
 
     const updates = req.body;
     const now = new Date().toISOString();
-    const allowed = ['name', 'category', 'quantity', 'unit', 'minLevel', 'location', 'photos'];
+    const allowed = ['name', 'category', 'quantity', 'unit', 'minLevel', 'location', 'photos', 'isReturnable'];
     const fieldsToSet = [];
     const values = {};
 
@@ -771,6 +927,8 @@ app.patch('/api/inventory/:id', (req, res) => {
           values[field] = Number(updates[field]);
         } else if (field === 'photos') {
           values[field] = Array.isArray(updates[field]) ? JSON.stringify(updates[field]) : String(updates[field]);
+        } else if (field === 'isReturnable') {
+          values[field] = updates[field] ? 1 : 0;
         } else {
           values[field] = updates[field];
         }

@@ -24,7 +24,8 @@ import {
   Droplets,
   Footprints,
   DoorOpen,
-  Globe
+  Globe,
+  RotateCcw
 } from 'lucide-react';
 import { DepartmentActionModal } from './DepartmentActionModal';
 import { TicketCard } from './TicketCard';
@@ -152,6 +153,25 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             <CheckCircle size={12} /> {t.tickets.status.completed}
           </span>
         );
+      case 'borrowed':
+      case 'on_loan':
+        return (
+          <span className="ticket-badge-status" style={{ background: 'rgba(249, 115, 22, 0.18)', border: '1px solid #f97316', color: '#fb923c' }}>
+            <Clock size={12} /> {t.tickets?.status?.on_loan || 'On Loan (1-2 Lessons)'}
+          </span>
+        );
+      case 'returned_by_teacher':
+        return (
+          <span className="ticket-badge-status" style={{ background: 'rgba(14, 165, 233, 0.18)', border: '1px solid #0284c7', color: '#38bdf8' }}>
+            <RotateCcw size={12} /> {t.tickets?.status?.returned_by_teacher || 'Returned • Awaiting Warehouse'}
+          </span>
+        );
+      case 'returned':
+        return (
+          <span className="ticket-badge-status ticket-badge-status-completed">
+            <CheckCircle size={12} /> {t.tickets?.status?.returned || 'Returned to Warehouse'}
+          </span>
+        );
       default:
         return (
           <span className="ticket-badge-status ticket-badge-status-default">
@@ -187,7 +207,10 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                           (ticket.teacherPhone || '').toLowerCase().includes(term) ||
                           (ticket.roomNumber || '').toLowerCase().includes(term) ||
                           (ticket.assignedWorker || '').toLowerCase().includes(term);
-    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || 
+      ticket.status === statusFilter ||
+      (statusFilter === 'on_loan' && (ticket.returnStatus === 'borrowed' || ticket.status === 'borrowed')) ||
+      (statusFilter === 'returned_by_teacher' && ticket.returnStatus === 'returned_by_teacher');
     const resolvedDeptId = resolveDepartment(ticket.department).id;
     const matchesDept = deptFilter === 'all' || resolvedDeptId === deptFilter;
 
@@ -331,6 +354,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               <option value="pending" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.pending}</option>
               <option value="in_progress" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.in_progress}</option>
               <option value="issued" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.issued}</option>
+              <option value="on_loan" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>⏱️ {t.tickets?.status?.on_loan || 'On Loan (1-2 Lessons)'}</option>
+              <option value="returned_by_teacher" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>⏳ {t.tickets?.status?.returned_by_teacher || 'Returned • Awaiting Warehouse'}</option>
               <option value="purchasing" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.purchasing}</option>
               <option value="completed" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.completed}</option>
             </select>

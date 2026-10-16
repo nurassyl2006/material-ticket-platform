@@ -8,8 +8,11 @@ import {
   Languages, 
   CheckCircle2, 
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Clock,
+  Check
 } from 'lucide-react';
+import { useApp } from '../AppContext';
 import { translateText, detectLanguage, TRANSLATOR_LANGUAGES } from '../services/translator';
 import { translateSubcategory } from '../departments';
 
@@ -30,6 +33,7 @@ export const TicketCard = ({
   onSelectTicket,
   onCompleteTicket
 }) => {
+  const { markTicketReturnedByTeacher, confirmTicketReturn } = useApp();
   const [activeLang, setActiveLang] = useState(autoTranslate ? targetLang : 'orig');
   const [showOriginal, setShowOriginal] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -38,6 +42,12 @@ export const TicketCard = ({
   const cleanPhone = (ticket.teacherPhone || '').replace(/[^\d+]/g, '');
   const targetDept = ticket.department || 'storage';
   const isCompleted = ticket.status === 'completed' || ticket.status === 'delivered';
+  const isStorageManager = role === 'storage_manager' || role === 'workerA' || role === 'director' || role === 'admin';
+  const isMyTicket = Boolean(
+    (currentUser?.name && ticket.teacherName && ticket.teacherName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
+    (currentUser?.id && ticket.createdById === currentUser.id) ||
+    role === 'teacher'
+  );
 
   // Detect original language of ticket
   const detectedSource = React.useMemo(() => {
@@ -209,8 +219,29 @@ export const TicketCard = ({
 
         {/* Status Badge & Translation Quick Controls */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {getStatusBadge(ticket.status)}
+
+            {/* Temporary Lesson Loan Status Badge */}
+            {ticket.isReturnable && (
+              ticket.returnStatus === 'borrowed' ? (
+                <span className="ticket-badge-status" style={{ background: 'rgba(249, 115, 22, 0.18)', border: '1px solid #f97316', color: '#fb923c' }}>
+                  <Clock size={12} /> {t.tickets?.status?.borrowed || 'On Loan (1-2 Lessons)'}
+                </span>
+              ) : ticket.returnStatus === 'returned_by_teacher' ? (
+                <span className="ticket-badge-status" style={{ background: 'rgba(14, 165, 233, 0.18)', border: '1px solid #0284c7', color: '#38bdf8' }}>
+                  <RotateCcw size={12} /> {t.tickets?.status?.returned_by_teacher || 'Returned • Awaiting Warehouse'}
+                </span>
+              ) : ticket.returnStatus === 'returned' ? (
+                <span className="ticket-badge-status" style={{ background: 'rgba(16, 185, 129, 0.18)', border: '1px solid #10b981', color: '#34d399' }}>
+                  <CheckCircle2 size={12} /> {t.tickets?.status?.returned || 'Returned to Warehouse'}
+                </span>
+              ) : (
+                <span className="ticket-badge-status" style={{ background: 'rgba(249, 115, 22, 0.1)', border: '1px solid rgba(249, 115, 22, 0.3)', color: '#fed7aa', fontSize: '10px' }}>
+                  ⏱️ {t.tickets?.loanNoticeShort || 'Temporary Loan'}
+                </span>
+              )
+            )}
           </div>
 
           {/* Language Selector Buttons */}
@@ -411,8 +442,58 @@ export const TicketCard = ({
             </div>
           )}
 
+          {/* Teacher: Return item to warehouse button */}
+          {ticket.isReturnable && ticket.returnStatus === 'borrowed' && isMyTicket && (
+            <button
+              onClick={() => markTicketReturnedByTeacher(ticket.id)}
+              className="fluent-btn-primary"
+              style={{
+                height: '28px',
+                padding: '0 12px',
+                fontSize: '12px',
+                background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                border: '1px solid #38bdf8',
+                color: '#fff',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer'
+              }}
+              title={t.tickets?.returnItem || 'I Have Returned This Item to Warehouse'}
+            >
+              <RotateCcw size={13} />
+              <span>{t.tickets?.returnItem || 'I Have Returned This Item'}</span>
+            </button>
+          )}
+
+          {/* Storage Manager / Admin: Confirm receipt of returned item */}
+          {ticket.isReturnable && (ticket.returnStatus === 'borrowed' || ticket.returnStatus === 'returned_by_teacher') && isStorageManager && (
+            <button
+              onClick={() => confirmTicketReturn(ticket.id)}
+              className="fluent-btn-primary"
+              style={{
+                height: '28px',
+                padding: '0 12px',
+                fontSize: '12px',
+                background: ticket.returnStatus === 'returned_by_teacher' 
+                  ? 'linear-gradient(135deg, #10b981, #059669)' 
+                  : 'linear-gradient(135deg, #0284c7, #0369a1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                color: '#fff',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer'
+              }}
+              title={t.tickets?.confirmReturnPrompt || 'Confirm return and restore warehouse inventory stock'}
+            >
+              <CheckCircle2 size={13} />
+              <span>{t.tickets?.confirmReturn || 'Confirm Return to Warehouse'}</span>
+            </button>
+          )}
+
           {/* Department Processing Button (Fluent Primary) */}
-          {canProcessTicket(ticket) && !isCompleted && (
+          {canProcessTicket(ticket) && !isCompleted && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
             <button
               onClick={() => onSelectTicket(ticket)}
               className="fluent-btn-primary"
@@ -423,7 +504,7 @@ export const TicketCard = ({
           )}
 
           {/* Mark Completed Button (Fluent Success) */}
-          {canProcessTicket(ticket) && !isCompleted && ticket.status !== 'pending' && (
+          {canProcessTicket(ticket) && !isCompleted && ticket.status !== 'pending' && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
             <button
               onClick={() => onCompleteTicket(ticket.id)}
               className="fluent-btn-primary"

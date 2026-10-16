@@ -15,12 +15,31 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  Bell,
+  Smartphone,
+  Volume2
 } from 'lucide-react';
+import { TelegramNotificationModal } from './TelegramNotificationModal';
 
 export const UserProfileModal = ({ isOpen, onClose }) => {
-  const { currentUser, updateUserProfile, t, logout, role, changePassword, isAuthenticated } = useApp();
+  const { 
+    currentUser, 
+    updateUserProfile, 
+    t, 
+    logout, 
+    role, 
+    changePassword, 
+    isAuthenticated,
+    devicePermission,
+    enableDeviceNotifications,
+    sendTestDeviceNotification,
+    lang
+  } = useApp();
   const [activeTab, setActiveTab] = useState('details'); // 'details' | 'security'
+  const [showTelegramModal, setShowTelegramModal] = useState(false);
+  const [testTesting, setTestTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -331,6 +350,127 @@ export const UserProfileModal = ({ isOpen, onClose }) => {
                 </div>
               </div>
 
+              {/* Device Push & Sound Notification Controls */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                padding: '14px',
+                marginTop: '16px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Bell size={16} color="var(--primary)" />
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
+                      {lang === 'ru' ? 'Уведомления на устройство' : 'Device & Phone Alerts'}
+                    </span>
+                  </div>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    padding: '2px 8px',
+                    borderRadius: '8px',
+                    background: devicePermission === 'granted' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(234, 179, 8, 0.15)',
+                    color: devicePermission === 'granted' ? '#34d399' : '#facc15'
+                  }}>
+                    {devicePermission === 'granted' ? 'Active' : devicePermission === 'denied' ? 'Blocked' : 'Off'}
+                  </span>
+                </div>
+
+                <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                  {lang === 'ru' 
+                    ? 'Включите звуковые оповещения и пуш-уведомления на телефон или компьютер для новых заявок и смены статусов.'
+                    : 'Receive sound chimes, device vibration, and native push popups for new requests and updates.'}
+                </p>
+
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {devicePermission !== 'granted' && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await enableDeviceNotifications();
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+                        border: 'none',
+                        color: '#fff',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      <Bell size={12} />
+                      <span>{lang === 'ru' ? 'Включить пуши' : 'Enable Device Push'}</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setTestTesting(true);
+                      try {
+                        const diag = await sendTestDeviceNotification();
+                        setTestResult(diag.delivered ? 'Alert delivered!' : 'Alert sent');
+                      } catch (err) {
+                        setTestResult('Test failed');
+                      } finally {
+                        setTestTesting(false);
+                        setTimeout(() => setTestResult(null), 3000);
+                      }
+                    }}
+                    disabled={testTesting}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-main)',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <Volume2 size={12} />
+                    <span>{testTesting ? 'Testing...' : (lang === 'ru' ? 'Проверить звук и пуш' : 'Test Device Alert')}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowTelegramModal(true)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(2, 132, 199, 0.2)',
+                      border: '1px solid rgba(56, 189, 248, 0.35)',
+                      color: '#38bdf8',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <Smartphone size={12} />
+                    <span>{lang === 'ru' ? 'Телефон (Telegram)' : 'Phone Alerts (Telegram)'}</span>
+                  </button>
+                </div>
+
+                {testResult && (
+                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#34d399', fontWeight: '600' }}>
+                    ✅ {testResult}
+                  </div>
+                )}
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
@@ -589,6 +729,12 @@ export const UserProfileModal = ({ isOpen, onClose }) => {
           </form>
         )}
       </div>
+
+      <TelegramNotificationModal
+        isOpen={showTelegramModal}
+        onClose={() => setShowTelegramModal(false)}
+        lang={lang}
+      />
     </div>
   );
 };

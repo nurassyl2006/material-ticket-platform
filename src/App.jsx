@@ -9,6 +9,7 @@ import { UserManagement } from './components/UserManagement';
 import { TicketModal } from './components/TicketModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { DeviceToastAlert } from './components/DeviceToastAlert';
+import { DeviceNotificationBanner } from './components/DeviceNotificationBanner';
 import ServerStatusModal from './components/ServerStatusModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ShieldCheck, LogIn, UserPlus, Compass, Users, Lock, Package, ClipboardList } from 'lucide-react';
@@ -19,7 +20,7 @@ function MainApp() {
   const { isAuthenticated, role, setRole, lang, t } = useApp();
   const [route, setRoute] = useState(() => parseCurrentRoute());
   const activeTab = route.tab;
-  const canAccessCatalog = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role));
+  const canAccessCatalog = Boolean(isAuthenticated);
 
   const setActiveTab = useCallback((newTabOrPath, params = {}) => {
     if (typeof newTabOrPath === 'string' && newTabOrPath.startsWith('/')) {
@@ -31,6 +32,7 @@ function MainApp() {
 
   const [isNewTicketOpen, setIsNewTicketOpen] = useState(false);
   const [newTicketDept, setNewTicketDept] = useState('engineering');
+  const [newTicketInitialItem, setNewTicketInitialItem] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [targetTicketId, setTargetTicketId] = useState(null);
   const [isServerModalOpen, setIsServerModalOpen] = useState(false);
@@ -49,8 +51,9 @@ function MainApp() {
     setIsAuthModalOpen(true);
   };
 
-  const handleOpenNewTicket = (dept = 'engineering') => {
+  const handleOpenNewTicket = (dept = 'engineering', initialItem = '') => {
     setNewTicketDept(dept);
+    setNewTicketInitialItem(initialItem);
     setIsNewTicketOpen(true);
   };
 
@@ -132,6 +135,9 @@ function MainApp() {
         onOpenServerModal={() => setIsServerModalOpen(true)}
       />
       <DeviceToastAlert onSelectTicket={handleSelectTicketFromNotification} />
+      <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 16px' }}>
+        <DeviceNotificationBanner />
+      </div>
 
       {/* Unregistered Guest / Parent Notification & Access Banner */}
       {!isAuthenticated && (
@@ -265,42 +271,8 @@ function MainApp() {
                 </button>
               </div>
             </div>
-          ) : !canAccessCatalog ? (
-            <div className="glass-panel" style={{ padding: '44px 28px', textAlign: 'center', maxWidth: '560px', margin: '36px auto', borderRadius: '12px', background: 'rgba(30, 41, 59, 0.7)', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(16px)' }}>
-              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <Lock size={26} color="#f87171" />
-              </div>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>
-                {lang === 'ru' ? 'Доступ к каталогу склада ограничен' : lang === 'kk' ? 'Қойма каталогына кіру шектелген' : 'Warehouse Catalog Access Restricted'}
-              </h3>
-              <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '22px', lineHeight: 1.6 }}>
-                {lang === 'ru' 
-                  ? 'Просмотр каталога склада и остатков товаров разрешен только заведующему складом, инженерам и администрации школы. Учителя и сотрудники могут заказывать нужные материалы через раздел заявок.'
-                  : lang === 'kk'
-                  ? 'Қойма каталогы мен тауар қалдықтарын қарау тек қойма меңгерушісіне, инженерлерге және мектеп әкімшілігіне рұқсат етілген. Мұғалімдер өтінімдер бөлімі арқылы қажетті заттарға сұраныс бере алады.'
-                  : 'Viewing the warehouse catalog and live stock counts is restricted to the Storage Manager, Engineers, and School Administration. Teachers and staff can request needed supplies directly from the Requests page.'}
-              </p>
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => setActiveTab('tickets')}
-                  className="fluent-btn-primary"
-                  style={{ height: '36px', padding: '0 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <ClipboardList size={16} />
-                  <span>{t.nav?.tickets || 'View Requests'}</span>
-                </button>
-                <button
-                  onClick={() => handleOpenNewTicket('storage')}
-                  className="fluent-btn-secondary"
-                  style={{ height: '36px', padding: '0 18px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <Package size={16} />
-                  <span>{lang === 'ru' ? 'Заказать материалы' : lang === 'kk' ? 'Материалдарға тапсырыс беру' : 'Request Supplies'}</span>
-                </button>
-              </div>
-            </div>
           ) : (
-            <InventoryManager />
+            <InventoryManager onOpenNewTicket={handleOpenNewTicket} />
           )
         )}
         {activeTab === 'users' && (
@@ -335,6 +307,7 @@ function MainApp() {
         isOpen={isNewTicketOpen} 
         onClose={() => setIsNewTicketOpen(false)} 
         initialDepartment={newTicketDept}
+        initialItem={newTicketInitialItem}
       />
 
       <UserProfileModal 

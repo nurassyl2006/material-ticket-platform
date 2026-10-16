@@ -15,12 +15,14 @@ import {
   Image as ImageIcon,
   Eye,
   X,
-  Maximize2
+  Maximize2,
+  Clock,
+  RotateCcw
 } from 'lucide-react';
 import { STORAGE_CATEGORIES, getCategoryMeta, getCategoryLabel } from '../storageCategories';
 import { compressImageFile, compressMultipleImageFiles } from '../utils/imageCompressor';
 
-export const InventoryManager = () => {
+export const InventoryManager = ({ onOpenNewTicket }) => {
   const { 
     t, 
     inventory, 
@@ -28,7 +30,10 @@ export const InventoryManager = () => {
     updateInventoryQty, 
     addPhotosToInventoryItem, 
     role, 
-    lang 
+    lang,
+    tickets,
+    confirmTicketReturn,
+    currentUser
   } = useApp();
   
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -47,6 +52,7 @@ export const InventoryManager = () => {
   const existingItemFileRef = useRef(null);
   const existingItemCameraRef = useRef(null);
   const [targetItemForPhoto, setTargetItemForPhoto] = useState(null);
+  const [confirmingLoanId, setConfirmingLoanId] = useState(null);
   
   const [newItem, setNewItem] = useState({
     name: '',
@@ -55,7 +61,8 @@ export const InventoryManager = () => {
     unit: 'pcs',
     minLevel: 5,
     location: 'Storage Cabinet 102 - Shelf A',
-    photos: []
+    photos: [],
+    isReturnable: false
   });
 
   const canManageStock = role === 'storage_manager' || 
@@ -65,13 +72,14 @@ export const InventoryManager = () => {
                          role === 'workerA' || 
                          role === 'admin';
 
-  // Handle category change in Add Modal with smart location suggestion
+  // Handle category change in Add Modal with smart location suggestion & loan policy
   const handleCategoryChange = (catId) => {
     const meta = getCategoryMeta(catId);
     setNewItem(prev => ({
       ...prev,
       category: catId,
-      location: meta.defaultLocation || prev.location
+      location: meta.defaultLocation || prev.location,
+      isReturnable: catId === 'stationary_loan' ? true : (catId === 'stationary' ? false : prev.isReturnable)
     }));
   };
 
@@ -85,7 +93,8 @@ export const InventoryManager = () => {
       unit: 'pcs',
       minLevel: 5,
       location: meta.defaultLocation || 'Storage Cabinet 102 - Shelf A',
-      photos: []
+      photos: [],
+      isReturnable: cat === 'stationary_loan'
     });
     setShowAddModal(true);
   };
@@ -152,9 +161,33 @@ export const InventoryManager = () => {
       name: newItem.name.trim(),
       quantity: Number(newItem.quantity) || 0,
       minLevel: Number(newItem.minLevel) || 5,
-      photos: newItem.photos || []
+      photos: newItem.photos || [],
+      isReturnable: Boolean(newItem.isReturnable)
     });
     setShowAddModal(false);
+  };
+
+  // Active Lesson Loans: temporary items currently issued to teachers for 1-2 lessons
+  const activeLoans = useMemo(() => {
+    return (tickets || []).filter(ticket => 
+      Boolean(ticket.isReturnable) && 
+      (ticket.returnStatus === 'borrowed' || ticket.returnStatus === 'returned_by_teacher')
+    );
+  }, [tickets]);
+
+  const awaitingConfirmationCount = useMemo(() => {
+    return activeLoans.filter(t => t.returnStatus === 'returned_by_teacher').length;
+  }, [activeLoans]);
+
+  const handleConfirmReturn = async (ticketId) => {
+    setConfirmingLoanId(ticketId);
+    try {
+      await confirmTicketReturn(ticketId);
+    } catch (err) {
+      console.error('Error confirming return from inventory manager:', err);
+    } finally {
+      setConfirmingLoanId(null);
+    }
   };
 
   // Group inventory items by category
@@ -303,23 +336,7 @@ export const InventoryManager = () => {
     );
   };
 
-  if (!canManageStock) {
-    return (
-      <div className="glass-panel" style={{ padding: '48px 24px', textAlign: 'center', maxWidth: '600px', margin: '40px auto' }}>
-        <div style={{ fontSize: '36px', marginBottom: '12px' }}>🔒</div>
-        <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#fff', marginBottom: '8px' }}>
-          {lang === 'ru' ? 'Доступ ограничен' : lang === 'kk' ? 'Қолжетімділік шектелген' : 'Access Restricted'}
-        </h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-          {lang === 'ru'
-            ? 'Складской каталог и остатки доступны только завскладу, инженерам, завхозу и администрации школы.'
-            : lang === 'kk'
-            ? 'Қойма каталогы мен қалдықтар тек қойма меңгерушісіне, инженерлерге, шаруашылық бөліміне және әкімшілікке қолжетімді.'
-            : 'Warehouse catalog and categories can only be viewed and managed by designated Storage Managers, Engineers, and School Administration.'}
-        </p>
-      </div>
-    );
-  }
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -347,15 +364,21 @@ export const InventoryManager = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <span style={{ fontSize: '24px' }}>📦</span>
             <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#fff', margin: 0 }}>
-              {t.inventory.title}
+              {canManageStock 
+                ? t.inventory.title 
+                : (t.inventory.teacherCatalogTitle || (lang === 'ru' ? 'Каталог канцтоваров и материалов' : 'School Stationery Catalog'))}
             </h2>
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-            {lang === 'ru' 
-              ? 'База данных склада с фотографиями товаров, разделенная по категориям: канцелярия, маркетинг, мебель и др.'
-              : lang === 'kk'
-              ? 'Тауар суреттері бар санатталған қойма дерекқоры: кеңсе, маркетинг, жиһаз, электроника т.б.'
-              : 'Warehouse database with photo proof partitioned into categories: stationery, marketing, furniture, etc.'}
+            {canManageStock
+              ? (lang === 'ru' 
+                  ? 'База данных склада с фотографиями товаров, разделенная по категориям: канцелярия, маркетинг, мебель и др.'
+                  : lang === 'kk'
+                  ? 'Тауар суреттері бар санатталған қойма дерекқоры: кеңсе, маркетинг, жиһаз, электроника т.б.'
+                  : 'Warehouse database with photo proof partitioned into categories: stationery, marketing, furniture, etc.')
+              : (t.inventory.teacherCatalogSubtitle || (lang === 'ru'
+                  ? 'Ознакомьтесь с доступными канцтоварами для уроков и закажите нужное в кабинет.'
+                  : 'Browse classroom supplies and request items needed for your lessons.'))}
           </p>
         </div>
 
@@ -432,15 +455,179 @@ export const InventoryManager = () => {
         </div>
       </div>
 
+      {/* Active Lesson Loans Banner / Tracker (Shown only to warehouse managers) */}
+      {canManageStock && activeLoans.length > 0 && (
+        <div className="glass-panel" style={{
+          padding: '16px 20px',
+          background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(15, 23, 42, 0.75) 100%)',
+          border: '1.5px solid rgba(249, 115, 22, 0.45)',
+          borderRadius: '14px',
+          boxShadow: '0 8px 24px rgba(249, 115, 22, 0.12)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: 'rgba(249, 115, 22, 0.2)',
+                border: '1px solid rgba(249, 115, 22, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px'
+              }}>
+                ⏱️
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: 0 }}>
+                    {t.tickets?.activeLoans || (lang === 'ru' ? 'Активные временные выдачи на уроки' : lang === 'kk' ? 'Сабаққа уақытша берілген заттар' : 'Active Lesson Loans')}
+                  </h3>
+                  <span style={{
+                    background: '#f97316',
+                    color: '#fff',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    padding: '2px 8px',
+                    borderRadius: '12px'
+                  }}>
+                    {activeLoans.length} {lang === 'ru' ? 'предметов на руках' : 'on loan'}
+                  </span>
+                  {awaitingConfirmationCount > 0 && (
+                    <span style={{
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      color: '#f87171',
+                      border: '1px solid rgba(239, 68, 68, 0.4)',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      ⏳ {awaitingConfirmationCount} {lang === 'ru' ? 'ожидают приемки' : 'awaiting confirmation'}
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                  {lang === 'ru'
+                    ? 'Канцелярия и оборудование, выданные учителям на 1-2 урока. После возврата учителем завсклад подтверждает получение, и количество автоматически возвращается на склад.'
+                    : lang === 'kk'
+                    ? 'Мұғалімдерге 1-2 сабаққа берілген кеңсе заттары. Мұғалім қайтарған соң қоймашы қабылдайды және қалдық автоматты түрде қоймаға қайтарылады.'
+                    : 'Stationery and equipment issued to teachers for 1-2 lessons. Once returned, storage manager confirms receipt and stock is automatically restored.'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* List of active loans */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '10px' }}>
+            {activeLoans.map(loan => {
+              const isReturnedByTeacher = loan.returnStatus === 'returned_by_teacher';
+              const isConfirming = confirmingLoanId === loan.id;
+
+              return (
+                <div
+                  key={loan.id}
+                  style={{
+                    background: isReturnedByTeacher ? 'rgba(34, 197, 94, 0.08)' : 'rgba(15, 23, 42, 0.7)',
+                    border: isReturnedByTeacher ? '1.5px solid rgba(34, 197, 94, 0.4)' : '1px solid rgba(249, 115, 22, 0.3)',
+                    borderRadius: '10px',
+                    padding: '12px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '10px'
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                      <div style={{ fontWeight: '700', color: '#fff', fontSize: '13px' }}>
+                        {loan.itemTitle || loan.title}
+                        {loan.quantity > 1 && <span style={{ color: '#fbbf24', marginLeft: '4px' }}>×{loan.quantity}</span>}
+                      </div>
+                      <span style={{
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        padding: '2px 6px',
+                        borderRadius: '6px',
+                        background: isReturnedByTeacher ? 'rgba(34, 197, 94, 0.2)' : 'rgba(249, 115, 22, 0.2)',
+                        color: isReturnedByTeacher ? '#4ade80' : '#fb923c',
+                        border: isReturnedByTeacher ? '1px solid rgba(34, 197, 94, 0.35)' : '1px solid rgba(249, 115, 22, 0.35)',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {isReturnedByTeacher 
+                          ? (lang === 'ru' ? '⏳ Учитель вернул' : lang === 'kk' ? '⏳ Қайтарылды' : '⏳ Teacher Returned') 
+                          : (lang === 'ru' ? '⏱️ На уроке' : lang === 'kk' ? '⏱️ Сабақта' : '⏱️ In Class')}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      <span>👤 <strong>{loan.userName}</strong></span>
+                      {loan.room && <span>🚪 {loan.room}</span>}
+                      {loan.loanDuration && (
+                        <span style={{ color: '#fbbf24' }}>
+                          ⌛ {loan.loanDuration === '1_lesson' ? '1 lesson (45m)' : loan.loanDuration === '2_lessons' ? '2 lessons (90m)' : loan.loanDuration}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                      {loan.borrowedAt ? new Date(loan.borrowedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (loan.createdAt ? new Date(loan.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')}
+                    </span>
+
+                    {canManageStock && (
+                      <button
+                        type="button"
+                        disabled={isConfirming}
+                        onClick={() => handleConfirmReturn(loan.id)}
+                        style={{
+                          background: isReturnedByTeacher ? '#16a34a' : 'rgba(249, 115, 22, 0.25)',
+                          border: isReturnedByTeacher ? '1px solid #22c55e' : '1px solid rgba(249, 115, 22, 0.5)',
+                          color: '#fff',
+                          padding: '5px 10px',
+                          borderRadius: '6px',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title={lang === 'ru' ? 'Подтвердить получение и вернуть остаток на склад' : 'Confirm return and restore stock'}
+                      >
+                        <CheckCircle2 size={12} />
+                        <span>{isConfirming ? '...' : (t.tickets?.confirmReturn || (lang === 'ru' ? 'Принять на склад' : 'Confirm Return'))}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Category Overview Cards Carousel / Grid */}
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
             {t.inventory.categoryOverview || 'Warehouse Categories Overview'}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            <span style={{ color: '#fff', fontWeight: '700' }}>{overallTotals.totalItems}</span> {t.inventory.itemsCount || 'items'} ({overallTotals.totalQty} total units)
-          </div>
+          {canManageStock ? (
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+              <span style={{ color: '#fff', fontWeight: '700' }}>{overallTotals.totalItems}</span> {t.inventory.itemsCount || 'items'} ({overallTotals.totalQty} total units)
+            </div>
+          ) : (
+            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+              <span>💡 {t.inventory?.orderOnlyNeeded || (lang === 'ru' ? 'Заказывайте ровно столько, сколько нужно для уроков' : 'Order only what is needed')}</span>
+            </div>
+          )}
         </div>
 
         <div style={{
@@ -466,23 +653,27 @@ export const InventoryManager = () => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: '20px' }}>📁</span>
-              <span style={{ 
-                fontSize: '11px', 
-                fontWeight: '700', 
-                background: 'rgba(255,255,255,0.1)', 
-                color: '#fff', 
-                padding: '2px 8px', 
-                borderRadius: '10px' 
-              }}>
-                {overallTotals.totalItems}
-              </span>
+              {canManageStock && (
+                <span style={{ 
+                  fontSize: '11px', 
+                  fontWeight: '700', 
+                  background: 'rgba(255,255,255,0.1)', 
+                  color: '#fff', 
+                  padding: '2px 8px', 
+                  borderRadius: '10px' 
+                }}>
+                  {overallTotals.totalItems}
+                </span>
+              )}
             </div>
             <div>
               <div style={{ fontSize: '13px', fontWeight: '700', color: selectedCategory === 'all' ? '#fbbf24' : '#fff' }}>
                 {t.inventory.allCategories || 'All Categories'}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                {STORAGE_CATEGORIES.length} {lang === 'ru' ? 'категорий' : lang === 'kk' ? 'санат' : 'divisions'}
+                {canManageStock 
+                  ? `${STORAGE_CATEGORIES.length} ${lang === 'ru' ? 'категорий' : lang === 'kk' ? 'санат' : 'divisions'}`
+                  : (lang === 'ru' ? 'Все разделы каталога' : lang === 'kk' ? 'Барлық санаттар' : 'All Catalog Sections')}
               </div>
             </div>
           </div>
@@ -513,23 +704,44 @@ export const InventoryManager = () => {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '20px' }}>{cat.icon}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {hasAlert && (
-                      <span title={lang === 'ru' ? 'Есть позиции с низким остатком' : 'Low stock items present'} style={{ fontSize: '10px' }}>
-                        ⚠️
+                  {canManageStock && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {hasAlert && (
+                        <span title={lang === 'ru' ? 'Есть позиции с низким остатком' : 'Low stock items present'} style={{ fontSize: '10px' }}>
+                          ⚠️
+                        </span>
+                      )}
+                      {cat.id === 'stationary_loan' && activeLoans.length > 0 && (
+                        <span 
+                          title={lang === 'ru' ? `${activeLoans.length} предметов сейчас на руках у учителей` : `${activeLoans.length} items currently on loan with teachers`}
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            background: 'rgba(249, 115, 22, 0.25)',
+                            color: '#fb923c',
+                            border: '1px solid rgba(249, 115, 22, 0.4)',
+                            padding: '1px 5px',
+                            borderRadius: '8px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px'
+                          }}
+                        >
+                          ⏱️ {activeLoans.length}
+                        </span>
+                      )}
+                      <span style={{ 
+                        fontSize: '11px', 
+                        fontWeight: '700', 
+                        background: 'rgba(255,255,255,0.08)', 
+                        color: cat.color, 
+                        padding: '2px 8px', 
+                        borderRadius: '10px' 
+                      }}>
+                        {st.count}
                       </span>
-                    )}
-                    <span style={{ 
-                      fontSize: '11px', 
-                      fontWeight: '700', 
-                      background: 'rgba(255,255,255,0.08)', 
-                      color: cat.color, 
-                      padding: '2px 8px', 
-                      borderRadius: '10px' 
-                    }}>
-                      {st.count}
-                    </span>
-                  </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -543,8 +755,12 @@ export const InventoryManager = () => {
                   }}>
                     {getCategoryLabel(cat.id, lang, true)}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    {st.totalQty} {lang === 'ru' ? 'шт / ед.' : lang === 'kk' ? 'дана' : 'units'}
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {canManageStock 
+                      ? `${st.totalQty} ${lang === 'ru' ? 'шт / ед.' : lang === 'kk' ? 'дана' : 'units'}`
+                      : (cat.isReturnable 
+                          ? (lang === 'ru' ? '⏱️ На 1-2 урока' : lang === 'kk' ? '⏱️ 1-2 сабаққа' : '⏱️ 1-2 Lessons Loan')
+                          : (lang === 'ru' ? '✏️ Выдача в кабинет' : lang === 'kk' ? '✏️ Кабинетке' : '✏️ Consumable'))}
                   </div>
                 </div>
               </div>
@@ -573,7 +789,7 @@ export const InventoryManager = () => {
               transition: 'all 0.15s ease'
             }}
           >
-            📁 {t.inventory.allCategories || 'All Categories'} ({overallTotals.totalItems})
+            📁 {t.inventory.allCategories || 'All Categories'} {canManageStock ? `(${overallTotals.totalItems})` : ''}
           </button>
 
           {STORAGE_CATEGORIES.map(cat => {
@@ -602,14 +818,16 @@ export const InventoryManager = () => {
               >
                 <span>{cat.icon}</span>
                 <span>{getCategoryLabel(cat.id, lang, true)}</span>
-                <span style={{ 
-                  background: isCatActive ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.12)', 
-                  padding: '1px 6px', 
-                  borderRadius: '10px', 
-                  fontSize: '10px' 
-                }}>
-                  {count}
-                </span>
+                {canManageStock && (
+                  <span style={{ 
+                    background: isCatActive ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.12)', 
+                    padding: '1px 6px', 
+                    borderRadius: '10px', 
+                    fontSize: '10px' 
+                  }}>
+                    {count}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -690,36 +908,40 @@ export const InventoryManager = () => {
             >
               {t.inventory.statusOk}
             </button>
-            <button
-              onClick={() => setStatusFilter('low')}
-              style={{
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                border: 'none',
-                cursor: 'pointer',
-                background: statusFilter === 'low' ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
-                color: statusFilter === 'low' ? '#fbbf24' : 'var(--text-muted)',
-                fontWeight: statusFilter === 'low' ? '700' : 'normal'
-              }}
-            >
-              ⚠️ {t.inventory.statusLow} ({overallTotals.lowStockCount})
-            </button>
-            <button
-              onClick={() => setStatusFilter('out')}
-              style={{
-                padding: '4px 10px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                border: 'none',
-                cursor: 'pointer',
-                background: statusFilter === 'out' ? 'rgba(239, 68, 68, 0.25)' : 'transparent',
-                color: statusFilter === 'out' ? '#f87171' : 'var(--text-muted)',
-                fontWeight: statusFilter === 'out' ? '700' : 'normal'
-              }}
-            >
-              ● {t.inventory.statusOut} ({overallTotals.outOfStockCount})
-            </button>
+            {canManageStock && (
+              <>
+                <button
+                  onClick={() => setStatusFilter('low')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: statusFilter === 'low' ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
+                    color: statusFilter === 'low' ? '#fbbf24' : 'var(--text-muted)',
+                    fontWeight: statusFilter === 'low' ? '700' : 'normal'
+                  }}
+                >
+                  ⚠️ {t.inventory.statusLow} ({overallTotals.lowStockCount})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('out')}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    background: statusFilter === 'out' ? 'rgba(239, 68, 68, 0.25)' : 'transparent',
+                    color: statusFilter === 'out' ? '#f87171' : 'var(--text-muted)',
+                    fontWeight: statusFilter === 'out' ? '700' : 'normal'
+                  }}
+                >
+                  ● {t.inventory.statusOut} ({overallTotals.outOfStockCount})
+                </button>
+              </>
+            )}
           </div>
 
         </div>
@@ -809,9 +1031,11 @@ export const InventoryManager = () => {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                      {t.inventory.totalQuantity || 'Total Stock'}: <strong style={{ color: '#fff' }}>{cat.totalUnits}</strong>
-                    </span>
+                    {canManageStock && (
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        {t.inventory.totalQuantity || 'Total Stock'}: <strong style={{ color: '#fff' }}>{cat.totalUnits}</strong>
+                      </span>
+                    )}
 
                     {canManageStock && (
                       <button
@@ -848,10 +1072,16 @@ export const InventoryManager = () => {
                       <thead>
                         <tr style={{ background: 'rgba(15, 23, 42, 0.4)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>
                           <th style={{ padding: '12px 20px' }}>{t.inventory.itemName}</th>
-                          <th style={{ padding: '12px 20px' }}>{t.inventory.inStock}</th>
-                          <th style={{ padding: '12px 20px' }}>Status</th>
+                          {canManageStock ? (
+                            <>
+                              <th style={{ padding: '12px 20px' }}>{t.inventory.inStock}</th>
+                              <th style={{ padding: '12px 20px' }}>Status</th>
+                            </>
+                          ) : (
+                            <th style={{ padding: '12px 20px' }}>{t.inventory.availability || 'Availability'}</th>
+                          )}
                           <th style={{ padding: '12px 20px' }}>{t.inventory.location}</th>
-                          {canManageStock && <th style={{ padding: '12px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Actions'}</th>}
+                          <th style={{ padding: '12px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Actions'}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -932,7 +1162,34 @@ export const InventoryManager = () => {
                                   </div>
 
                                   <div>
-                                    <div style={{ color: '#fff', fontSize: '13px' }}>{item.name}</div>
+                                    <div style={{ color: '#fff', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                      <span>{item.name}</span>
+                                      {item.isReturnable || item.category === 'stationary_loan' ? (
+                                        <span style={{
+                                          fontSize: '10px',
+                                          fontWeight: '700',
+                                          padding: '1px 6px',
+                                          borderRadius: '4px',
+                                          background: 'rgba(249, 115, 22, 0.15)',
+                                          color: '#fb923c',
+                                          border: '1px solid rgba(249, 115, 22, 0.3)'
+                                        }}>
+                                          ⏱️ {lang === 'ru' ? 'На 1-2 урока (С возвратом)' : lang === 'kk' ? '1-2 сабаққа (Қайтарылады)' : 'Loan (1-2 Lessons)'}
+                                        </span>
+                                      ) : (
+                                        <span style={{
+                                          fontSize: '10px',
+                                          fontWeight: '600',
+                                          padding: '1px 6px',
+                                          borderRadius: '4px',
+                                          background: 'rgba(59, 130, 246, 0.12)',
+                                          color: '#60a5fa',
+                                          border: '1px solid rgba(59, 130, 246, 0.25)'
+                                        }}>
+                                          ✏️ {lang === 'ru' ? 'Расходный' : lang === 'kk' ? 'Шығыс' : 'Consumable'}
+                                        </span>
+                                      )}
+                                    </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                                       {hasPhotos && (
                                         <span style={{ fontSize: '10px', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '2px' }}>
@@ -944,23 +1201,60 @@ export const InventoryManager = () => {
                                 </div>
                               </td>
 
-                              <td style={{ padding: '14px 20px', fontWeight: '700', fontSize: '14px' }}>
-                                {item.quantity} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{item.unit}</span>
-                              </td>
+                              {canManageStock ? (
+                                <>
+                                  <td style={{ padding: '14px 20px', fontWeight: '700', fontSize: '14px' }}>
+                                    {item.quantity} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{item.unit}</span>
+                                  </td>
 
-                              <td style={{ padding: '14px 20px' }}>
-                                {getStockStatusBadge(item.quantity, item.minLevel)}
-                              </td>
+                                  <td style={{ padding: '14px 20px' }}>
+                                    {getStockStatusBadge(item.quantity, item.minLevel)}
+                                  </td>
+                                </>
+                              ) : (
+                                <td style={{ padding: '14px 20px' }}>
+                                  {item.quantity > 0 ? (
+                                    <span style={{ 
+                                      background: 'rgba(16, 185, 129, 0.15)', 
+                                      color: '#34d399', 
+                                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                                      padding: '3px 8px', 
+                                      borderRadius: '12px', 
+                                      fontSize: '11px', 
+                                      fontWeight: '700',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '4px'
+                                    }}>
+                                      ✓ {t.inventory.available || (lang === 'ru' ? 'В наличии' : 'In Stock')}
+                                    </span>
+                                  ) : (
+                                    <span style={{ 
+                                      background: 'rgba(239, 68, 68, 0.15)', 
+                                      color: '#f87171', 
+                                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                                      padding: '3px 8px', 
+                                      borderRadius: '12px', 
+                                      fontSize: '11px', 
+                                      fontWeight: '700',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '4px'
+                                    }}>
+                                      ● {t.inventory.statusOut || (lang === 'ru' ? 'Под заказ' : 'Out of stock')}
+                                    </span>
+                                  )}
+                                </td>
+                              )}
 
                               <td style={{ padding: '14px 20px', color: 'var(--text-muted)', fontSize: '12px' }}>
                                 <MapPin size={13} style={{ verticalAlign: 'middle', marginRight: '4px', color: cat.color }} />
                                 {item.location || cat.defaultLocation}
                               </td>
 
-                              {canManageStock && (
-                                <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                              <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                                {canManageStock ? (
                                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                                    
                                     {/* Upload photo button for this specific item */}
                                     <button
                                       onClick={() => handleTriggerAddPhotoToExisting(item, false)}
@@ -1028,10 +1322,32 @@ export const InventoryManager = () => {
                                         +
                                       </button>
                                     </div>
-
                                   </div>
-                                </td>
-                              )}
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => onOpenNewTicket && onOpenNewTicket('storage', item.name)}
+                                    style={{
+                                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                                      border: 'none',
+                                      color: '#fff',
+                                      padding: '6px 14px',
+                                      borderRadius: '6px',
+                                      fontSize: '11px',
+                                      fontWeight: '700',
+                                      cursor: 'pointer',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                      boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)',
+                                      transition: 'all 0.15s ease'
+                                    }}
+                                  >
+                                    <Package size={13} />
+                                    <span>{t.inventory?.requestItem || (lang === 'ru' ? 'Заказать в кабинет' : 'Request Item')}</span>
+                                  </button>
+                                )}
+                              </td>
                             </tr>
                           );
                         })}
@@ -1052,10 +1368,16 @@ export const InventoryManager = () => {
               <tr style={{ background: 'rgba(15, 23, 42, 0.6)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>
                 <th style={{ padding: '16px 20px' }}>{t.inventory.itemName}</th>
                 <th style={{ padding: '16px 20px' }}>{t.inventory.category}</th>
-                <th style={{ padding: '16px 20px' }}>{t.inventory.inStock}</th>
-                <th style={{ padding: '16px 20px' }}>Status</th>
+                {canManageStock ? (
+                  <>
+                    <th style={{ padding: '16px 20px' }}>{t.inventory.inStock}</th>
+                    <th style={{ padding: '16px 20px' }}>Status</th>
+                  </>
+                ) : (
+                  <th style={{ padding: '16px 20px' }}>{t.inventory.availability || 'Availability'}</th>
+                )}
                 <th style={{ padding: '16px 20px' }}>{t.inventory.location}</th>
-                {canManageStock && <th style={{ padding: '16px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Actions'}</th>}
+                <th style={{ padding: '16px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Actions'}</th>
               </tr>
             </thead>
             <tbody>
@@ -1111,7 +1433,34 @@ export const InventoryManager = () => {
                             )}
                           </div>
                           <div>
-                            <div style={{ color: '#fff' }}>{item.name}</div>
+                            <div style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span>{item.name}</span>
+                              {item.isReturnable || item.category === 'stationary_loan' ? (
+                                <span style={{
+                                  fontSize: '10px',
+                                  fontWeight: '700',
+                                  padding: '1px 6px',
+                                  borderRadius: '4px',
+                                  background: 'rgba(249, 115, 22, 0.15)',
+                                  color: '#fb923c',
+                                  border: '1px solid rgba(249, 115, 22, 0.3)'
+                                }}>
+                                  ⏱️ {lang === 'ru' ? 'На 1-2 урока' : lang === 'kk' ? '1-2 сабаққа' : 'Loan (1-2 Lessons)'}
+                                </span>
+                              ) : (
+                                <span style={{
+                                  fontSize: '10px',
+                                  fontWeight: '600',
+                                  padding: '1px 6px',
+                                  borderRadius: '4px',
+                                  background: 'rgba(59, 130, 246, 0.12)',
+                                  color: '#60a5fa',
+                                  border: '1px solid rgba(59, 130, 246, 0.25)'
+                                }}>
+                                  ✏️ {lang === 'ru' ? 'Расходный' : lang === 'kk' ? 'Шығыс' : 'Consumable'}
+                                </span>
+                              )}
+                            </div>
                             {hasPhotos && (
                               <div style={{ fontSize: '10px', color: '#38bdf8' }}>
                                 📷 {item.photos.length} {lang === 'ru' ? 'фото в БД' : 'photo in DB'}
@@ -1139,21 +1488,59 @@ export const InventoryManager = () => {
                         </span>
                       </td>
 
-                      <td style={{ padding: '16px 20px', fontWeight: '700', fontSize: '15px' }}>
-                        {item.quantity} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{item.unit}</span>
-                      </td>
+                      {canManageStock ? (
+                        <>
+                          <td style={{ padding: '16px 20px', fontWeight: '700', fontSize: '15px' }}>
+                            {item.quantity} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{item.unit}</span>
+                          </td>
 
-                      <td style={{ padding: '16px 20px' }}>
-                        {getStockStatusBadge(item.quantity, item.minLevel)}
-                      </td>
+                          <td style={{ padding: '16px 20px' }}>
+                            {getStockStatusBadge(item.quantity, item.minLevel)}
+                          </td>
+                        </>
+                      ) : (
+                        <td style={{ padding: '16px 20px' }}>
+                          {item.quantity > 0 ? (
+                            <span style={{ 
+                              background: 'rgba(16, 185, 129, 0.15)', 
+                              color: '#34d399', 
+                              border: '1px solid rgba(16, 185, 129, 0.3)',
+                              padding: '3px 8px', 
+                              borderRadius: '12px', 
+                              fontSize: '11px', 
+                              fontWeight: '700',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              ✓ {t.inventory.available || (lang === 'ru' ? 'В наличии' : 'In Stock')}
+                            </span>
+                          ) : (
+                            <span style={{ 
+                              background: 'rgba(239, 68, 68, 0.15)', 
+                              color: '#f87171', 
+                              border: '1px solid rgba(239, 68, 68, 0.3)',
+                              padding: '3px 8px', 
+                              borderRadius: '12px', 
+                              fontSize: '11px', 
+                              fontWeight: '700',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              ● {t.inventory.statusOut || (lang === 'ru' ? 'Под заказ' : 'Out of stock')}
+                            </span>
+                          )}
+                        </td>
+                      )}
 
                       <td style={{ padding: '16px 20px', color: 'var(--text-muted)', fontSize: '13px' }}>
                         <MapPin size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
                         {item.location}
                       </td>
 
-                      {canManageStock && (
-                        <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                      <td style={{ padding: '16px 20px', textAlign: 'right' }}>
+                        {canManageStock ? (
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                             <button
                               onClick={() => handleTriggerAddPhotoToExisting(item, false)}
@@ -1191,8 +1578,31 @@ export const InventoryManager = () => {
                               </button>
                             </div>
                           </div>
-                        </td>
-                      )}
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => onOpenNewTicket && onOpenNewTicket('storage', item.name)}
+                            style={{
+                              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                              border: 'none',
+                              color: '#fff',
+                              padding: '6px 14px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <Package size={13} />
+                            <span>{t.inventory?.requestItem || (lang === 'ru' ? 'Заказать в кабинет' : 'Request Item')}</span>
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })
@@ -1262,6 +1672,66 @@ export const InventoryManager = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* Warehouse Issue & Return Policy Selection */}
+              <div>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '6px', fontWeight: '600' }}>
+                  {t.tickets?.itemType || (lang === 'ru' ? 'Политика выдачи и возврата' : 'Issue & Return Policy')} <span style={{ color: 'var(--danger)' }}>*</span>
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setNewItem(prev => ({ ...prev, isReturnable: false }))}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: !newItem.isReturnable ? '2px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                      background: !newItem.isReturnable ? 'rgba(59, 130, 246, 0.15)' : 'rgba(15, 23, 42, 0.6)',
+                      color: !newItem.isReturnable ? '#fff' : 'var(--text-muted)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ fontWeight: '700', fontSize: '12px', color: !newItem.isReturnable ? '#60a5fa' : '#cbd5e1', marginBottom: '2px' }}>
+                      ✏️ {lang === 'ru' ? 'Расходные материалы' : lang === 'kk' ? 'Шығыс материалдары' : 'Consumable Supply'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+                      {lang === 'ru' 
+                        ? 'Выдаются учителю насовсем (бумага, маркеры, ручки). Возврат на склад не требуется.' 
+                        : lang === 'kk' 
+                        ? 'Мұғалімге біржола беріледі (қағаз, қалам, маркер). Қайтарылмайды.'
+                        : 'Given permanently to teacher (paper, markers, pens). No return required.'}
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewItem(prev => ({ ...prev, isReturnable: true }))}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: newItem.isReturnable ? '2px solid #f97316' : '1px solid rgba(255, 255, 255, 0.1)',
+                      background: newItem.isReturnable ? 'rgba(249, 115, 22, 0.18)' : 'rgba(15, 23, 42, 0.6)',
+                      color: newItem.isReturnable ? '#fff' : 'var(--text-muted)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ fontWeight: '700', fontSize: '12px', color: newItem.isReturnable ? '#f97316' : '#cbd5e1', marginBottom: '2px' }}>
+                      ⏱️ {lang === 'ru' ? 'Временная выдача (1-2 урока)' : lang === 'kk' ? '1-2 сабаққа уақытша' : 'Temporary Lesson Loan'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: '1.3' }}>
+                      {lang === 'ru' 
+                        ? 'Выдается на 1-2 урока. Учитель обязан вернуть, завсклад подтверждает возврат.' 
+                        : lang === 'kk' 
+                        ? '1-2 сабаққа беріледі. Мұғалім қайтаруға міндетті, қоймашы қабылдайды.'
+                        : 'Issued for 1-2 lessons. Teacher must return, storage manager confirms.'}
+                    </div>
+                  </button>
+                </div>
               </div>
 
               {/* Item Name */}

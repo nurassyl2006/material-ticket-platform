@@ -1,8 +1,40 @@
 /**
  * Device Notification Suite
  * Powers Native OS Push Notifications, Device Vibration, and Web Audio Chimes
- * for EduOps School & Campus Operations.
+ * for EduOps School & Campus Operations across Desktop (Chrome, Edge, Safari, Firefox)
+ * and Mobile Devices (Android Chrome, iOS PWA / WebPush).
  */
+
+let sharedAudioCtx = null;
+
+// User gesture unlocker for Web Audio API (ensures audio plays smoothly even on locked-down mobile browsers)
+export function unlockAudioContext() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new AudioContext();
+    }
+    if (sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume().catch(() => {});
+    }
+  } catch (e) {
+    // restricted until gesture
+  }
+}
+
+// Auto-bind unlock listener on first user interaction with the window
+if (typeof window !== 'undefined') {
+  const handleInteraction = () => {
+    unlockAudioContext();
+    window.removeEventListener('pointerdown', handleInteraction);
+    window.removeEventListener('touchstart', handleInteraction);
+    window.removeEventListener('keydown', handleInteraction);
+  };
+  window.addEventListener('pointerdown', handleInteraction, { passive: true });
+  window.addEventListener('touchstart', handleInteraction, { passive: true });
+  window.addEventListener('keydown', handleInteraction, { passive: true });
+}
 
 // Web Audio synthesizer for pleasant alert chimes (zero dependencies, 0ms latency)
 export function playNotificationSound() {
@@ -12,7 +44,11 @@ export function playNotificationSound() {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
-    const ctx = new AudioContext();
+
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new AudioContext();
+    }
+    const ctx = sharedAudioCtx;
 
     if (ctx.state === 'suspended') {
       ctx.resume().catch(() => {});
@@ -25,7 +61,7 @@ export function playNotificationSound() {
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(587.33, now);
-    gain1.gain.setValueAtTime(0.2, now);
+    gain1.gain.setValueAtTime(0.25, now);
     gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
@@ -36,19 +72,19 @@ export function playNotificationSound() {
     const gain2 = ctx.createGain();
     osc2.type = 'sine';
     osc2.frequency.setValueAtTime(880, now + 0.12);
-    gain2.gain.setValueAtTime(0.25, now + 0.12);
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    gain2.gain.setValueAtTime(0.3, now + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
     osc2.connect(gain2);
     gain2.connect(ctx.destination);
     osc2.start(now + 0.12);
-    osc2.stop(now + 0.6);
+    osc2.stop(now + 0.65);
   } catch (e) {
     // Audio context may be restricted before initial user gesture
   }
 }
 
 // Device vibration for mobile phones (Android / Chrome)
-export function vibrateDevice(pattern = [200, 100, 200]) {
+export function vibrateDevice(pattern = [300, 150, 300, 150, 300]) {
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try {
       navigator.vibrate(pattern);
@@ -67,12 +103,43 @@ export function getNotificationPermission() {
   return Notification.permission;
 }
 
+// Helper: Ensure service worker registration is active & ready
+export async function ensureServiceWorkerReady() {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+    return null;
+  }
+  try {
+    // Wait for ready registration with a 2-second timeout
+    const readyPromise = navigator.serviceWorker.ready;
+    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 2000));
+    let reg = await Promise.race([readyPromise, timeoutPromise]);
+    if (reg) return reg;
+
+    reg = await navigator.serviceWorker.getRegistration();
+    if (reg) return reg;
+
+    reg = await navigator.serviceWorker.register('/sw.js');
+    return reg;
+  } catch (err) {
+    console.warn('[EduOps] Service Worker readiness check warning:', err);
+    return null;
+  }
+}
+
 // Request permission from the user's browser / OS
 export async function requestDeviceNotificationPermission() {
+  unlockAudioContext();
   if (!isNotificationSupported()) return 'unsupported';
+
   try {
     const permission = await Notification.requestPermission();
     localStorage.setItem('app_notification_permission', permission);
+
+    // Warm up service worker registration when permission is granted
+    if (permission === 'granted') {
+      ensureServiceWorkerReady().catch(() => {});
+    }
+
     return permission;
   } catch (e) {
     return 'denied';
@@ -84,8 +151,8 @@ export async function sendDeviceNotification({ title, message, ticketId, tag }) 
   // 1. Play audio chime on device speakers
   playNotificationSound();
 
-  // 2. Vibrate mobile device
-  vibrateDevice([200, 100, 200]);
+  // 2. Vibrate mobile device (triple pulse)
+  vibrateDevice([300, 150, 300, 150, 300]);
 
   // 3. Dispatch an in-app event so on-screen toast popup shows immediately
   if (typeof window !== 'undefined') {
@@ -102,40 +169,86 @@ export async function sendDeviceNotification({ title, message, ticketId, tag }) 
 
   const notifTag = tag || ticketId || `eduops-${Date.now()}`;
   const notifOptions = {
-    body: message || 'New update in EduOps Platform',
+    body: message || 'New operational update in EduOps Platform',
     icon: '/favicon.svg',
     badge: '/favicon.svg',
     tag: notifTag,
     renotify: true,
-    data: { ticketId, url: window.location.origin }
+    requireInteraction: false,
+    silent: false,
+    vibrate: [300, 150, 300],
+    data: {
+      ticketId,
+      url: typeof window !== 'undefined' ? window.location.origin : '/'
+    }
   };
 
-  // Try via Service Worker first if available
-  if ('serviceWorker' in navigator) {
+  let displayed = false;
+
+  // Approach A: Service Worker showNotification
+  // REQUIRED for mobile Android Chrome (where `new Notification()` throws Illegal Constructor error)
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
     try {
-      const reg = await navigator.serviceWorker.getRegistration();
-      if (reg && reg.showNotification) {
+      const reg = await ensureServiceWorkerReady();
+      if (reg && typeof reg.showNotification === 'function') {
         await reg.showNotification(title, notifOptions);
-        return true;
+        displayed = true;
       }
-    } catch (e) {
-      // fallback to standard Notification
+    } catch (swErr) {
+      console.warn('[EduOps] SW showNotification error:', swErr);
+    }
+
+    // Also bridge via postMessage to service worker controller if available
+    try {
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SHOW_NOTIFICATION',
+          title,
+          options: notifOptions
+        });
+        displayed = true;
+      }
+    } catch (msgErr) {}
+  }
+
+  // Approach B: Standard Web Notification fallback (desktop Chrome / Firefox / Safari macOS)
+  if (!displayed && typeof window !== 'undefined' && 'Notification' in window) {
+    try {
+      const notification = new Notification(title, notifOptions);
+      notification.onclick = function () {
+        window.focus();
+        if (ticketId && typeof window.__onSelectTicketGlobal === 'function') {
+          window.__onSelectTicketGlobal(ticketId);
+        }
+        this.close();
+      };
+      displayed = true;
+    } catch (constructorErr) {
+      // Android Chrome throws: Failed to construct 'Notification': Illegal constructor.
+      // Handled via Service Worker above.
     }
   }
 
-  // Standard Web Notification fallback
-  try {
-    const notification = new Notification(title, notifOptions);
-    notification.onclick = function () {
-      window.focus();
-      if (ticketId && typeof window.__onSelectTicketGlobal === 'function') {
-        window.__onSelectTicketGlobal(ticketId);
-      }
-      this.close();
-    };
-    return true;
-  } catch (e) {
-    return false;
-  }
+  return displayed;
 }
 
+// Complete diagnostic & test alert runner for the user's current device
+export async function sendTestDeviceNotification() {
+  unlockAudioContext();
+  const supported = isNotificationSupported();
+  const permission = getNotificationPermission();
+  const isSecure = typeof window !== 'undefined' ? Boolean(window.isSecureContext) : false;
+
+  const delivered = await sendDeviceNotification({
+    title: '🔔 EduOps Test Alert',
+    message: 'Sound, vibration and device alerts are working directly on this device!',
+    tag: `test-alert-${Date.now()}`
+  });
+
+  return {
+    supported,
+    permission,
+    isSecure,
+    delivered
+  };
+}

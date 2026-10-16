@@ -1,5 +1,5 @@
 export const mockInventory = [
-  // --- Stationary (Канцелярия и бумага) ---
+  // --- Stationary (Канцелярия - постоянная выдача учителям / расходные) ---
   {
     id: "inv-1",
     name: "Whiteboard Markers Set (Red/Blue/Black)",
@@ -7,7 +7,8 @@ export const mockInventory = [
     quantity: 45,
     unit: "box",
     minLevel: 10,
-    location: "Storage Cabinet 102 - Shelf A"
+    location: "Storage Cabinet 102 - Shelf A",
+    isReturnable: false
   },
   {
     id: "inv-2",
@@ -16,7 +17,8 @@ export const mockInventory = [
     quantity: 18,
     unit: "pack",
     minLevel: 25,
-    location: "Storage Cabinet 102 - Shelf B"
+    location: "Storage Cabinet 102 - Shelf B",
+    isReturnable: false
   },
   {
     id: "inv-s3",
@@ -25,16 +27,8 @@ export const mockInventory = [
     quantity: 35,
     unit: "pack",
     minLevel: 10,
-    location: "Storage Cabinet 102 - Shelf C"
-  },
-  {
-    id: "inv-s4",
-    name: "Heavy-Duty Desktop Stapler & 24/6 Staples Kit",
-    category: "stationary",
-    quantity: 14,
-    unit: "set",
-    minLevel: 4,
-    location: "Storage Cabinet 103 - Shelf A"
+    location: "Storage Cabinet 102 - Shelf C",
+    isReturnable: false
   },
   {
     id: "inv-s5",
@@ -43,7 +37,70 @@ export const mockInventory = [
     quantity: 60,
     unit: "pad",
     minLevel: 15,
-    location: "Storage Cabinet 103 - Shelf B"
+    location: "Storage Cabinet 103 - Shelf B",
+    isReturnable: false
+  },
+
+  // --- Temporary Lesson Equipment & Tools (Временная выдача на 1-2 урока / С возвратом) ---
+  {
+    id: "inv-s4",
+    name: "Heavy-Duty Desktop Stapler & 24/6 Staples Kit",
+    category: "stationary_loan",
+    quantity: 14,
+    unit: "set",
+    minLevel: 4,
+    location: "Storage Cabinet 103 - Shelf A",
+    isReturnable: true
+  },
+  {
+    id: "inv-s-clicker",
+    name: "Wireless Presentation Clicker & Laser Pointer",
+    category: "stationary_loan",
+    quantity: 8,
+    unit: "pcs",
+    minLevel: 2,
+    location: "Storage Cabinet 103 - Shelf A",
+    isReturnable: true
+  },
+  {
+    id: "inv-s-calc",
+    name: "Scientific Calculators Class Set (Casio fx-82)",
+    category: "stationary_loan",
+    quantity: 30,
+    unit: "pcs",
+    minLevel: 5,
+    location: "Storage Cabinet 103 - Shelf C",
+    isReturnable: true
+  },
+  {
+    id: "inv-s-punch",
+    name: "Heavy-Duty 2-Hole Desktop Paper Puncher",
+    category: "stationary_loan",
+    quantity: 10,
+    unit: "pcs",
+    minLevel: 2,
+    location: "Storage Cabinet 103 - Shelf A",
+    isReturnable: true
+  },
+  {
+    id: "inv-s-timer",
+    name: "Classroom Digital Lesson Timer & Stopwatch",
+    category: "stationary_loan",
+    quantity: 12,
+    unit: "pcs",
+    minLevel: 3,
+    location: "Storage Cabinet 103 - Shelf B",
+    isReturnable: true
+  },
+  {
+    id: "inv-s-globe",
+    name: "Demonstration Magnetic Globe & Map Pointer",
+    category: "stationary_loan",
+    quantity: 4,
+    unit: "set",
+    minLevel: 1,
+    location: "Storage Cabinet 103 - Shelf D",
+    isReturnable: true
   },
 
   // --- Marketing (Маркетинг, PR и полиграфия) ---

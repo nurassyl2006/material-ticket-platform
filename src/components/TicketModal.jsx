@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useApp } from '../AppContext';
 import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, Sparkles, User, Users, Package, Search, Minus, Plus, Check, ShoppingBag, AlertCircle } from 'lucide-react';
 import { CampusLocationSelector } from './CampusLocationSelector';
-import { DEPARTMENTS, resolveDepartment, getSubcategories } from '../departments';
+import { DEPARTMENTS, resolveDepartment, getSubcategories, isReturnableSubcategory } from '../departments';
 import { translateText } from '../services/translator';
 import { STORAGE_CATEGORIES, getCategoryMeta, getCategoryLabel } from '../storageCategories';
 import { compressImageFile } from '../utils/imageCompressor';
 
-export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk' }) => {
+export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk', initialItem = '' }) => {
   const { t, addTicket, inventory, currentUser, lang, role, isAuthenticated } = useApp();
 
   const [department, setDepartment] = useState(() => resolveDepartment(initialDepartment).id);
@@ -30,6 +30,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   const [photos, setPhotos] = useState([]);
   const [storageSearchTerm, setStorageSearchTerm] = useState('');
   const [storageSelectedCategory, setStorageSelectedCategory] = useState('all');
+  const [isReturnableOverride, setIsReturnableOverride] = useState(null);
   const [translatedPreview, setTranslatedPreview] = useState(null);
   const [isTranslatingPreview, setIsTranslatingPreview] = useState(false);
   const fileInputRef = useRef(null);
@@ -42,19 +43,21 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
       setDepartment(resolved.id);
       setFormData(prev => ({
         ...prev,
-        subcategory: '',
+        itemTitle: initialItem || prev.itemTitle,
+        subcategory: initialItem || '',
         roomNumber: prev.roomNumber && prev.roomNumber !== 'Room 101'
           ? prev.roomNumber
           : (resolved.id === 'cleaning' ? 'Block A • 1st Floor • A-1-10 (Toilets & Stairs)' : 'Block A • 1st Floor • A-1-2 (Year 1A)')
       }));
     }
-  }, [isOpen, initialDepartment]);
+  }, [isOpen, initialDepartment, initialItem]);
 
   const activeDeptObj = resolveDepartment(department);
   const departmentList = Object.values(DEPARTMENTS);
 
-  // Catalog & Inventory stock visibility: only storage_manager, engineer, and school leadership
-  const canAccessCatalog = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role));
+  // Storage Manager, Engineer, and Leadership can view/manage live numerical stock counts
+  const canManageStock = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role));
+  const isTeacher = !canManageStock;
 
   const handleSelectSubcategory = (subcat) => {
     setFormData(prev => {
@@ -152,6 +155,15 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     );
   }, [inventory, formData.itemTitle]);
 
+  const isReturnable = useMemo(() => {
+    if (isReturnableOverride !== null) return isReturnableOverride;
+    return Boolean(
+      formData.category === 'stationary_loan' ||
+      isReturnableSubcategory(formData.subcategory || formData.itemTitle) ||
+      (matchedStockItem && matchedStockItem.isReturnable)
+    );
+  }, [isReturnableOverride, formData.category, formData.subcategory, formData.itemTitle, matchedStockItem]);
+
   // ── Photo helpers ──────────────────────────────────────────────────────────
   const processFiles = async (files) => {
     const remaining = 5 - photos.length;
@@ -205,12 +217,17 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
       ...formData,
       itemTitle: formData.itemTitle.trim(),
       subcategory: formData.subcategory || '',
+      category: isReturnable ? 'stationary_loan' : (formData.category || 'other'),
+      isReturnable,
       department,
       roomNumber: targetRoom,
       moveDetails,
       photos,
       senderName: author,
-      senderPhone: authorPhone
+      senderPhone: authorPhone,
+      description: isReturnable && formData.loanDuration
+        ? `${formData.description ? `${formData.description}\n` : ''}[${lang === 'ru' ? 'Срок пользования' : lang === 'kk' ? 'Қолдану мерзімі' : 'Loan Duration'}: ${formData.loanDuration === '1_lesson' ? (t.tickets?.loan1Lesson || '1 Lesson (45 min)') : formData.loanDuration === '2_lessons' ? (t.tickets?.loan2Lessons || '2 Lessons (1.5 hours)') : (t.tickets?.loanFullDay || 'Full School Day')}]`
+        : formData.description
     });
 
     onClose();
@@ -464,8 +481,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
           </div>
         )}
 
-        {/* Storage Catalog & Live Warehouse Inventory Picker - Visible only to Storage Manager, Engineer, and School Admin */}
-        {department === 'storage' && canAccessCatalog && (
+        {/* Storage Catalog & Live Warehouse Inventory Picker - Available to all with role-based stock numbers */}
+        {department === 'storage' && (
           <div style={{
             marginBottom: '16px',
             background: 'rgba(245, 158, 11, 0.07)',
@@ -477,12 +494,21 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24', fontSize: '12px', fontWeight: '700' }}>
                 <Package size={16} />
                 <span>
-                  {lang === 'ru' ? 'Каталог школьного склада (в наличии):' : lang === 'kk' ? 'Мектеп қоймасының каталогы (қолда бар):' : 'School Warehouse Inventory (In Stock):'}
+                  {canManageStock 
+                    ? (lang === 'ru' ? 'Каталог школьного склада (в наличии):' : lang === 'kk' ? 'Мектеп қоймасының каталогы (қолда бар):' : 'School Warehouse Inventory (In Stock):')
+                    : (lang === 'ru' ? 'Каталог канцелярии и школьных материалов:' : lang === 'kk' ? 'Кеңсе тауарлары мен сабақ материалдары:' : 'Stationery & Lesson Supplies Catalog:')
+                  }
                 </span>
               </div>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                {(inventory || []).length} {lang === 'ru' ? 'позиций на складе' : lang === 'kk' ? 'қоймадағы заттар' : 'items cataloged'}
-              </span>
+              {canManageStock ? (
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                  {(inventory || []).length} {lang === 'ru' ? 'позиций на складе' : lang === 'kk' ? 'қоймадағы заттар' : 'items cataloged'}
+                </span>
+              ) : (
+                <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  {lang === 'ru' ? 'Нажмите на нужный предмет' : lang === 'kk' ? 'Таңдау үшін затты басыңыз' : 'Click item to select'}
+                </span>
+              )}
             </div>
 
             {/* Quick Search in Warehouse Catalog */}
@@ -539,7 +565,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   color: storageSelectedCategory === 'all' ? '#0f172a' : '#cbd5e1'
                 }}
               >
-                {t.inventory?.allCategories || 'All'} ({(inventory || []).length})
+                {t.inventory?.allCategories || 'All'} {canManageStock ? `(${(inventory || []).length})` : ''}
               </button>
               {STORAGE_CATEGORIES.map(cat => {
                 const count = (inventory || []).filter(i => (i.category || 'other') === cat.id).length;
@@ -562,7 +588,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                       color: isCatActive ? '#fff' : '#cbd5e1'
                     }}
                   >
-                    {cat.icon} {getCategoryLabel(cat.id, lang, true)} ({count})
+                    {cat.icon} {getCategoryLabel(cat.id, lang, true)} {canManageStock ? `(${count})` : ''}
                   </button>
                 );
               })}
@@ -616,20 +642,45 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
-                      <span style={{
-                        padding: '1px 6px',
-                        borderRadius: '4px',
-                        fontWeight: '700',
-                        background: isOut ? 'rgba(239, 68, 68, 0.2)' : isLow ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                        color: isOut ? '#f87171' : isLow ? '#fbbf24' : '#34d399'
-                      }}>
-                        {isOut 
-                          ? (lang === 'ru' ? 'Под заказ' : 'Out of stock')
-                          : `${item.quantity} ${item.unit}`}
-                      </span>
-                      {item.location && (
+                      {canManageStock ? (
+                        <span style={{
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          fontWeight: '700',
+                          background: isOut ? 'rgba(239, 68, 68, 0.2)' : isLow ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                          color: isOut ? '#f87171' : isLow ? '#fbbf24' : '#34d399'
+                        }}>
+                          {isOut 
+                            ? (lang === 'ru' ? 'Под заказ' : 'Out of stock')
+                            : `${item.quantity} ${item.unit}`}
+                        </span>
+                      ) : (
+                        <span style={{
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          fontWeight: '700',
+                          background: isOut ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                          color: isOut ? '#f87171' : '#34d399'
+                        }}>
+                          {isOut 
+                            ? (lang === 'ru' ? '● Под заказ' : lang === 'kk' ? '● Тапсырыспен' : '● Out of stock')
+                            : (lang === 'ru' ? '✓ В наличии' : lang === 'kk' ? '✓ Қолда бар' : '✓ In Stock')}
+                        </span>
+                      )}
+                      {item.location && canManageStock && (
                         <span style={{ color: 'var(--text-muted)', fontSize: '9px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>
                           {item.location.split('-')[0]}
+                        </span>
+                      )}
+                      {!canManageStock && (
+                        <span style={{
+                          fontSize: '9px',
+                          fontWeight: '700',
+                          color: (item.isReturnable || item.category === 'stationary_loan') ? '#fb923c' : '#94a3b8'
+                        }}>
+                          {(item.isReturnable || item.category === 'stationary_loan') 
+                            ? (lang === 'ru' ? '⏱️ 1-2 урока' : lang === 'kk' ? '⏱️ 1-2 сабақ' : '⏱️ 1-2 Lessons') 
+                            : (lang === 'ru' ? '✏️ Насовсем' : lang === 'kk' ? '✏️ Берілетін' : '✏️ Consumable')}
                         </span>
                       )}
                     </div>
@@ -792,28 +843,34 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                       <Plus size={15} />
                     </button>
 
-                    {/* Quick increment pills */}
-                    <div style={{ display: 'flex', gap: '4px', marginLeft: '4px' }}>
-                      {[2, 5, 10].map(amt => (
-                        <button
-                          key={amt}
-                          type="button"
-                          onClick={() => setFormData(p => ({ ...p, quantity: amt }))}
-                          style={{
-                            padding: '4px 8px',
-                            borderRadius: '6px',
-                            background: formData.quantity === amt ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                            border: formData.quantity === amt ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.1)',
-                            color: formData.quantity === amt ? '#fbbf24' : '#94a3b8',
-                            fontSize: '11px',
-                            fontWeight: '600',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {amt}
-                        </button>
-                      ))}
-                    </div>
+                    {/* Quick increment pills - shown to warehouse managers; hidden for teachers so they only order what they need */}
+                    {canManageStock ? (
+                      <div style={{ display: 'flex', gap: '4px', marginLeft: '4px' }}>
+                        {[2, 5, 10].map(amt => (
+                          <button
+                            key={amt}
+                            type="button"
+                            onClick={() => setFormData(p => ({ ...p, quantity: amt }))}
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              background: formData.quantity === amt ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+                              border: formData.quantity === amt ? '1px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.1)',
+                              color: formData.quantity === amt ? '#fbbf24' : '#94a3b8',
+                              fontSize: '11px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {amt}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ marginLeft: '8px', fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span>💡 {t.inventory?.orderOnlyNeeded || (lang === 'ru' ? 'Заказывайте только точное количество для уроков' : 'Order exact amount needed')}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -893,6 +950,99 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   )}
                 </div>
               )}
+
+              {/* Return Policy Selection & Temporary Loan Banner */}
+              <div style={{ marginTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    {t.tickets?.itemType || 'Warehouse Issue Policy'}
+                  </label>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setIsReturnableOverride(false)}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: !isReturnable ? '1.5px solid #3b82f6' : '1px solid rgba(255, 255, 255, 0.1)',
+                        background: !isReturnable ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                        color: !isReturnable ? '#60a5fa' : '#94a3b8',
+                        fontSize: '11px',
+                        fontWeight: !isReturnable ? '700' : '500',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ✏️ {lang === 'ru' ? 'Выдача без возврата' : lang === 'kk' ? 'Қайтарымсыз' : 'Consumable'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsReturnableOverride(true)}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        border: isReturnable ? '1.5px solid #f97316' : '1px solid rgba(255, 255, 255, 0.1)',
+                        background: isReturnable ? 'rgba(249, 115, 22, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                        color: isReturnable ? '#fb923c' : '#94a3b8',
+                        fontSize: '11px',
+                        fontWeight: isReturnable ? '700' : '500',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⏱️ {lang === 'ru' ? 'На 1-2 урока (С возвратом)' : lang === 'kk' ? '1-2 сабаққа (Қайтару)' : 'On Loan (1-2 Lessons)'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Banner when returnable item is selected */}
+                {isReturnable ? (
+                  <div style={{
+                    background: 'rgba(249, 115, 22, 0.12)',
+                    border: '1px solid rgba(249, 115, 22, 0.35)',
+                    borderRadius: '8px',
+                    padding: '10px 12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#fb923c', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <span>⏱️</span>
+                        <span>{t.tickets?.loanNoticeShort || 'Temporary Lesson Loan (Returnable)'}</span>
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '10px', color: '#fed7aa', fontWeight: '600' }}>
+                          {t.tickets?.loanDuration || 'Duration'}:
+                        </span>
+                        <select
+                          value={formData.loanDuration || '1_lesson'}
+                          onChange={e => setFormData(prev => ({ ...prev, loanDuration: e.target.value }))}
+                          style={{
+                            background: '#0f172a',
+                            border: '1px solid rgba(249, 115, 22, 0.4)',
+                            borderRadius: '4px',
+                            padding: '2px 6px',
+                            color: '#fff',
+                            fontSize: '11px',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <option value="1_lesson">{t.tickets?.loan1Lesson || '1 Lesson (45 min)'}</option>
+                          <option value="2_lessons">{t.tickets?.loan2Lessons || '2 Lessons (1.5 hours)'}</option>
+                          <option value="full_day">{t.tickets?.loanFullDay || 'Full School Day'}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#e2e8f0', lineHeight: 1.4 }}>
+                      {t.tickets?.loanNotice || 'This item is issued temporarily for classroom use and must be returned to the warehouse manager after your lesson.'}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.35 }}>
+                    {t.tickets?.consumableNotice || '✏️ Consumable supply: issued permanently to the teacher, no return to warehouse required.'}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

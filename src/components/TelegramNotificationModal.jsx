@@ -52,9 +52,15 @@ export const TelegramNotificationModal = ({ isOpen, onClose, lang = 'en' }) => {
     try {
       setTesting(true);
       setStatusMsg(null);
+      if (botToken || chatId) {
+        await saveTelegramConfigApi({ botToken, chatId });
+        setIsConfigured(true);
+      }
       const res = await sendTelegramTestApi();
       if (res && res.success) {
-        setStatusMsg({ type: 'success', text: lang === 'ru' ? '✅ Тестовое уведомление успешно отправлено на телефон!' : '✅ Test notification delivered to your device via Telegram!' });
+        setStatusMsg({ type: 'success', text: lang === 'ru' ? '✅ Тестовое уведомление успешно отправлено на телефон в Telegram!' : '✅ Test notification delivered to your phone in Telegram!' });
+      } else {
+        setStatusMsg({ type: 'error', text: res?.error || 'Failed to send test message. Check your bot token and chat ID.' });
       }
     } catch (err) {
       setStatusMsg({ type: 'error', text: err.message || 'Failed to send test alert. Check token and chat ID.' });

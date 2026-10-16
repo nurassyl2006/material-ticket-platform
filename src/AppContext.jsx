@@ -26,7 +26,9 @@ import {
   registerUserApi,
   fetchAuthMeApi,
   changePasswordApi,
-  logoutUserApi
+  logoutUserApi,
+  markTicketReturnedByTeacherInDb,
+  confirmTicketReturnInDb
 } from './api';
 import {
   translateText,
@@ -38,10 +40,12 @@ import {
   playNotificationSound,
   getNotificationPermission,
   requestDeviceNotificationPermission,
-  sendDeviceNotification
+  sendDeviceNotification,
+  sendTestDeviceNotification,
+  unlockAudioContext
 } from './services/deviceNotifications';
 import { filterVisibleTickets, isUserRelatedToTicket } from './utils/ticketPermissions';
-import { resolveDepartment } from './departments';
+import { resolveDepartment, isReturnableSubcategory } from './departments';
 import {
   safeGetItem,
   safeSetItem,
@@ -337,9 +341,12 @@ export const AppProvider = ({ children }) => {
       let reachedServer = false;
 
       // 1. Process Tickets from DB
+      let freshTickets = ticketsRef.current || [];
       if (ticketsResult.status === 'fulfilled' && Array.isArray(ticketsResult.value)) {
         reachedServer = true;
         const dbTickets = ticketsResult.value.filter(t => !OLD_MOCK_IDS.has(t.id));
+        freshTickets = dbTickets;
+        ticketsRef.current = dbTickets;
 
         // If DB is empty but local storage has user tickets, migrate them to DB
         setTickets(currentLocalTickets => {
@@ -395,26 +402,32 @@ export const AppProvider = ({ children }) => {
           isInitialNotifLoadRef.current = false;
         } else {
           // Detect brand new notifications and trigger native device alert
+          const curRole = roleRef.current;
+          const curUser = activeUserRef.current;
+          const curUsers = usersRef.current;
+          const curTickets = freshTickets.length > 0 ? freshTickets : (ticketsRef.current || []);
+          const curCreatedIds = myCreatedTicketIdsRef.current || [];
+
+          const myName = (curUser?.name || curUsers[curRole]?.name || '').trim().toLowerCase();
+          const myId = curUser?.id;
+          const myEmail = (curUser?.email || '').trim().toLowerCase();
+
           for (const n of incomingNotifs) {
             if (!seenNotifIdsRef.current.has(n.id)) {
               seenNotifIdsRef.current.add(n.id);
 
-              const curRole = roleRef.current;
-              const curUser = activeUserRef.current;
-              const curUsers = usersRef.current;
-              const curTickets = ticketsRef.current;
-              const curCreatedIds = myCreatedTicketIdsRef.current;
-
-              const myName = (curUser?.name || curUsers[curRole]?.name || '').trim().toLowerCase();
-              const myId = curUser?.id;
-              const myEmail = (curUser?.email || '').trim().toLowerCase();
               const recip = (n.recipientName || '').trim().toLowerCase();
-              const genericRoles = ['teacher', 'staff', 'guest', 'user', 'parent', 'all', 'admin', 'director'];
+              const notifTitle = (n.title || '').toLowerCase();
+              const notifMsg = (n.message || '').toLowerCase();
+              const isBroadCast = recip.includes('all') || recip.includes('staff') || recip.includes('everyone') || recip === '';
 
               let isForMe = false;
+
+              // Leadership always receives all campus operational alerts
               if (curRole === 'director' || curRole === 'admin') {
                 isForMe = true;
               } else if (n.ticketId) {
+                // If this is a ticket the current user created
                 if (Array.isArray(curCreatedIds) && curCreatedIds.includes(n.ticketId)) {
                   isForMe = true;
                 } else {
@@ -424,38 +437,53 @@ export const AppProvider = ({ children }) => {
                     const tEmail = (relatedTicket.teacherEmail || '').trim().toLowerCase();
                     const tWorker = (relatedTicket.assignedWorker || '').trim().toLowerCase();
                     const deptId = resolveDepartment(relatedTicket.department)?.id || relatedTicket.department;
-                    if ((myId && relatedTicket.createdById === myId) || (myEmail && tEmail === myEmail) || (myName && tTeacher === myName)) {
+                    const catId = (relatedTicket.category || '').toLowerCase();
+
+                    // Creator check
+                    if ((myId && relatedTicket.createdById === myId) || (myEmail && tEmail === myEmail) || (myName && (tTeacher === myName || tTeacher.includes(myName) || myName.includes(tTeacher)))) {
                       isForMe = true;
-                    } else if (myName && tWorker && (tWorker === myName || tWorker.includes(myName))) {
+                    }
+                    // Assigned worker check
+                    else if (myName && tWorker && (tWorker === myName || tWorker.includes(myName) || myName.includes(tWorker))) {
                       isForMe = true;
-                    } else if (curRole === 'cleaning' && deptId === 'cleaning') {
+                    }
+                    // Department specialist checks
+                    else if (curRole === 'cleaning' && deptId === 'cleaning') {
                       isForMe = true;
                     } else if (curRole === 'it_support' && (deptId === 'it_helpdesk' || deptId === 'it')) {
                       isForMe = true;
-                    } else if (curRole === 'engineer' && ['plumbing', 'electrical', 'engineering'].includes(deptId)) {
+                    } else if (curRole === 'engineer' && ['plumbing', 'electrical', 'engineering', 'facilities'].includes(deptId)) {
                       isForMe = true;
                     } else if (curRole === 'facilities_manager' && ['carpentry', 'event_prep', 'grounds', 'facilities', 'cleaning', 'plumbing', 'electrical'].includes(deptId)) {
                       isForMe = true;
-                    } else if ((curRole === 'storage_manager' || curRole === 'workerA') && ['storage', 'other'].includes(deptId)) {
+                    } else if ((curRole === 'storage_manager' || curRole === 'workerA') && (['storage', 'other', 'furniture', 'marketing', 'stationary'].includes(deptId) || ['stationary', 'stationary_loan', 'furniture', 'marketing'].includes(catId))) {
+                      isForMe = true;
+                    }
+                  } else if (isBroadCast) {
+                    // Related ticket not loaded yet but broadcast to all staff
+                    if (curRole === 'storage_manager' || curRole === 'workerA' || curRole === 'facilities_manager') {
                       isForMe = true;
                     }
                   }
                 }
-              } else if (curRole === 'it_support' && (recip.includes('it') || recip.includes('helpdesk'))) {
-                isForMe = true;
-              } else if (curRole === 'cleaning' && recip.includes('clean')) {
-                isForMe = true;
-              } else if (curRole === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance'))) {
-                isForMe = true;
-              } else if ((curRole === 'storage_manager' || curRole === 'workerA') && (recip.includes('storage') || recip.includes('warehouse'))) {
-                isForMe = true;
-              } else if (curRole === 'facilities_manager' && recip.includes('facilities')) {
-                isForMe = true;
-              } else if (recip && myName) {
-                if (recip === myName) {
+              }
+
+              // Fallback role/keyword matching if no ticketId or broadcast
+              if (!isForMe) {
+                if (curRole === 'it_support' && (recip.includes('it') || recip.includes('helpdesk') || notifTitle.includes('it ') || notifMsg.includes('laptop') || notifMsg.includes('wifi') || notifMsg.includes('projector'))) {
                   isForMe = true;
-                } else if (!genericRoles.includes(recip) && !genericRoles.includes(myName) && recip.length > 3 && myName.length > 3) {
-                  if (recip.includes(myName) || myName.includes(recip)) isForMe = true;
+                } else if (curRole === 'cleaning' && (recip.includes('clean') || notifTitle.includes('clean') || notifMsg.includes('clean') || notifMsg.includes('trash') || notifMsg.includes('spill'))) {
+                  isForMe = true;
+                } else if (curRole === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || notifMsg.includes('leak') || notifMsg.includes('pipe') || notifMsg.includes('socket') || notifMsg.includes('light'))) {
+                  isForMe = true;
+                } else if ((curRole === 'storage_manager' || curRole === 'workerA') && (recip.includes('storage') || recip.includes('warehouse') || isBroadCast || notifTitle.includes('return') || notifMsg.includes('paper') || notifMsg.includes('stationary'))) {
+                  isForMe = true;
+                } else if (curRole === 'facilities_manager' && (recip.includes('facilities') || isBroadCast)) {
+                  isForMe = true;
+                } else if (recip && myName) {
+                  if (recip === myName || recip.includes(myName) || myName.includes(recip)) {
+                    isForMe = true;
+                  }
                 }
               }
 
@@ -561,13 +589,19 @@ export const AppProvider = ({ children }) => {
     // Send native device push notification + sound chime only if current client is the intended recipient
     const myName = (activeUser?.name || users[role]?.name || '').trim().toLowerCase();
     const recip = (recipientName || '').trim().toLowerCase();
+    const notifTitle = (title || '').toLowerCase();
+    const notifMsg = (message || '').toLowerCase();
+    const isBroadCast = recip.includes('all') || recip.includes('staff') || recip.includes('everyone') || recip === '';
+    const isMyTicket = ticketId && Array.isArray(myCreatedTicketIds) && myCreatedTicketIds.includes(ticketId);
+
     const isDirectedToMe = (role === 'director' || role === 'admin') ||
-      (myName && recip === myName) ||
-      (role === 'it_support' && recip.includes('it')) ||
-      (role === 'cleaning' && recip.includes('clean')) ||
-      (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance'))) ||
-      ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse'))) ||
-      (role === 'facilities_manager' && recip.includes('facilities'));
+      isMyTicket ||
+      (myName && (recip === myName || recip.includes(myName) || myName.includes(recip))) ||
+      (role === 'it_support' && (recip.includes('it') || recip.includes('helpdesk') || notifTitle.includes('it') || notifMsg.includes('wifi') || notifMsg.includes('laptop'))) ||
+      (role === 'cleaning' && (recip.includes('clean') || notifTitle.includes('clean') || notifMsg.includes('clean'))) ||
+      (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || notifMsg.includes('leak') || notifMsg.includes('pipe') || notifMsg.includes('electric'))) ||
+      ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse') || isBroadCast || notifTitle.includes('return') || notifMsg.includes('paper') || notifMsg.includes('station'))) ||
+      (role === 'facilities_manager' && (recip.includes('facilities') || isBroadCast));
 
     if (isDirectedToMe) {
       sendDeviceNotification({
@@ -583,12 +617,13 @@ export const AppProvider = ({ children }) => {
   };
 
   const enableDeviceNotifications = async () => {
+    unlockAudioContext();
     const perm = await requestDeviceNotificationPermission();
     setDevicePermission(perm);
     if (perm === 'granted') {
-      sendDeviceNotification({
+      await sendDeviceNotification({
         title: '🔔 Device Alerts Active',
-        message: 'You will receive instant alerts on this device for request updates!'
+        message: 'Instant sound, vibration and popups enabled on this device!'
       });
     }
     return perm;
@@ -786,12 +821,22 @@ export const AppProvider = ({ children }) => {
     const authorName = ticketData.senderName || currentUser.name || (role === 'parent' ? 'Parent' : (role === 'guest' ? 'Guest' : (t.roles[role] || 'Teacher')));
     const authorPhone = ticketData.senderPhone || currentUser.phone || '';
 
+    const isReturnable = Boolean(
+      ticketData.isReturnable ||
+      ticketData.category === 'stationary_loan' ||
+      isReturnableSubcategory(ticketData.subcategory || ticketData.itemTitle) ||
+      (Array.isArray(inventory) && inventory.some(i => i.isReturnable && (
+        i.name.toLowerCase() === (ticketData.itemTitle || '').toLowerCase() ||
+        (ticketData.itemTitle || '').toLowerCase().includes(i.name.toLowerCase())
+      )))
+    );
+
     const newTicket = {
       id: `TCK-${Math.floor(1000 + Math.random() * 9000)}`,
       department: ticketData.department || 'other',
       itemTitle: ticketData.itemTitle,
       subcategory: ticketData.subcategory || '',
-      category: ticketData.category || 'other',
+      category: ticketData.category || (isReturnable ? 'stationary_loan' : 'other'),
       quantity: Number(ticketData.quantity) || 1,
       unit: ticketData.unit || 'pcs',
       urgency: ticketData.urgency || 'medium',
@@ -800,6 +845,12 @@ export const AppProvider = ({ children }) => {
       description: ticketData.description || '',
       photos: ticketData.photos || [],
       completionPhotos: [],
+      isReturnable,
+      returnStatus: isReturnable ? 'pending_issue' : 'none',
+      borrowedAt: null,
+      returnedAt: null,
+      returnConfirmedAt: null,
+      returnConfirmedBy: null,
       teacherName: authorName,
       teacherPhone: authorPhone,
       teacherEmail: activeUser?.email || currentUser?.email || '',
@@ -913,22 +964,25 @@ export const AppProvider = ({ children }) => {
   const issueTicketFromStock = (ticketId, notes = '') => {
     let target = null;
     const updatedAt = new Date().toISOString();
+    const existing = tickets.find(t => t.id === ticketId);
+    const isReturnable = existing ? Boolean(existing.isReturnable) : false;
+
     const payload = {
       status: 'issued',
       handledAction: 'issued',
       assignedWorker: currentUser.name,
       assignedRole: 'storage_manager',
-      notes: notes || 'Issued directly from warehouse inventory stock.',
+      isReturnable: isReturnable ? 1 : 0,
+      returnStatus: isReturnable ? 'borrowed' : 'none',
+      borrowedAt: isReturnable ? updatedAt : null,
+      notes: notes || (isReturnable ? 'Issued for temporary lesson use (must be returned).' : 'Issued directly from warehouse inventory stock.'),
       updatedAt
     };
 
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
-        target = ticket;
-        return {
-          ...ticket,
-          ...payload
-        };
+        target = { ...ticket, ...payload };
+        return target;
       }
       return ticket;
     }));
@@ -939,8 +993,10 @@ export const AppProvider = ({ children }) => {
       addNotification(
         target.teacherName,
         target.id,
-        t.notifications.ticketIssued,
-        `Item "${target.itemTitle}" has been prepared and issued from stock.`,
+        isReturnable ? (t.tickets?.status?.on_loan || 'Item Issued for Lesson') : t.notifications.ticketIssued,
+        isReturnable
+          ? `Item "${target.itemTitle}" issued for 1-2 lessons. Please return it to the warehouse when your lesson finishes.`
+          : `Item "${target.itemTitle}" has been prepared and issued from stock.`,
         'issued'
       );
     }
@@ -956,6 +1012,109 @@ export const AppProvider = ({ children }) => {
         }
         return item;
       }));
+    }
+  };
+
+  // Teacher: Report item returned to warehouse
+  const markTicketReturnedByTeacher = async (ticketId, notes = '') => {
+    const updatedAt = new Date().toISOString();
+    let target = null;
+
+    setTickets(prev => prev.map(t => {
+      if (t.id === ticketId) {
+        target = t;
+        const newNotes = notes 
+          ? (t.notes ? `${t.notes} | Teacher: ${notes}` : `Teacher: ${notes}`)
+          : t.notes;
+        return {
+          ...t,
+          returnStatus: 'returned_by_teacher',
+          returnedAt: updatedAt,
+          notes: newNotes,
+          updatedAt
+        };
+      }
+      return t;
+    }));
+
+    try {
+      await markTicketReturnedByTeacherInDb(ticketId, notes);
+    } catch {
+      updateTicketInDb(ticketId, {
+        returnStatus: 'returned_by_teacher',
+        returnedAt: updatedAt,
+        updatedAt
+      }).catch(() => {});
+    }
+
+    addNotification(
+      'Storage Manager',
+      ticketId,
+      'Equipment Return Awaiting Confirmation',
+      `${target?.teacherName || currentUser.name} has returned "${target?.itemTitle || 'item'}". Please inspect and confirm receipt in warehouse.`,
+      'returned_by_teacher'
+    );
+  };
+
+  // Storage Manager / Admin: Confirm item returned and restore warehouse stock
+  const confirmTicketReturn = async (ticketId, notes = '') => {
+    const updatedAt = new Date().toISOString();
+    let target = null;
+    const who = currentUser.name || 'Storage Manager';
+
+    setTickets(prev => prev.map(t => {
+      if (t.id === ticketId) {
+        target = t;
+        const newNotes = notes 
+          ? (t.notes ? `${t.notes} | Return confirmed by ${who}: ${notes}` : `Return confirmed by ${who}: ${notes}`)
+          : (t.notes ? `${t.notes} | Return confirmed by ${who}.` : `Return confirmed by ${who} - item received back in warehouse.`);
+        return {
+          ...t,
+          returnStatus: 'returned',
+          status: 'completed',
+          returnConfirmedAt: updatedAt,
+          returnConfirmedBy: who,
+          notes: newNotes,
+          updatedAt
+        };
+      }
+      return t;
+    }));
+
+    // Restore stock in inventory state
+    if (target) {
+      setInventory(prev => prev.map(item => {
+        const iName = (item.name || '').toLowerCase();
+        const tTitle = (target.itemTitle || '').toLowerCase();
+        if (iName === tTitle || iName.includes(tTitle) || tTitle.includes(iName)) {
+          const restoredQty = (Number(item.quantity) || 0) + (Number(target.quantity) || 1);
+          updateInventoryQtyInDb(item.id, { quantity: restoredQty }).catch(() => {});
+          return { ...item, quantity: restoredQty };
+        }
+        return item;
+      }));
+    }
+
+    try {
+      await confirmTicketReturnInDb(ticketId, { confirmedBy: who, notes });
+    } catch {
+      updateTicketInDb(ticketId, {
+        returnStatus: 'returned',
+        status: 'completed',
+        returnConfirmedAt: updatedAt,
+        returnConfirmedBy: who,
+        updatedAt
+      }).catch(() => {});
+    }
+
+    if (target && target.teacherName) {
+      addNotification(
+        target.teacherName,
+        ticketId,
+        'Return Confirmed by Storage Manager',
+        `Return of "${target.itemTitle}" has been inspected and confirmed in warehouse. Stock restored. Thank you!`,
+        'completed'
+      );
     }
   };
 
@@ -1243,11 +1402,14 @@ export const AppProvider = ({ children }) => {
       devicePermission,
       enableDeviceNotifications,
       sendDeviceNotification,
+      sendTestDeviceNotification,
       playNotificationSound,
       addTicket,
       updateTicket,
       startTicketWork,
       issueTicketFromStock,
+      markTicketReturnedByTeacher,
+      confirmTicketReturn,
       markTicketToPurchase,
       completeTicketDelivery,
       updateFacilitiesMove,

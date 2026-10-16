@@ -171,6 +171,20 @@ export async function bulkSyncTicketsToDb(tickets) {
   });
 }
 
+export async function markTicketReturnedByTeacherInDb(id, notes = '') {
+  return request(`/tickets/${id}/return-by-teacher`, {
+    method: 'POST',
+    body: JSON.stringify({ notes })
+  });
+}
+
+export async function confirmTicketReturnInDb(id, { confirmedBy, notes } = {}) {
+  return request(`/tickets/${id}/confirm-return`, {
+    method: 'POST',
+    body: JSON.stringify({ confirmedBy, notes })
+  });
+}
+
 // -------------------------------------------------------------
 // Storage List of Goods (Inventory) API
 // -------------------------------------------------------------

@@ -13,20 +13,46 @@ export const STORAGE_CATEGORIES = [
     bgColor: 'rgba(59, 130, 246, 0.12)',
     borderColor: 'rgba(59, 130, 246, 0.3)',
     defaultLocation: 'Storage Cabinet 102 - Shelf A',
+    isReturnable: false,
     translations: {
-      en: 'Stationery & Office Supplies',
-      ru: 'Канцелярия и бумага',
-      kk: 'Кеңсе және қағаз тауарлары'
+      en: 'Stationery & Paper (Given to Teacher / Consumable)',
+      ru: 'Канцелярия и бумага (Выдача учителям / Без возврата)',
+      kk: 'Кеңсе және қағаз (Мұғалімге берілетін / Қайтарылмайтын)'
     },
     shortTranslations: {
-      en: 'Stationery',
-      ru: 'Канцелярия',
-      kk: 'Кеңсе'
+      en: 'Stationery (Permanent)',
+      ru: 'Канцелярия (Выдача)',
+      kk: 'Кеңсе (Берілетін)'
     },
     description: {
-      en: 'Paper, pens, markers, staplers, folders, notebooks and desk supplies',
-      ru: 'Бумага А4, маркеры, папки, тетради, степлеры и офисные принадлежности',
-      kk: 'А4 қағазы, маркерлер, папкалар, дәптерлер және кеңсе бұйымдары'
+      en: 'A4 paper, markers, sticky notes, folders, pens and consumables given permanently to teachers',
+      ru: 'Бумага А4, маркеры для досок, стикеры, папки и расходные материалы, выдаваемые учителю насовсем',
+      kk: 'А4 қағазы, тақта маркерлері, жапсырмалар, папкалар мен мұғалімге біржола берілетін заттар'
+    }
+  },
+  {
+    id: 'stationary_loan',
+    key: 'stationary_loan',
+    icon: '⏱️',
+    color: '#f97316',
+    bgColor: 'rgba(249, 115, 22, 0.12)',
+    borderColor: 'rgba(249, 115, 22, 0.35)',
+    defaultLocation: 'Storage Cabinet 103 - Shelf A',
+    isReturnable: true,
+    translations: {
+      en: 'Lesson Supplies on Loan (1-2 Lessons • Returnable)',
+      ru: 'Временные материалы на 1-2 урока (С возвратом на склад)',
+      kk: 'Сабаққа уақытша заттар (1-2 сабаққа • Қайтарылатын)'
+    },
+    shortTranslations: {
+      en: 'Temporary Loan (1-2 Lessons)',
+      ru: 'Временные на урок (С возвратом)',
+      kk: 'Уақытша (Қайтарылатын)'
+    },
+    description: {
+      en: 'Clickers, desktop staplers, hole punchers, scientific calculators, timers and demonstration kits borrowed for 1-2 lessons and returned to storage',
+      ru: 'Кликеры, степлеры, дыроколы, комплекты калькуляторов, секундомеры и макеты, выдаваемые на 1-2 урока и подлежащие возврату на склад',
+      kk: 'Кликерлер, степлерлер, тескіштер, калькуляторлар мен көрнекі құралдар (1-2 сабаққа беріліп, қоймаға қайтарылады)'
     }
   },
   {

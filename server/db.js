@@ -58,6 +58,12 @@ db.exec(`
     description TEXT DEFAULT '',
     photos TEXT DEFAULT '[]',
     completionPhotos TEXT DEFAULT '[]',
+    isReturnable INTEGER DEFAULT 0,
+    returnStatus TEXT DEFAULT 'none',
+    borrowedAt TEXT DEFAULT NULL,
+    returnedAt TEXT DEFAULT NULL,
+    returnConfirmedAt TEXT DEFAULT NULL,
+    returnConfirmedBy TEXT DEFAULT NULL,
     teacherName TEXT DEFAULT '',
     teacherPhone TEXT DEFAULT '',
     createdById TEXT DEFAULT NULL,
@@ -86,6 +92,7 @@ db.exec(`
     minLevel REAL DEFAULT 5,
     location TEXT DEFAULT '',
     photos TEXT DEFAULT '[]',
+    isReturnable INTEGER DEFAULT 0,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
   );
@@ -168,19 +175,48 @@ try {
   // Index/column migration check
 }
 
-// Migration: Ensure photos column exists on inventory table
+// Migration: Ensure return columns exist on tickets
+try {
+  const ticketColumns = db.prepare("PRAGMA table_info(tickets)").all().map(c => c.name);
+  if (!ticketColumns.includes('isReturnable')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN isReturnable INTEGER DEFAULT 0").run();
+  }
+  if (!ticketColumns.includes('returnStatus')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN returnStatus TEXT DEFAULT 'none'").run();
+  }
+  if (!ticketColumns.includes('borrowedAt')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN borrowedAt TEXT DEFAULT NULL").run();
+  }
+  if (!ticketColumns.includes('returnedAt')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN returnedAt TEXT DEFAULT NULL").run();
+  }
+  if (!ticketColumns.includes('returnConfirmedAt')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN returnConfirmedAt TEXT DEFAULT NULL").run();
+  }
+  if (!ticketColumns.includes('returnConfirmedBy')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN returnConfirmedBy TEXT DEFAULT NULL").run();
+  }
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_tickets_returnStatus ON tickets(returnStatus)").run();
+} catch (err) {
+  // Ticket return columns check
+}
+
+// Migration: Ensure isReturnable and photos columns exist on inventory table
 try {
   const invColumns = db.prepare("PRAGMA table_info(inventory)").all().map(c => c.name);
   if (!invColumns.includes('photos')) {
     db.prepare("ALTER TABLE inventory ADD COLUMN photos TEXT DEFAULT '[]'").run();
   }
-} catch {
-  // Inventory photos column check
+  if (!invColumns.includes('isReturnable')) {
+    db.prepare("ALTER TABLE inventory ADD COLUMN isReturnable INTEGER DEFAULT 0").run();
+  }
+} catch (err) {
+  // Inventory columns check
 }
 
 // Default initial inventory items, divided into standard categories
 const defaultInventory = [
-  // --- Stationary (Канцелярия и бумага) ---
+  // --- Stationary (Канцелярия - выдача учителям насовсем / расходные) ---
   {
     id: "inv-1",
     name: "Whiteboard Markers Set (Red/Blue/Black)",
@@ -188,7 +224,8 @@ const defaultInventory = [
     quantity: 45,
     unit: "box",
     minLevel: 10,
-    location: "Storage Cabinet 102 - Shelf A"
+    location: "Storage Cabinet 102 - Shelf A",
+    isReturnable: 0
   },
   {
     id: "inv-2",
@@ -197,7 +234,8 @@ const defaultInventory = [
     quantity: 18,
     unit: "pack",
     minLevel: 25,
-    location: "Storage Cabinet 102 - Shelf B"
+    location: "Storage Cabinet 102 - Shelf B",
+    isReturnable: 0
   },
   {
     id: "inv-s3",
@@ -206,16 +244,8 @@ const defaultInventory = [
     quantity: 35,
     unit: "pack",
     minLevel: 10,
-    location: "Storage Cabinet 102 - Shelf C"
-  },
-  {
-    id: "inv-s4",
-    name: "Heavy-Duty Desktop Stapler & 24/6 Staples Kit",
-    category: "stationary",
-    quantity: 14,
-    unit: "set",
-    minLevel: 4,
-    location: "Storage Cabinet 103 - Shelf A"
+    location: "Storage Cabinet 102 - Shelf C",
+    isReturnable: 0
   },
   {
     id: "inv-s5",
@@ -224,7 +254,70 @@ const defaultInventory = [
     quantity: 60,
     unit: "pad",
     minLevel: 15,
-    location: "Storage Cabinet 103 - Shelf B"
+    location: "Storage Cabinet 103 - Shelf B",
+    isReturnable: 0
+  },
+
+  // --- Temporary Lesson Equipment & Tools (Временная выдача на 1-2 урока / С возвратом) ---
+  {
+    id: "inv-s4",
+    name: "Heavy-Duty Desktop Stapler & 24/6 Staples Kit",
+    category: "stationary_loan",
+    quantity: 14,
+    unit: "set",
+    minLevel: 4,
+    location: "Storage Cabinet 103 - Shelf A",
+    isReturnable: 1
+  },
+  {
+    id: "inv-s-clicker",
+    name: "Wireless Presentation Clicker & Laser Pointer",
+    category: "stationary_loan",
+    quantity: 8,
+    unit: "pcs",
+    minLevel: 2,
+    location: "Storage Cabinet 103 - Shelf A",
+    isReturnable: 1
+  },
+  {
+    id: "inv-s-calc",
+    name: "Scientific Calculators Class Set (Casio fx-82)",
+    category: "stationary_loan",
+    quantity: 30,
+    unit: "pcs",
+    minLevel: 5,
+    location: "Storage Cabinet 103 - Shelf C",
+    isReturnable: 1
+  },
+  {
+    id: "inv-s-punch",
+    name: "Heavy-Duty 2-Hole Desktop Paper Puncher",
+    category: "stationary_loan",
+    quantity: 10,
+    unit: "pcs",
+    minLevel: 2,
+    location: "Storage Cabinet 103 - Shelf A",
+    isReturnable: 1
+  },
+  {
+    id: "inv-s-timer",
+    name: "Classroom Digital Lesson Timer & Stopwatch",
+    category: "stationary_loan",
+    quantity: 12,
+    unit: "pcs",
+    minLevel: 3,
+    location: "Storage Cabinet 103 - Shelf B",
+    isReturnable: 1
+  },
+  {
+    id: "inv-s-globe",
+    name: "Demonstration Magnetic Globe & Map Pointer",
+    category: "stationary_loan",
+    quantity: 4,
+    unit: "set",
+    minLevel: 1,
+    location: "Storage Cabinet 103 - Shelf D",
+    isReturnable: 1
   },
 
   // --- Marketing (Маркетинг, PR и полиграфия) ---
@@ -444,8 +537,8 @@ const defaultInventory = [
 const invCount = db.prepare('SELECT COUNT(*) as count FROM inventory').get().count;
 if (invCount === 0) {
   const insertInv = db.prepare(`
-    INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
-    VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
+    INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, isReturnable, createdAt, updatedAt)
+    VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @isReturnable, @createdAt, @updatedAt)
   `);
   const now = new Date().toISOString();
   const insertMany = db.transaction((items) => {
@@ -453,6 +546,7 @@ if (invCount === 0) {
       insertInv.run({
         ...item,
         photos: Array.isArray(item.photos) ? JSON.stringify(item.photos) : (typeof item.photos === 'string' ? item.photos : '[]'),
+        isReturnable: item.isReturnable ? 1 : 0,
         createdAt: now,
         updatedAt: now
       });
@@ -460,11 +554,11 @@ if (invCount === 0) {
   });
   insertMany(defaultInventory);
 } else {
-  // Migration: Ensure newly added categories (like marketing, expanded stationary & furniture) exist
+  // Migration: Ensure newly added categories (like marketing, stationary_loan & furniture) exist
   try {
     const insertOrIgnoreInv = db.prepare(`
-      INSERT OR IGNORE INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
-      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
+      INSERT OR IGNORE INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, isReturnable, createdAt, updatedAt)
+      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @isReturnable, @createdAt, @updatedAt)
     `);
     const now = new Date().toISOString();
     db.transaction((items) => {
@@ -472,6 +566,7 @@ if (invCount === 0) {
         insertOrIgnoreInv.run({
           ...item,
           photos: Array.isArray(item.photos) ? JSON.stringify(item.photos) : (typeof item.photos === 'string' ? item.photos : '[]'),
+          isReturnable: item.isReturnable ? 1 : 0,
           createdAt: now,
           updatedAt: now
         });
@@ -627,13 +722,14 @@ export function resetDatabase() {
     // Reset inventory to default
     db.prepare('DELETE FROM inventory').run();
     const insertInv = db.prepare(`
-      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
-      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
+      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, isReturnable, createdAt, updatedAt)
+      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @isReturnable, @createdAt, @updatedAt)
     `);
     for (const item of defaultInventory) {
       insertInv.run({
         ...item,
         photos: Array.isArray(item.photos) ? JSON.stringify(item.photos) : (typeof item.photos === 'string' ? item.photos : '[]'),
+        isReturnable: item.isReturnable ? 1 : 0,
         createdAt: now,
         updatedAt: now
       });

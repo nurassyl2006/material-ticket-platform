@@ -200,7 +200,7 @@ export const Navbar = ({
               <span>{t.nav.tickets}</span>
             </Link>
 
-            {(role === 'storage_manager' || role === 'engineer' || role === 'director' || role === 'workerA' || role === 'admin') && (
+            {isAuthenticated && (
               <Link
                 to="inventory"
                 style={{
@@ -233,7 +233,7 @@ export const Navbar = ({
                 }}
               >
                 <Package size={15} color={activeTab === 'inventory' ? '#818cf8' : 'currentColor'} />
-                <span>{t.nav.inventory}</span>
+                <span>{role === 'teacher' ? (t.nav?.catalog || (lang === 'ru' ? 'Каталог канцтоваров' : 'Supplies Catalog')) : t.nav.inventory}</span>
               </Link>
             )}
 
@@ -721,13 +721,13 @@ export const Navbar = ({
               <Users size={20} />
               <span>{t.nav?.users || 'Staff'}</span>
             </Link>
-          ) : (role === 'storage_manager' || role === 'engineer' || role === 'workerA') ? (
+          ) : isAuthenticated ? (
             <Link
               to="inventory"
               className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
             >
               <Package size={20} />
-              <span>{t.nav.inventory}</span>
+              <span>{role === 'teacher' ? (t.nav?.catalog || (lang === 'ru' ? 'Каталог' : 'Catalog')) : t.nav.inventory}</span>
             </Link>
           ) : null
         )}

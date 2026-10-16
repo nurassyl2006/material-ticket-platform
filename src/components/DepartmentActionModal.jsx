@@ -636,6 +636,35 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               )}
             </div>
 
+            {ticket.isReturnable && (
+              <div style={{
+                background: 'rgba(249, 115, 22, 0.12)',
+                border: '1px solid rgba(249, 115, 22, 0.35)',
+                borderRadius: '8px',
+                padding: '10px 12px',
+                marginBottom: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '12px',
+                color: '#fed7aa'
+              }}>
+                <span style={{ fontSize: '18px' }}>⏱️</span>
+                <div>
+                  <strong style={{ color: '#fb923c', display: 'block' }}>
+                    {lang === 'ru' ? 'Временная выдача на 1-2 урока (С обязательным возвратом)' : lang === 'kk' ? '1-2 сабаққа уақытша беру (Қайтарылуы міндетті)' : 'Temporary Lesson Equipment (Must Be Returned)'}
+                  </strong>
+                  <span style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                    {lang === 'ru'
+                      ? 'Предмет выдается учителю на время урока. После окончания занятия учитель отметит возврат, а вы подтвердите прием на склад.'
+                      : lang === 'kk'
+                      ? 'Зат мұғалімге сабақ барысына беріледі. Сабақ аяқталған соң мұғалім қайтарылғанын белгілейді, ал сіз қабылдауды растайсыз.'
+                      : 'This equipment is issued for the class duration. Teacher will return it afterwards and you will confirm receipt into stock.'}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
               <button
                 type="button"
@@ -778,8 +807,12 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                     <Truck size={14} /> {lang === 'ru' ? '✓ Выдать и доставить в кабинет' : lang === 'kk' ? '✓ Беріп, кабинетке жеткізу' : '✓ Issue & Deliver to Room'}
                   </button>
                 )}
-                <button type="submit" style={{ background: storageActionType === 'stock' ? '#107c41' : 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                  {storageActionType === 'stock' ? '✓ Confirm Give from Stock' : '🛒 Confirm Purchase Order'}
+                <button type="submit" style={{ background: storageActionType === 'stock' ? (ticket.isReturnable ? 'linear-gradient(135deg, #f97316, #ea580c)' : '#107c41') : 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                  {storageActionType === 'stock'
+                    ? (ticket.isReturnable
+                        ? (lang === 'ru' ? '⏱️ Выдать на урок (С возвратом)' : lang === 'kk' ? '⏱️ Сабаққа беру (Қайтарумен)' : '⏱️ Issue on Lesson Loan')
+                        : '✓ Confirm Give from Stock')
+                    : '🛒 Confirm Purchase Order'}
                 </button>
               </div>
             </form>
