@@ -4,7 +4,8 @@ import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, 
 import { CampusLocationSelector } from './CampusLocationSelector';
 import { DEPARTMENTS, resolveDepartment, getSubcategories } from '../departments';
 import { translateText } from '../services/translator';
-import { STORAGE_CATEGORIES, getCategoryLabel } from '../storageCategories';
+import { STORAGE_CATEGORIES, getCategoryMeta, getCategoryLabel } from '../storageCategories';
+import { compressImageFile } from '../utils/imageCompressor';
 
 export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk' }) => {
   const { t, addTicket, inventory, currentUser, lang, role, isAuthenticated } = useApp();
@@ -152,18 +153,23 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   }, [inventory, formData.itemTitle]);
 
   // ── Photo helpers ──────────────────────────────────────────────────────────
-  const processFiles = (files) => {
+  const processFiles = async (files) => {
     const remaining = 5 - photos.length;
     if (remaining <= 0) return;
     const toProcess = Array.from(files).slice(0, remaining);
-    toProcess.forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPhotos(prev => prev.length < 5 ? [...prev, e.target.result] : prev);
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of toProcess) {
+      if (!file.type.startsWith('image/')) continue;
+      try {
+        const compressed = await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, quality: 0.82 });
+        setPhotos(prev => prev.length < 5 ? [...prev, compressed] : prev);
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPhotos(prev => prev.length < 5 ? [...prev, e.target.result] : prev);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
   };
 
   const removePhoto = (idx) => setPhotos(prev => prev.filter((_, i) => i !== idx));
@@ -595,8 +601,19 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                       transition: 'all 0.15s ease'
                     }}
                   >
-                    <div style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '600', color: isSelected ? '#fbbf24' : '#fff', lineHeight: 1.25 }}>
-                      {isSelected ? '✓ ' : ''}{item.name}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {item.photos && item.photos.length > 0 ? (
+                        <img 
+                          src={item.photos[0]} 
+                          alt={item.name} 
+                          style={{ width: '28px', height: '28px', borderRadius: '4px', objectFit: 'cover', flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }} 
+                        />
+                      ) : (
+                        <span style={{ fontSize: '14px', flexShrink: 0 }}>{getCategoryMeta(item.category).icon}</span>
+                      )}
+                      <div style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '600', color: isSelected ? '#fbbf24' : '#fff', lineHeight: 1.25 }}>
+                        {isSelected ? '✓ ' : ''}{item.name}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
                       <span style={{

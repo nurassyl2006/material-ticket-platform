@@ -9,6 +9,7 @@ import {
   fetchInventoryFromDb,
   createInventoryItemInDb,
   updateInventoryQtyInDb,
+  addPhotoToInventoryItemInDb,
   fetchUsersFromDb,
   updateUserProfileInDb,
   createUserInDb,
@@ -1099,10 +1100,23 @@ export const AppProvider = ({ children }) => {
       id: `inv-${Date.now()}`,
       ...newItem,
       quantity: Number(newItem.quantity) || 0,
-      minLevel: Number(newItem.minLevel) || 5
+      minLevel: Number(newItem.minLevel) || 5,
+      photos: Array.isArray(newItem.photos) ? newItem.photos : []
     };
     setInventory(prev => [item, ...prev]);
     createInventoryItemInDb(item).catch(() => {});
+  };
+
+  const addPhotosToInventoryItem = (id, photosArray) => {
+    if (!id || !photosArray || photosArray.length === 0) return;
+    setInventory(prev => prev.map(item => {
+      if (item.id === id) {
+        const currentPhotos = Array.isArray(item.photos) ? item.photos : [];
+        return { ...item, photos: [...currentPhotos, ...photosArray] };
+      }
+      return item;
+    }));
+    addPhotoToInventoryItemInDb(id, photosArray).catch(() => {});
   };
 
   const updateInventoryQty = (id, newQty) => {
@@ -1239,6 +1253,7 @@ export const AppProvider = ({ children }) => {
       updateFacilitiesMove,
       addInventoryItem,
       updateInventoryQty,
+      addPhotosToInventoryItem,
       addPhotosToTicket,
       resetDemoData,
       // Ticket Translation Suite for Engineers & Teachers

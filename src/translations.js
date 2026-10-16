@@ -312,7 +312,14 @@ export const translations = {
       addToCategory: "Add to this category",
       totalQuantity: "Total in stock",
       itemsCount: "items",
-      lowStockWarning: "low stock alert"
+      lowStockWarning: "low stock alert",
+      addPhoto: "Add Photo",
+      photos: "Photos",
+      uploadPhoto: "Upload Photo",
+      takePhoto: "Take Photo",
+      viewPhoto: "View Photo",
+      photoProof: "Item Photo",
+      dropPhotos: "Upload photos or take picture"
     },
     dashboard: {
       welcome: "Welcome back,",
@@ -708,7 +715,14 @@ export const translations = {
       addToCategory: "Добавить в категорию",
       totalQuantity: "Всего на складе",
       itemsCount: "позиций",
-      lowStockWarning: "требует пополнения"
+      lowStockWarning: "требует пополнения",
+      addPhoto: "Добавить фото",
+      photos: "Фотографии",
+      uploadPhoto: "Загрузить фото",
+      takePhoto: "Сделать снимок",
+      viewPhoto: "Посмотреть фото",
+      photoProof: "Фотография товара",
+      dropPhotos: "Загрузите фото или сделайте снимок"
     },
     dashboard: {
       welcome: "Добро пожаловать,",
@@ -1104,7 +1118,14 @@ export const translations = {
       addToCategory: "Санатқа тауар қосу",
       totalQuantity: "Қоймадағы барлық қалдық",
       itemsCount: "позиция",
-      lowStockWarning: "қоймада аз қалды"
+      lowStockWarning: "қоймада аз қалды",
+      addPhoto: "Фото қосу",
+      photos: "Фотосуреттер",
+      uploadPhoto: "Фото жүктеу",
+      takePhoto: "Суретке түсіру",
+      viewPhoto: "Фотоны көру",
+      photoProof: "Тауар суреті",
+      dropPhotos: "Фото жүктеңіз немесе түсіріңіз"
     },
     dashboard: {
       welcome: "Қош келдіңіз,",

@@ -85,6 +85,7 @@ db.exec(`
     unit TEXT DEFAULT 'pcs',
     minLevel REAL DEFAULT 5,
     location TEXT DEFAULT '',
+    photos TEXT DEFAULT '[]',
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
   );
@@ -165,6 +166,16 @@ try {
   db.prepare("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)").run();
 } catch {
   // Index/column migration check
+}
+
+// Migration: Ensure photos column exists on inventory table
+try {
+  const invColumns = db.prepare("PRAGMA table_info(inventory)").all().map(c => c.name);
+  if (!invColumns.includes('photos')) {
+    db.prepare("ALTER TABLE inventory ADD COLUMN photos TEXT DEFAULT '[]'").run();
+  }
+} catch {
+  // Inventory photos column check
 }
 
 // Default initial inventory items, divided into standard categories
@@ -433,14 +444,15 @@ const defaultInventory = [
 const invCount = db.prepare('SELECT COUNT(*) as count FROM inventory').get().count;
 if (invCount === 0) {
   const insertInv = db.prepare(`
-    INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, createdAt, updatedAt)
-    VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @createdAt, @updatedAt)
+    INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
+    VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
   `);
   const now = new Date().toISOString();
   const insertMany = db.transaction((items) => {
     for (const item of items) {
       insertInv.run({
         ...item,
+        photos: Array.isArray(item.photos) ? JSON.stringify(item.photos) : (typeof item.photos === 'string' ? item.photos : '[]'),
         createdAt: now,
         updatedAt: now
       });
@@ -451,14 +463,15 @@ if (invCount === 0) {
   // Migration: Ensure newly added categories (like marketing, expanded stationary & furniture) exist
   try {
     const insertOrIgnoreInv = db.prepare(`
-      INSERT OR IGNORE INTO inventory (id, name, category, quantity, unit, minLevel, location, createdAt, updatedAt)
-      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @createdAt, @updatedAt)
+      INSERT OR IGNORE INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
+      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
     `);
     const now = new Date().toISOString();
     db.transaction((items) => {
       for (const item of items) {
         insertOrIgnoreInv.run({
           ...item,
+          photos: Array.isArray(item.photos) ? JSON.stringify(item.photos) : (typeof item.photos === 'string' ? item.photos : '[]'),
           createdAt: now,
           updatedAt: now
         });
@@ -614,12 +627,13 @@ export function resetDatabase() {
     // Reset inventory to default
     db.prepare('DELETE FROM inventory').run();
     const insertInv = db.prepare(`
-      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, createdAt, updatedAt)
-      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @createdAt, @updatedAt)
+      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
+      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
     `);
     for (const item of defaultInventory) {
       insertInv.run({
         ...item,
+        photos: Array.isArray(item.photos) ? JSON.stringify(item.photos) : (typeof item.photos === 'string' ? item.photos : '[]'),
         createdAt: now,
         updatedAt: now
       });

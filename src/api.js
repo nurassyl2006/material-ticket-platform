@@ -197,6 +197,13 @@ export async function updateInventoryItemInDb(id, updates) {
   });
 }
 
+export async function addPhotoToInventoryItemInDb(id, photos) {
+  return request(`/inventory/${id}/photos`, {
+    method: 'POST',
+    body: JSON.stringify({ photos })
+  });
+}
+
 export async function updateInventoryQtyInDb(id, { quantity, delta }) {
   return request(`/inventory/${id}/quantity`, {
     method: 'PATCH',

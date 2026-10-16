@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useApp } from '../AppContext';
 import { 
   Plus, 
@@ -9,20 +9,44 @@ import {
   Package, 
   AlertTriangle, 
   CheckCircle2, 
-  Sparkles,
-  ChevronRight,
-  Filter
+  Filter,
+  Camera,
+  ImagePlus,
+  Image as ImageIcon,
+  Eye,
+  X,
+  Maximize2
 } from 'lucide-react';
 import { STORAGE_CATEGORIES, getCategoryMeta, getCategoryLabel } from '../storageCategories';
+import { compressImageFile, compressMultipleImageFiles } from '../utils/imageCompressor';
 
 export const InventoryManager = () => {
-  const { t, inventory, addInventoryItem, updateInventoryQty, role, lang } = useApp();
+  const { 
+    t, 
+    inventory, 
+    addInventoryItem, 
+    updateInventoryQty, 
+    addPhotosToInventoryItem, 
+    role, 
+    lang 
+  } = useApp();
   
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'ok' | 'low' | 'out'
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grouped'); // 'grouped' | 'table'
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+
+  // Lightbox preview for full photo
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+
+  // Hidden file inputs for adding photos
+  const newItemFileRef = useRef(null);
+  const newItemCameraRef = useRef(null);
+  const existingItemFileRef = useRef(null);
+  const existingItemCameraRef = useRef(null);
+  const [targetItemForPhoto, setTargetItemForPhoto] = useState(null);
   
   const [newItem, setNewItem] = useState({
     name: '',
@@ -30,7 +54,8 @@ export const InventoryManager = () => {
     quantity: 10,
     unit: 'pcs',
     minLevel: 5,
-    location: 'Storage Cabinet 102 - Shelf A'
+    location: 'Storage Cabinet 102 - Shelf A',
+    photos: []
   });
 
   const canManageStock = role === 'storage_manager' || 
@@ -59,9 +84,64 @@ export const InventoryManager = () => {
       quantity: 10,
       unit: 'pcs',
       minLevel: 5,
-      location: meta.defaultLocation || 'Storage Cabinet 102 - Shelf A'
+      location: meta.defaultLocation || 'Storage Cabinet 102 - Shelf A',
+      photos: []
     });
     setShowAddModal(true);
+  };
+
+  // Handle uploading photos for new stock item
+  const handleNewItemPhotoUpload = async (files) => {
+    if (!files || files.length === 0) return;
+    setIsCompressing(true);
+    try {
+      const remainingSlots = 3 - (newItem.photos || []).length;
+      if (remainingSlots <= 0) return;
+      const compressedList = await compressMultipleImageFiles(files, remainingSlots);
+      setNewItem(prev => ({
+        ...prev,
+        photos: [...(prev.photos || []), ...compressedList]
+      }));
+    } catch (err) {
+      console.error('Error processing image:', err);
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
+  const handleRemoveNewItemPhoto = (index) => {
+    setNewItem(prev => ({
+      ...prev,
+      photos: (prev.photos || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  // Handle uploading photos to an existing item in DB
+  const handleTriggerAddPhotoToExisting = (item, useCamera = false) => {
+    setTargetItemForPhoto(item);
+    if (useCamera && existingItemCameraRef.current) {
+      existingItemCameraRef.current.click();
+    } else if (existingItemFileRef.current) {
+      existingItemFileRef.current.click();
+    }
+  };
+
+  const handleExistingItemPhotoSelected = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !targetItemForPhoto) return;
+    setIsCompressing(true);
+    try {
+      const compressedList = await compressMultipleImageFiles(files, 3);
+      if (compressedList.length > 0) {
+        addPhotosToInventoryItem(targetItemForPhoto.id, compressedList);
+      }
+    } catch (err) {
+      console.error('Error compressing existing item photo:', err);
+    } finally {
+      setIsCompressing(false);
+      setTargetItemForPhoto(null);
+      e.target.value = '';
+    }
   };
 
   const handleAddSubmit = (e) => {
@@ -71,7 +151,8 @@ export const InventoryManager = () => {
       ...newItem,
       name: newItem.name.trim(),
       quantity: Number(newItem.quantity) || 0,
-      minLevel: Number(newItem.minLevel) || 5
+      minLevel: Number(newItem.minLevel) || 5,
+      photos: newItem.photos || []
     });
     setShowAddModal(false);
   };
@@ -160,7 +241,6 @@ export const InventoryManager = () => {
         lowStockItems: items.filter(i => i.quantity <= i.minLevel)
       };
     }).filter(group => {
-      // If searching or filtering, show only groups with items; otherwise show groups that have items in catalog
       if (searchTerm.trim() || statusFilter !== 'all') {
         return group.items.length > 0;
       }
@@ -244,6 +324,23 @@ export const InventoryManager = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
+      {/* Hidden file inputs for adding photo to existing items */}
+      <input
+        type="file"
+        ref={existingItemFileRef}
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleExistingItemPhotoSelected}
+      />
+      <input
+        type="file"
+        ref={existingItemCameraRef}
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        onChange={handleExistingItemPhotoSelected}
+      />
+
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
         <div>
@@ -255,10 +352,10 @@ export const InventoryManager = () => {
           </div>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
             {lang === 'ru' 
-              ? 'База данных склада, разделенная по категориям: канцелярия, маркетинг, мебель, электроника и др.'
+              ? 'База данных склада с фотографиями товаров, разделенная по категориям: канцелярия, маркетинг, мебель и др.'
               : lang === 'kk'
-              ? 'Санаттарға бөлінген қойма дерекқоры: кеңсе, маркетинг, жиһаз, электроника т.б.'
-              : 'Warehouse database partitioned into categories: stationery, marketing, furniture, electronics, and utilities.'}
+              ? 'Тауар суреттері бар санатталған қойма дерекқоры: кеңсе, маркетинг, жиһаз, электроника т.б.'
+              : 'Warehouse database with photo proof partitioned into categories: stationery, marketing, furniture, etc.'}
           </p>
         </div>
 
@@ -754,86 +851,190 @@ export const InventoryManager = () => {
                           <th style={{ padding: '12px 20px' }}>{t.inventory.inStock}</th>
                           <th style={{ padding: '12px 20px' }}>Status</th>
                           <th style={{ padding: '12px 20px' }}>{t.inventory.location}</th>
-                          {canManageStock && <th style={{ padding: '12px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Quantity'}</th>}
+                          {canManageStock && <th style={{ padding: '12px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Actions'}</th>}
                         </tr>
                       </thead>
                       <tbody>
-                        {cat.items.map((item, idx) => (
-                          <tr 
-                            key={item.id} 
-                            style={{ 
-                              borderBottom: idx !== cat.items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                              transition: 'background 0.15s ease'
-                            }}
-                          >
-                            <td style={{ padding: '14px 20px', fontWeight: '600', color: '#fff' }}>
-                              {item.name}
-                            </td>
+                        {cat.items.map((item, idx) => {
+                          const hasPhotos = item.photos && item.photos.length > 0;
+                          return (
+                            <tr 
+                              key={item.id} 
+                              style={{ 
+                                borderBottom: idx !== cat.items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                transition: 'background 0.15s ease'
+                              }}
+                            >
+                              <td style={{ padding: '14px 20px', fontWeight: '600', color: '#fff' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  {/* Item Photo Thumbnail */}
+                                  <div style={{ position: 'relative', width: '42px', height: '42px', flexShrink: 0 }}>
+                                    {hasPhotos ? (
+                                      <div 
+                                        onClick={() => setPreviewPhoto({
+                                          url: item.photos[0],
+                                          name: item.name,
+                                          category: item.category,
+                                          location: item.location
+                                        })}
+                                        title={t.inventory.viewPhoto || 'Click to view photo'}
+                                        style={{
+                                          width: '100%',
+                                          height: '100%',
+                                          borderRadius: '8px',
+                                          overflow: 'hidden',
+                                          border: '1.5px solid rgba(255, 255, 255, 0.15)',
+                                          cursor: 'pointer',
+                                          background: 'rgba(15, 23, 42, 0.8)',
+                                          position: 'relative'
+                                        }}
+                                      >
+                                        <img 
+                                          src={item.photos[0]} 
+                                          alt={item.name} 
+                                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                        {item.photos.length > 1 && (
+                                          <span style={{
+                                            position: 'absolute',
+                                            bottom: '2px',
+                                            right: '2px',
+                                            background: 'rgba(0,0,0,0.7)',
+                                            color: '#fff',
+                                            fontSize: '9px',
+                                            padding: '1px 3px',
+                                            borderRadius: '4px',
+                                            fontWeight: '700'
+                                          }}>
+                                            +{item.photos.length - 1}
+                                          </span>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div 
+                                        style={{
+                                          width: '100%',
+                                          height: '100%',
+                                          borderRadius: '8px',
+                                          background: cat.bgColor,
+                                          border: `1px dashed ${cat.borderColor}`,
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          fontSize: '18px',
+                                          color: 'var(--text-muted)'
+                                        }}
+                                        title={lang === 'ru' ? 'Нет фото (нажмите + Фото для добавления)' : 'No photo attached'}
+                                      >
+                                        {cat.icon}
+                                      </div>
+                                    )}
+                                  </div>
 
-                            <td style={{ padding: '14px 20px', fontWeight: '700', fontSize: '14px' }}>
-                              {item.quantity} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{item.unit}</span>
-                            </td>
-
-                            <td style={{ padding: '14px 20px' }}>
-                              {getStockStatusBadge(item.quantity, item.minLevel)}
-                            </td>
-
-                            <td style={{ padding: '14px 20px', color: 'var(--text-muted)', fontSize: '12px' }}>
-                              <MapPin size={13} style={{ verticalAlign: 'middle', marginRight: '4px', color: cat.color }} />
-                              {item.location || cat.defaultLocation}
-                            </td>
-
-                            {canManageStock && (
-                              <td style={{ padding: '14px 20px', textAlign: 'right' }}>
-                                <div style={{ 
-                                  display: 'inline-flex', 
-                                  alignItems: 'center', 
-                                  gap: '4px', 
-                                  background: 'rgba(15, 23, 42, 0.7)', 
-                                  padding: '3px 6px', 
-                                  borderRadius: '6px', 
-                                  border: '1px solid var(--border-color)' 
-                                }}>
-                                  <button
-                                    onClick={() => updateInventoryQty(item.id, item.quantity - 1)}
-                                    title="Decrease quantity by 1"
-                                    style={{ 
-                                      background: 'rgba(255,255,255,0.1)', 
-                                      color: '#fff', 
-                                      width: '24px', 
-                                      height: '24px', 
-                                      borderRadius: '4px', 
-                                      fontWeight: 'bold', 
-                                      border: 'none', 
-                                      cursor: 'pointer' 
-                                    }}
-                                  >
-                                    -
-                                  </button>
-                                  <span style={{ width: '32px', textAlign: 'center', fontWeight: 'bold', fontSize: '13px' }}>
-                                    {item.quantity}
-                                  </span>
-                                  <button
-                                    onClick={() => updateInventoryQty(item.id, item.quantity + 1)}
-                                    title="Increase quantity by 1"
-                                    style={{ 
-                                      background: 'rgba(255,255,255,0.1)', 
-                                      color: '#fff', 
-                                      width: '24px', 
-                                      height: '24px', 
-                                      borderRadius: '4px', 
-                                      fontWeight: 'bold', 
-                                      border: 'none', 
-                                      cursor: 'pointer' 
-                                    }}
-                                  >
-                                    +
-                                  </button>
+                                  <div>
+                                    <div style={{ color: '#fff', fontSize: '13px' }}>{item.name}</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                      {hasPhotos && (
+                                        <span style={{ fontSize: '10px', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                          <ImageIcon size={10} /> {item.photos.length} {lang === 'ru' ? 'фото в БД' : 'photo in DB'}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
                               </td>
-                            )}
-                          </tr>
-                        ))}
+
+                              <td style={{ padding: '14px 20px', fontWeight: '700', fontSize: '14px' }}>
+                                {item.quantity} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{item.unit}</span>
+                              </td>
+
+                              <td style={{ padding: '14px 20px' }}>
+                                {getStockStatusBadge(item.quantity, item.minLevel)}
+                              </td>
+
+                              <td style={{ padding: '14px 20px', color: 'var(--text-muted)', fontSize: '12px' }}>
+                                <MapPin size={13} style={{ verticalAlign: 'middle', marginRight: '4px', color: cat.color }} />
+                                {item.location || cat.defaultLocation}
+                              </td>
+
+                              {canManageStock && (
+                                <td style={{ padding: '14px 20px', textAlign: 'right' }}>
+                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                                    
+                                    {/* Upload photo button for this specific item */}
+                                    <button
+                                      onClick={() => handleTriggerAddPhotoToExisting(item, false)}
+                                      title={t.inventory.addPhoto || 'Add photo to this item in DB'}
+                                      style={{
+                                        background: hasPhotos ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                                        border: hasPhotos ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid rgba(255, 255, 255, 0.15)',
+                                        color: hasPhotos ? '#38bdf8' : 'var(--text-muted)',
+                                        padding: '4px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '11px',
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                      }}
+                                    >
+                                      <Camera size={12} />
+                                      <span>{hasPhotos ? `+${lang === 'ru' ? 'Фото' : 'Photo'}` : `+${t.inventory.addPhoto || 'Photo'}`}</span>
+                                    </button>
+
+                                    {/* Quantity Controls */}
+                                    <div style={{ 
+                                      display: 'inline-flex', 
+                                      alignItems: 'center', 
+                                      gap: '4px', 
+                                      background: 'rgba(15, 23, 42, 0.7)', 
+                                      padding: '3px 6px', 
+                                      borderRadius: '6px', 
+                                      border: '1px solid var(--border-color)' 
+                                    }}>
+                                      <button
+                                        onClick={() => updateInventoryQty(item.id, item.quantity - 1)}
+                                        title="Decrease quantity by 1"
+                                        style={{ 
+                                          background: 'rgba(255,255,255,0.1)', 
+                                          color: '#fff', 
+                                          width: '24px', 
+                                          height: '24px', 
+                                          borderRadius: '4px', 
+                                          fontWeight: 'bold', 
+                                          border: 'none', 
+                                          cursor: 'pointer' 
+                                        }}
+                                      >
+                                        -
+                                      </button>
+                                      <span style={{ width: '32px', textAlign: 'center', fontWeight: 'bold', fontSize: '13px' }}>
+                                        {item.quantity}
+                                      </span>
+                                      <button
+                                        onClick={() => updateInventoryQty(item.id, item.quantity + 1)}
+                                        title="Increase quantity by 1"
+                                        style={{ 
+                                          background: 'rgba(255,255,255,0.1)', 
+                                          color: '#fff', 
+                                          width: '24px', 
+                                          height: '24px', 
+                                          borderRadius: '4px', 
+                                          fontWeight: 'bold', 
+                                          border: 'none', 
+                                          cursor: 'pointer' 
+                                        }}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+
+                                  </div>
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -854,7 +1055,7 @@ export const InventoryManager = () => {
                 <th style={{ padding: '16px 20px' }}>{t.inventory.inStock}</th>
                 <th style={{ padding: '16px 20px' }}>Status</th>
                 <th style={{ padding: '16px 20px' }}>{t.inventory.location}</th>
-                {canManageStock && <th style={{ padding: '16px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Quantity'}</th>}
+                {canManageStock && <th style={{ padding: '16px 20px', textAlign: 'right' }}>{t.inventory.actions || 'Actions'}</th>}
               </tr>
             </thead>
             <tbody>
@@ -867,10 +1068,57 @@ export const InventoryManager = () => {
               ) : (
                 filteredInventory.map((item, idx) => {
                   const meta = getCategoryMeta(item.category);
+                  const hasPhotos = item.photos && item.photos.length > 0;
                   return (
                     <tr key={item.id} style={{ borderBottom: idx !== filteredInventory.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                       <td style={{ padding: '16px 20px', fontWeight: '600', color: '#fff' }}>
-                        {item.name}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{ position: 'relative', width: '38px', height: '38px', flexShrink: 0 }}>
+                            {hasPhotos ? (
+                              <div
+                                onClick={() => setPreviewPhoto({
+                                  url: item.photos[0],
+                                  name: item.name,
+                                  category: item.category,
+                                  location: item.location
+                                })}
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden',
+                                  border: '1.5px solid rgba(255, 255, 255, 0.15)',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <img src={item.photos[0]} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              </div>
+                            ) : (
+                              <div 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  borderRadius: '8px',
+                                  background: meta.bgColor,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '16px'
+                                }}
+                              >
+                                {meta.icon}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div style={{ color: '#fff' }}>{item.name}</div>
+                            {hasPhotos && (
+                              <div style={{ fontSize: '10px', color: '#38bdf8' }}>
+                                📷 {item.photos.length} {lang === 'ru' ? 'фото в БД' : 'photo in DB'}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </td>
 
                       <td style={{ padding: '16px 20px' }}>
@@ -906,20 +1154,42 @@ export const InventoryManager = () => {
 
                       {canManageStock && (
                         <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.6)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                             <button
-                              onClick={() => updateInventoryQty(item.id, item.quantity - 1)}
-                              style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                              onClick={() => handleTriggerAddPhotoToExisting(item, false)}
+                              title={t.inventory.addPhoto || 'Add photo to this item in DB'}
+                              style={{
+                                background: hasPhotos ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                                border: hasPhotos ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid rgba(255, 255, 255, 0.15)',
+                                color: hasPhotos ? '#38bdf8' : 'var(--text-muted)',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
                             >
-                              -
+                              <Camera size={12} />
+                              <span>{hasPhotos ? `+${lang === 'ru' ? 'Фото' : 'Photo'}` : `+${t.inventory.addPhoto || 'Photo'}`}</span>
                             </button>
-                            <span style={{ width: '28px', textAlign: 'center', fontWeight: 'bold' }}>{item.quantity}</span>
-                            <button
-                              onClick={() => updateInventoryQty(item.id, item.quantity + 1)}
-                              style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
-                            >
-                              +
-                            </button>
+
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 23, 42, 0.6)', padding: '4px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                              <button
+                                onClick={() => updateInventoryQty(item.id, item.quantity - 1)}
+                                style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                              >
+                                -
+                              </button>
+                              <span style={{ width: '28px', textAlign: 'center', fontWeight: 'bold' }}>{item.quantity}</span>
+                              <button
+                                onClick={() => updateInventoryQty(item.id, item.quantity + 1)}
+                                style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', width: '26px', height: '26px', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                              >
+                                +
+                              </button>
+                            </div>
                           </div>
                         </td>
                       )}
@@ -940,7 +1210,7 @@ export const InventoryManager = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(15, 23, 42, 0.8)',
+          background: 'rgba(15, 23, 42, 0.82)',
           backdropFilter: 'blur(8px)',
           display: 'flex',
           alignItems: 'center',
@@ -948,7 +1218,7 @@ export const InventoryManager = () => {
           zIndex: 1000,
           padding: '16px'
         }}>
-          <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '520px', padding: '28px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+          <div className="glass-panel animate-fade-in" style={{ width: '100%', maxWidth: '540px', padding: '28px', border: '1px solid rgba(245, 158, 11, 0.3)', maxHeight: '90vh', overflowY: 'auto' }}>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -960,7 +1230,7 @@ export const InventoryManager = () => {
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '16px', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer' }}
               >
                 ✕
               </button>
@@ -1079,6 +1349,141 @@ export const InventoryManager = () => {
                 />
               </div>
 
+              {/* Photos Attachment Section (Persisted to SQLite DB) */}
+              <div style={{
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                padding: '12px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '12px', color: '#fff', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                    <Camera size={14} color="#38bdf8" />
+                    <span>{t.inventory.photoProof || 'Item Photos (Saved directly to DB)'}</span>
+                  </label>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {newItem.photos.length}/3 {t.inventory.photos || 'photos'}
+                  </span>
+                </div>
+
+                {/* Upload Action Buttons */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: newItem.photos.length > 0 ? '10px' : '0' }}>
+                  <input
+                    type="file"
+                    ref={newItemFileRef}
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={e => handleNewItemPhotoUpload(e.target.files)}
+                  />
+                  <input
+                    type="file"
+                    ref={newItemCameraRef}
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: 'none' }}
+                    onChange={e => handleNewItemPhotoUpload(e.target.files)}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => newItemFileRef.current?.click()}
+                    disabled={isCompressing || newItem.photos.length >= 3}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#fff',
+                      cursor: newItem.photos.length >= 3 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <ImagePlus size={14} />
+                    <span>{t.inventory.uploadPhoto || 'Upload Photo'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => newItemCameraRef.current?.click()}
+                    disabled={isCompressing || newItem.photos.length >= 3}
+                    style={{
+                      flex: 1,
+                      padding: '8px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      background: 'rgba(56, 189, 248, 0.15)',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      color: '#38bdf8',
+                      cursor: newItem.photos.length >= 3 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <Camera size={14} />
+                    <span>{t.inventory.takePhoto || 'Take Photo'}</span>
+                  </button>
+                </div>
+
+                {/* Photo Previews */}
+                {newItem.photos.length > 0 && (
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {newItem.photos.map((photoSrc, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          position: 'relative',
+                          width: '68px',
+                          height: '68px',
+                          borderRadius: '6px',
+                          overflow: 'hidden',
+                          border: '1px solid rgba(255, 255, 255, 0.2)'
+                        }}
+                      >
+                        <img 
+                          src={photoSrc} 
+                          alt={`new-item-photo-${idx}`} 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNewItemPhoto(idx)}
+                          style={{
+                            position: 'absolute',
+                            top: '2px',
+                            right: '2px',
+                            background: 'rgba(0, 0, 0, 0.75)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '18px',
+                            height: '18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '11px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                  🔒 {lang === 'ru' ? 'Фото сжимаются и сохраняются прямо в базе данных SQLite' : 'Photos are optimized and stored directly inside the SQLite database.'}
+                </div>
+              </div>
+
               {/* Modal Buttons */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px', borderTop: '1px solid #383838', paddingTop: '14px' }}>
                 <button 
@@ -1091,14 +1496,123 @@ export const InventoryManager = () => {
                 </button>
                 <button 
                   type="submit" 
+                  disabled={isCompressing}
                   className="fluent-btn-primary" 
                   style={{ padding: '8px 20px', borderRadius: '6px', fontSize: '12px', fontWeight: '700' }}
                 >
-                  {t.common.save}
+                  {isCompressing ? '...' : t.common.save}
                 </button>
               </div>
 
             </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Photo Preview Modal */}
+      {previewPhoto && (
+        <div 
+          onClick={() => setPreviewPhoto(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.88)',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            padding: '20px'
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: '800px',
+              width: '100%',
+              background: '#0f172a',
+              borderRadius: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              overflow: 'hidden',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
+            }}
+          >
+            {/* Lightbox Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '14px 20px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(30, 41, 59, 0.7)'
+            }}>
+              <div>
+                <h4 style={{ margin: 0, color: '#fff', fontSize: '16px', fontWeight: '700' }}>
+                  {previewPhoto.name}
+                </h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <span>{getCategoryLabel(previewPhoto.category, lang)}</span>
+                  <span>•</span>
+                  <span>{previewPhoto.location}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setPreviewPhoto(null)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: 'none',
+                  color: '#fff',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* High-Resolution Image Display */}
+            <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', background: '#020617' }}>
+              <img 
+                src={previewPhoto.url} 
+                alt={previewPhoto.name} 
+                style={{
+                  maxHeight: '65vh',
+                  maxWidth: '100%',
+                  borderRadius: '8px',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
+
+            <div style={{ padding: '12px 20px', background: 'rgba(30, 41, 59, 0.5)', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
+              <span>📸 {lang === 'ru' ? 'Сохранено в базе данных SQLite' : 'Stored in SQLite Database'}</span>
+              <button
+                onClick={() => window.open(previewPhoto.url, '_blank')}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#38bdf8',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <Maximize2 size={13} /> {lang === 'ru' ? 'Открыть в полном окне' : 'Open in new tab'}
+              </button>
+            </div>
 
           </div>
         </div>

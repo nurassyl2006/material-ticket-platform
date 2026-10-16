@@ -54,7 +54,8 @@ function formatInventory(row) {
   return {
     ...row,
     quantity: Number(row.quantity) || 0,
-    minLevel: Number(row.minLevel) || 5
+    minLevel: Number(row.minLevel) || 5,
+    photos: safeJsonParse(row.photos, [])
   };
 }
 
@@ -731,13 +732,14 @@ app.post('/api/inventory', (req, res) => {
       unit: body.unit || 'pcs',
       minLevel: Number(body.minLevel) || 5,
       location: body.location || '',
+      photos: Array.isArray(body.photos) ? JSON.stringify(body.photos) : (typeof body.photos === 'string' ? body.photos : '[]'),
       createdAt: now,
       updatedAt: now
     };
 
     db.prepare(`
-      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, createdAt, updatedAt)
-      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @createdAt, @updatedAt)
+      INSERT INTO inventory (id, name, category, quantity, unit, minLevel, location, photos, createdAt, updatedAt)
+      VALUES (@id, @name, @category, @quantity, @unit, @minLevel, @location, @photos, @createdAt, @updatedAt)
     `).run(newItem);
 
     const created = db.prepare('SELECT * FROM inventory WHERE id = ?').get(id);
@@ -758,14 +760,20 @@ app.patch('/api/inventory/:id', (req, res) => {
 
     const updates = req.body;
     const now = new Date().toISOString();
-    const allowed = ['name', 'category', 'quantity', 'unit', 'minLevel', 'location'];
+    const allowed = ['name', 'category', 'quantity', 'unit', 'minLevel', 'location', 'photos'];
     const fieldsToSet = [];
     const values = {};
 
     for (const field of allowed) {
       if (updates[field] !== undefined) {
         fieldsToSet.push(`${field} = @${field}`);
-        values[field] = (field === 'quantity' || field === 'minLevel') ? Number(updates[field]) : updates[field];
+        if (field === 'quantity' || field === 'minLevel') {
+          values[field] = Number(updates[field]);
+        } else if (field === 'photos') {
+          values[field] = Array.isArray(updates[field]) ? JSON.stringify(updates[field]) : String(updates[field]);
+        } else {
+          values[field] = updates[field];
+        }
       }
     }
 
@@ -775,6 +783,31 @@ app.patch('/api/inventory/:id', (req, res) => {
 
     const sql = `UPDATE inventory SET ${fieldsToSet.join(', ')} WHERE id = @id`;
     db.prepare(sql).run(values);
+
+    const updated = db.prepare('SELECT * FROM inventory WHERE id = ?').get(id);
+    res.json(formatInventory(updated));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST add photo(s) to an existing inventory item in DB
+app.post('/api/inventory/:id/photos', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { photos } = req.body;
+    const existing = db.prepare('SELECT * FROM inventory WHERE id = ?').get(id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Item not found in inventory' });
+    }
+
+    const currentPhotos = safeJsonParse(existing.photos, []);
+    const incomingPhotos = Array.isArray(photos) ? photos : [photos].filter(Boolean);
+    const updatedPhotos = [...currentPhotos, ...incomingPhotos];
+
+    const now = new Date().toISOString();
+    db.prepare('UPDATE inventory SET photos = ?, updatedAt = ? WHERE id = ?')
+      .run(JSON.stringify(updatedPhotos), now, id);
 
     const updated = db.prepare('SELECT * FROM inventory WHERE id = ?').get(id);
     res.json(formatInventory(updated));
