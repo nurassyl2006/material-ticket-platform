@@ -1377,6 +1377,58 @@ app.post('/api/notifications/telegram/test', async (req, res) => {
   }
 });
 
+// -------------------------------------------------------------
+// Roles & Permissions Matrix Configuration API (Director Controls)
+// -------------------------------------------------------------
+app.get('/api/roles', (req, res) => {
+  try {
+    const raw = getSetting('roles_config');
+    const roles = raw ? safeJsonParse(raw, null) : null;
+    res.json({ roles });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/roles', (req, res) => {
+  try {
+    const { roles } = req.body;
+    if (!roles || typeof roles !== 'object') {
+      return res.status(400).json({ error: 'Valid roles configuration object is required' });
+    }
+    setSetting('roles_config', JSON.stringify(roles));
+    res.json({ success: true, roles });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// -------------------------------------------------------------
+// Storage Categories Configuration API (Director Controls)
+// -------------------------------------------------------------
+app.get('/api/categories', (req, res) => {
+  try {
+    const raw = getSetting('storage_categories');
+    const categories = raw ? safeJsonParse(raw, null) : null;
+    res.json({ categories });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/categories', (req, res) => {
+  try {
+    const { categories } = req.body;
+    if (!Array.isArray(categories)) {
+      return res.status(400).json({ error: 'Categories must be an array' });
+    }
+    setSetting('storage_categories', JSON.stringify(categories));
+    res.json({ success: true, categories });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // -------------------------------------------------------------
 // Translation API Endpoint (Assists Engineers & Teachers)

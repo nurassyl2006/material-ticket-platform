@@ -47,9 +47,12 @@ export const Navbar = ({
     syncWithCloud, 
     isAuthenticated,
     theme,
-    toggleTheme
+    toggleTheme,
+    canAccessStorage
   } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
 
   // Helper for User Initials (e.g., Balkan Kassimov -> BK)
   const getUserInitials = (name) => {
@@ -200,7 +203,7 @@ export const Navbar = ({
               <span>{t.nav.tickets}</span>
             </Link>
 
-            {isAuthenticated && (
+            {isAuthenticated && hasStorageAccess && (
               <Link
                 to="inventory"
                 style={{
@@ -721,7 +724,7 @@ export const Navbar = ({
               <Users size={20} />
               <span>{t.nav?.users || 'Staff'}</span>
             </Link>
-          ) : isAuthenticated ? (
+          ) : (isAuthenticated && hasStorageAccess) ? (
             <Link
               to="inventory"
               className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}

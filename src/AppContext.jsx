@@ -28,7 +28,11 @@ import {
   changePasswordApi,
   logoutUserApi,
   markTicketReturnedByTeacherInDb,
-  confirmTicketReturnInDb
+  confirmTicketReturnInDb,
+  fetchRolesApi,
+  saveRolesApi,
+  fetchCategoriesApi,
+  saveCategoriesApi
 } from './api';
 import {
   translateText,
@@ -44,6 +48,20 @@ import {
   sendTestDeviceNotification,
   unlockAudioContext
 } from './services/deviceNotifications';
+import {
+  DEFAULT_ROLES,
+  getRoleDefinition,
+  canRoleAccessStorage,
+  canRoleManageStock,
+  getRoleAllowedCategories,
+  isCategoryAllowedForRole
+} from './roleConfig';
+import {
+  STORAGE_CATEGORIES,
+  mergeCategories,
+  getCategoryMeta,
+  getCategoryLabel
+} from './storageCategories';
 import { filterVisibleTickets, isUserRelatedToTicket } from './utils/ticketPermissions';
 import { resolveDepartment, isReturnableSubcategory } from './departments';
 import {
@@ -183,6 +201,28 @@ export const AppProvider = ({ children }) => {
 
   // Full list of all registered staff users
   const [usersList, setUsersList] = useState([]);
+
+  // Roles & Tasks Matrix Configuration (Director controls roles, tasks, and category access)
+  const [rolesConfig, setRolesConfig] = useState(() => {
+    const saved = localStorage.getItem('app_roles_config_v1');
+    if (saved) {
+      try {
+        return { ...DEFAULT_ROLES, ...JSON.parse(saved) };
+      } catch {}
+    }
+    return DEFAULT_ROLES;
+  });
+
+  // Storage Categories Configuration (Director controls categories, returnable policy, shelf locations)
+  const [customCategories, setCustomCategories] = useState(() => {
+    const saved = localStorage.getItem('app_storage_categories_v1');
+    if (saved) {
+      try {
+        return mergeCategories(JSON.parse(saved));
+      } catch {}
+    }
+    return STORAGE_CATEGORIES;
+  });
 
   // Native Device Push Notifications state & tracking
   const [devicePermission, setDevicePermission] = useState(() => getNotificationPermission());
@@ -331,11 +371,13 @@ export const AppProvider = ({ children }) => {
       setDbStatus(prev => prev === 'connected' ? 'connected' : 'syncing');
 
       // Fetch all entities concurrently
-      const [ticketsResult, invResult, usersResult, notifsResult] = await Promise.allSettled([
+      const [ticketsResult, invResult, usersResult, notifsResult, rolesResult, catsResult] = await Promise.allSettled([
         fetchTicketsFromDb(),
         fetchInventoryFromDb(),
         fetchUsersFromDb(),
-        fetchNotificationsFromDb()
+        fetchNotificationsFromDb(),
+        fetchRolesApi(),
+        fetchCategoriesApi()
       ]);
 
       let reachedServer = false;
@@ -498,6 +540,22 @@ export const AppProvider = ({ children }) => {
             }
           }
         }
+      }
+
+      // 5. Process Roles Configuration from DB (Director permissions matrix)
+      if (rolesResult.status === 'fulfilled' && rolesResult.value?.roles) {
+        reachedServer = true;
+        const merged = { ...DEFAULT_ROLES, ...rolesResult.value.roles };
+        setRolesConfig(merged);
+        localStorage.setItem('app_roles_config_v1', JSON.stringify(merged));
+      }
+
+      // 6. Process Storage Categories from DB
+      if (catsResult.status === 'fulfilled' && Array.isArray(catsResult.value?.categories)) {
+        reachedServer = true;
+        const merged = mergeCategories(catsResult.value.categories);
+        setCustomCategories(merged);
+        localStorage.setItem('app_storage_categories_v1', JSON.stringify(merged));
       }
 
       if (reachedServer) {
@@ -1284,6 +1342,125 @@ export const AppProvider = ({ children }) => {
     updateInventoryQtyInDb(id, { quantity: clampedQty }).catch(() => {});
   };
 
+  // -------------------------------------------------------------
+  // Role & Permissions Matrix Management (Director Controls)
+  // -------------------------------------------------------------
+  const updateRoleConfig = useCallback(async (roleKey, updates) => {
+    setRolesConfig(prev => {
+      const existing = prev[roleKey] || DEFAULT_ROLES[roleKey] || {};
+      const updated = {
+        ...prev,
+        [roleKey]: {
+          ...existing,
+          ...updates,
+          key: roleKey
+        }
+      };
+      localStorage.setItem('app_roles_config_v1', JSON.stringify(updated));
+      saveRolesApi(updated).catch(() => {});
+      return updated;
+    });
+  }, []);
+
+  const createRole = useCallback(async (newRoleData) => {
+    if (!newRoleData || !newRoleData.key) return false;
+    const cleanKey = newRoleData.key.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    setRolesConfig(prev => {
+      const updated = {
+        ...prev,
+        [cleanKey]: {
+          key: cleanKey,
+          label: newRoleData.label || cleanKey,
+          labelRu: newRoleData.labelRu || newRoleData.label || cleanKey,
+          labelKk: newRoleData.labelKk || newRoleData.label || cleanKey,
+          color: newRoleData.color || '#6366f1',
+          bg: newRoleData.bg || 'rgba(99, 102, 241, 0.15)',
+          border: newRoleData.border || 'rgba(99, 102, 241, 0.35)',
+          icon: newRoleData.icon || 'Users',
+          scope: newRoleData.scope || 'Custom operational tasks',
+          scopeRu: newRoleData.scopeRu || newRoleData.scope || 'Пользовательские задачи',
+          scopeKk: newRoleData.scopeKk || newRoleData.scope || 'Арнайы міндеттер',
+          canViewStorage: Boolean(newRoleData.canViewStorage),
+          canManageStock: Boolean(newRoleData.canManageStock),
+          allowedCategories: Array.isArray(newRoleData.allowedCategories) ? newRoleData.allowedCategories : ['all']
+        }
+      };
+      localStorage.setItem('app_roles_config_v1', JSON.stringify(updated));
+      saveRolesApi(updated).catch(() => {});
+      return updated;
+    });
+    return true;
+  }, []);
+
+  // -------------------------------------------------------------
+  // Storage Categories Matrix Management (Director Controls)
+  // -------------------------------------------------------------
+  const createStorageCategory = useCallback(async (newCatData) => {
+    if (!newCatData || (!newCatData.id && !newCatData.key && !newCatData.nameEn)) return false;
+    const rawId = newCatData.id || newCatData.key || newCatData.nameEn;
+    const cleanId = rawId.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
+
+    const catObj = {
+      id: cleanId,
+      key: cleanId,
+      icon: newCatData.icon || '📦',
+      color: newCatData.color || '#94a3b8',
+      bgColor: newCatData.bgColor || 'rgba(148, 163, 184, 0.12)',
+      borderColor: newCatData.borderColor || 'rgba(148, 163, 184, 0.3)',
+      defaultLocation: newCatData.defaultLocation || 'Main Warehouse',
+      isReturnable: Boolean(newCatData.isReturnable),
+      translations: {
+        en: newCatData.nameEn || cleanId,
+        ru: newCatData.nameRu || newCatData.nameEn || cleanId,
+        kk: newCatData.nameKk || newCatData.nameEn || cleanId
+      },
+      shortTranslations: {
+        en: newCatData.shortEn || newCatData.nameEn || cleanId,
+        ru: newCatData.shortRu || newCatData.nameRu || cleanId,
+        kk: newCatData.shortKk || newCatData.nameKk || cleanId
+      },
+      description: {
+        en: newCatData.descEn || '',
+        ru: newCatData.descRu || '',
+        kk: newCatData.descKk || ''
+      }
+    };
+
+    setCustomCategories(prev => {
+      const merged = mergeCategories([...prev, catObj]);
+      localStorage.setItem('app_storage_categories_v1', JSON.stringify(merged));
+      saveCategoriesApi(merged).catch(() => {});
+      return merged;
+    });
+    return true;
+  }, []);
+
+  const updateStorageCategory = useCallback(async (catId, updates) => {
+    setCustomCategories(prev => {
+      const updated = prev.map(c => {
+        if (c.id === catId) {
+          return {
+            ...c,
+            ...updates,
+            translations: {
+              ...(c.translations || {}),
+              ...(updates.translations || {})
+            },
+            shortTranslations: {
+              ...(c.shortTranslations || {}),
+              ...(updates.shortTranslations || {})
+            }
+          };
+        }
+        return c;
+      });
+      localStorage.setItem('app_storage_categories_v1', JSON.stringify(updated));
+      saveCategoriesApi(updated).catch(() => {});
+      return updated;
+    });
+  }, []);
+
+
   // Notifications strictly visible to the current user (only connected users see them)
   const userNotifications = React.useMemo(() => {
     if (!currentUser?.name) return [];
@@ -1417,6 +1594,17 @@ export const AppProvider = ({ children }) => {
       updateInventoryQty,
       addPhotosToInventoryItem,
       addPhotosToTicket,
+      // Director Role & Storage Category Matrix Controls
+      rolesConfig,
+      customCategories,
+      updateRoleConfig,
+      createRole,
+      createStorageCategory,
+      updateStorageCategory,
+      canAccessStorage: (r = role) => canRoleAccessStorage(r, rolesConfig),
+      canManageStorageStock: (r = role) => canRoleManageStock(r, rolesConfig),
+      getAllowedCategoriesForRole: (r = role) => getRoleAllowedCategories(r, rolesConfig, customCategories),
+      isCategoryAllowed: (catId, r = role) => isCategoryAllowedForRole(catId, r, rolesConfig, customCategories),
       resetDemoData,
       // Ticket Translation Suite for Engineers & Teachers
       autoTranslateTickets,

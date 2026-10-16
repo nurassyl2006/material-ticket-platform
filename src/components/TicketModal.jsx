@@ -8,7 +8,18 @@ import { STORAGE_CATEGORIES, getCategoryMeta, getCategoryLabel } from '../storag
 import { compressImageFile } from '../utils/imageCompressor';
 
 export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk', initialItem = '' }) => {
-  const { t, addTicket, inventory, currentUser, lang, role, isAuthenticated } = useApp();
+  const { 
+    t, 
+    addTicket, 
+    inventory, 
+    currentUser, 
+    lang, 
+    role, 
+    isAuthenticated,
+    customCategories,
+    canAccessStorage,
+    getAllowedCategoriesForRole
+  } = useApp();
 
   const [department, setDepartment] = useState(() => resolveDepartment(initialDepartment).id);
   const [formData, setFormData] = useState({
@@ -58,6 +69,22 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   // Storage Manager, Engineer, and Leadership can view/manage live numerical stock counts
   const canManageStock = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role));
   const isTeacher = !canManageStock;
+  const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
+
+  const allowedCategoryIds = useMemo(() => {
+    return getAllowedCategoriesForRole ? getAllowedCategoriesForRole(role) : [];
+  }, [role, getAllowedCategoriesForRole]);
+
+  const allAvailableCategories = useMemo(() => {
+    return customCategories || STORAGE_CATEGORIES;
+  }, [customCategories]);
+
+  const visibleCategories = useMemo(() => {
+    if (role === 'director' || role === 'admin' || role === 'storage_manager' || role === 'workerA') {
+      return allAvailableCategories;
+    }
+    return allAvailableCategories.filter(cat => allowedCategoryIds.includes(cat.id || cat.key));
+  }, [allAvailableCategories, role, allowedCategoryIds]);
 
   const handleSelectSubcategory = (subcat) => {
     setFormData(prev => {
@@ -131,6 +158,12 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   const filteredInventory = useMemo(() => {
     if (!inventory || !Array.isArray(inventory)) return [];
     let items = inventory;
+
+    // Filter by permitted categories for this role
+    if (role !== 'director' && role !== 'admin' && role !== 'storage_manager' && role !== 'workerA') {
+      items = items.filter(item => allowedCategoryIds.includes(item.category || 'other'));
+    }
+
     if (storageSelectedCategory !== 'all') {
       items = items.filter(item => (item.category || 'other') === storageSelectedCategory);
     }
@@ -143,7 +176,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
       );
     }
     return items;
-  }, [inventory, storageSelectedCategory, storageSearchTerm]);
+  }, [inventory, storageSelectedCategory, storageSearchTerm, role, allowedCategoryIds]);
 
   const matchedStockItem = useMemo(() => {
     if (!inventory || !formData.itemTitle) return null;
@@ -481,8 +514,30 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
           </div>
         )}
 
-        {/* Storage Catalog & Live Warehouse Inventory Picker - Available to all with role-based stock numbers */}
-        {department === 'storage' && (
+        {/* Storage Catalog & Live Warehouse Inventory Picker - Role Permissions Protected */}
+        {department === 'storage' && !hasStorageAccess && (
+          <div style={{
+            marginBottom: '16px',
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            color: '#f87171',
+            fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <AlertCircle size={16} />
+            <span>
+              {lang === 'ru'
+                ? 'Заказ со склада отключен для вашей роли директором школы.'
+                : 'Storage catalog access is restricted for your role by the School Director.'}
+            </span>
+          </div>
+        )}
+
+        {department === 'storage' && hasStorageAccess && (
           <div style={{
             marginBottom: '16px',
             background: 'rgba(245, 158, 11, 0.07)',
@@ -567,9 +622,9 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               >
                 {t.inventory?.allCategories || 'All'} {canManageStock ? `(${(inventory || []).length})` : ''}
               </button>
-              {STORAGE_CATEGORIES.map(cat => {
+              {visibleCategories.map(cat => {
                 const count = (inventory || []).filter(i => (i.category || 'other') === cat.id).length;
-                if (count === 0) return null;
+                if (count === 0 && !canManageStock) return null;
                 const isCatActive = storageSelectedCategory === cat.id;
                 return (
                   <button

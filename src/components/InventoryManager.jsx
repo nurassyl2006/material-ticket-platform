@@ -17,10 +17,12 @@ import {
   X,
   Maximize2,
   Clock,
-  RotateCcw
+  RotateCcw,
+  ShieldAlert
 } from 'lucide-react';
 import { STORAGE_CATEGORIES, getCategoryMeta, getCategoryLabel } from '../storageCategories';
 import { compressImageFile, compressMultipleImageFiles } from '../utils/imageCompressor';
+import { CategoryEditorModal } from './CategoryEditorModal';
 
 export const InventoryManager = ({ onOpenNewTicket }) => {
   const { 
@@ -33,7 +35,13 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
     lang,
     tickets,
     confirmTicketReturn,
-    currentUser
+    currentUser,
+    customCategories,
+    canAccessStorage,
+    canManageStorageStock,
+    getAllowedCategoriesForRole,
+    isCategoryAllowed,
+    createStorageCategory
   } = useApp();
   
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -41,6 +49,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grouped'); // 'grouped' | 'table'
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
 
   // Lightbox preview for full photo
@@ -65,27 +74,50 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
     isReturnable: false
   });
 
-  const canManageStock = role === 'storage_manager' || 
-                         role === 'engineer' || 
-                         role === 'facilities_manager' ||
-                         role === 'director' || 
-                         role === 'workerA' || 
-                         role === 'admin';
+  const userHasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
+  const userCanManageStock = canManageStorageStock ? canManageStorageStock(role) : (role === 'storage_manager' || role === 'director' || role === 'admin');
+  const canManageStock = userCanManageStock;
+
+  const allowedCategoryIds = useMemo(() => {
+    return getAllowedCategoriesForRole ? getAllowedCategoriesForRole(role) : [];
+  }, [role, getAllowedCategoriesForRole]);
+
+  const allAvailableCategories = useMemo(() => {
+    return customCategories || STORAGE_CATEGORIES;
+  }, [customCategories]);
+
+  const visibleCategories = useMemo(() => {
+    if (role === 'director' || role === 'admin' || role === 'storage_manager' || role === 'workerA') {
+      return allAvailableCategories;
+    }
+    return allAvailableCategories.filter(cat => allowedCategoryIds.includes(cat.id || cat.key));
+  }, [allAvailableCategories, role, allowedCategoryIds]);
+
+  const permittedInventory = useMemo(() => {
+    if (role === 'director' || role === 'admin' || role === 'storage_manager' || role === 'workerA') {
+      return inventory || [];
+    }
+    return (inventory || []).filter(item => {
+      const cat = item.category || 'other';
+      return allowedCategoryIds.includes(cat);
+    });
+  }, [inventory, role, allowedCategoryIds]);
 
   // Handle category change in Add Modal with smart location suggestion & loan policy
   const handleCategoryChange = (catId) => {
-    const meta = getCategoryMeta(catId);
+    const meta = getCategoryMeta(catId, customCategories);
     setNewItem(prev => ({
       ...prev,
       category: catId,
       location: meta.defaultLocation || prev.location,
-      isReturnable: catId === 'stationary_loan' ? true : (catId === 'stationary' ? false : prev.isReturnable)
+      isReturnable: Boolean(meta.isReturnable)
     }));
   };
 
   const handleOpenAddModal = (presetCategory = null) => {
-    const cat = presetCategory || (selectedCategory !== 'all' ? selectedCategory : 'stationary');
-    const meta = getCategoryMeta(cat);
+    const defaultCat = visibleCategories[0]?.id || 'stationary';
+    const cat = presetCategory || (selectedCategory !== 'all' ? selectedCategory : defaultCat);
+    const meta = getCategoryMeta(cat, customCategories);
     setNewItem({
       name: '',
       category: cat,
@@ -94,7 +126,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
       minLevel: 5,
       location: meta.defaultLocation || 'Storage Cabinet 102 - Shelf A',
       photos: [],
-      isReturnable: cat === 'stationary_loan'
+      isReturnable: Boolean(meta.isReturnable)
     });
     setShowAddModal(true);
   };
@@ -193,7 +225,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
   // Group inventory items by category
   const categoryStats = useMemo(() => {
     const stats = {};
-    for (const cat of STORAGE_CATEGORIES) {
+    for (const cat of visibleCategories) {
       stats[cat.id] = {
         count: 0,
         totalQty: 0,
@@ -202,7 +234,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
       };
     }
 
-    for (const item of (inventory || [])) {
+    for (const item of permittedInventory) {
       const catId = item.category || 'other';
       if (!stats[catId]) {
         stats[catId] = { count: 0, totalQty: 0, lowStock: 0, outOfStock: 0 };
@@ -217,21 +249,21 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
     }
 
     return stats;
-  }, [inventory]);
+  }, [visibleCategories, permittedInventory]);
 
   // Overall totals
   const overallTotals = useMemo(() => {
-    const list = inventory || [];
+    const list = permittedInventory;
     const totalItems = list.length;
     const totalQty = list.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
     const lowStockCount = list.filter(i => i.quantity > 0 && i.quantity <= i.minLevel).length;
     const outOfStockCount = list.filter(i => i.quantity === 0).length;
     return { totalItems, totalQty, lowStockCount, outOfStockCount };
-  }, [inventory]);
+  }, [permittedInventory]);
 
   // Filtered inventory
   const filteredInventory = useMemo(() => {
-    return (inventory || []).filter(item => {
+    return permittedInventory.filter(item => {
       // Category filter
       if (selectedCategory !== 'all' && (item.category || 'other') !== selectedCategory) {
         return false;
@@ -256,13 +288,13 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
 
       return true;
     });
-  }, [inventory, selectedCategory, statusFilter, searchTerm, lang]);
+  }, [permittedInventory, selectedCategory, statusFilter, searchTerm, lang]);
 
   // Divided / Grouped Items
   const groupedCategories = useMemo(() => {
     const activeCats = selectedCategory === 'all' 
-      ? STORAGE_CATEGORIES 
-      : STORAGE_CATEGORIES.filter(c => c.id === selectedCategory);
+      ? visibleCategories 
+      : visibleCategories.filter(c => c.id === selectedCategory);
 
     return activeCats.map(cat => {
       const items = filteredInventory.filter(item => (item.category || 'other') === cat.id);
@@ -279,7 +311,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
       }
       return group.items.length > 0 || (categoryStats[group.id]?.count > 0);
     });
-  }, [selectedCategory, filteredInventory, searchTerm, statusFilter, categoryStats]);
+  }, [selectedCategory, visibleCategories, filteredInventory, searchTerm, statusFilter, categoryStats]);
 
   const getStockStatusBadge = (qty, minLevel) => {
     if (qty === 0) {
@@ -337,6 +369,22 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
   };
 
 
+
+  if (!userHasStorageAccess) {
+    return (
+      <div className="glass-panel" style={{ padding: '40px 24px', textAlign: 'center', margin: '40px auto', maxWidth: '600px', borderRadius: '16px' }}>
+        <ShieldAlert size={52} color="#f97316" style={{ margin: '0 auto 16px' }} />
+        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: '#fff' }}>
+          {lang === 'ru' ? 'Доступ к складу ограничен' : 'Storage Catalog Access Restricted'}
+        </h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.5 }}>
+          {lang === 'ru'
+            ? 'Просмотр каталога товаров на складе отключен для вашей роли директором школы. Если вам необходим доступ к материалам, обратитесь к администрации.'
+            : 'Access to the school storage catalog is disabled for your role by the School Director. Please contact administration if you require access.'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -450,6 +498,25 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               }}
             >
               <Plus size={16} /> <span>{t.inventory.addItem}</span>
+            </button>
+          )}
+
+          {(role === 'director' || role === 'admin' || role === 'storage_manager') && (
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="fluent-btn-secondary"
+              style={{
+                padding: '8px 14px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: '600'
+              }}
+              title={lang === 'ru' ? 'Создать категорию склада' : 'Create Storage Category'}
+            >
+              <Plus size={15} /> <span>{lang === 'ru' ? '+ Категория' : '+ Category'}</span>
             </button>
           )}
         </div>
@@ -672,14 +739,14 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 {canManageStock 
-                  ? `${STORAGE_CATEGORIES.length} ${lang === 'ru' ? 'категорий' : lang === 'kk' ? 'санат' : 'divisions'}`
+                  ? `${visibleCategories.length} ${lang === 'ru' ? 'категорий' : lang === 'kk' ? 'санат' : 'divisions'}`
                   : (lang === 'ru' ? 'Все разделы каталога' : lang === 'kk' ? 'Барлық санаттар' : 'All Catalog Sections')}
               </div>
             </div>
           </div>
 
           {/* Individual Category cards */}
-          {STORAGE_CATEGORIES.map(cat => {
+          {visibleCategories.map(cat => {
             const st = categoryStats[cat.id] || { count: 0, totalQty: 0, lowStock: 0, outOfStock: 0 };
             const isSelected = selectedCategory === cat.id;
             const hasAlert = st.lowStock > 0 || st.outOfStock > 0;
@@ -792,7 +859,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
             📁 {t.inventory.allCategories || 'All Categories'} {canManageStock ? `(${overallTotals.totalItems})` : ''}
           </button>
 
-          {STORAGE_CATEGORIES.map(cat => {
+          {visibleCategories.map(cat => {
             const count = categoryStats[cat.id]?.count || 0;
             const isCatActive = selectedCategory === cat.id;
 
@@ -1666,7 +1733,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                     fontSize: '13px'
                   }}
                 >
-                  {STORAGE_CATEGORIES.map(cat => (
+                  {allAvailableCategories.map(cat => (
                     <option key={cat.id} value={cat.id}>
                       {cat.icon} {getCategoryLabel(cat.id, lang)}
                     </option>
@@ -2087,6 +2154,18 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
           </div>
         </div>
       )}
+
+      {/* Category Editor Modal */}
+      <CategoryEditorModal
+        isOpen={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        categoryData={null}
+        onSave={async (cat) => {
+          await createStorageCategory(cat);
+          setShowCategoryModal(false);
+        }}
+        lang={lang}
+      />
 
     </div>
   );

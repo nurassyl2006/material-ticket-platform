@@ -375,3 +375,29 @@ export async function sendTelegramTestApi() {
     method: 'POST'
   });
 }
+
+// -------------------------------------------------------------
+// Roles & Storage Categories Matrix API (Director Controls)
+// -------------------------------------------------------------
+export async function fetchRolesApi() {
+  return request('/roles');
+}
+
+export async function saveRolesApi(roles) {
+  return request('/roles', {
+    method: 'POST',
+    body: JSON.stringify({ roles })
+  });
+}
+
+export async function fetchCategoriesApi() {
+  return request('/categories');
+}
+
+export async function saveCategoriesApi(categories) {
+  return request('/categories', {
+    method: 'POST',
+    body: JSON.stringify({ categories })
+  });
+}
+

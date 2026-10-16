@@ -254,9 +254,36 @@ export const CATEGORY_MAP = STORAGE_CATEGORIES.reduce((acc, cat) => {
   return acc;
 }, {});
 
-export function getCategoryMeta(categoryId) {
+export function mergeCategories(customCategories = []) {
+  if (!Array.isArray(customCategories) || customCategories.length === 0) {
+    return STORAGE_CATEGORIES;
+  }
+  const map = { ...CATEGORY_MAP };
+  for (const cat of customCategories) {
+    if (cat && cat.id) {
+      map[cat.id] = {
+        ...(map[cat.id] || {}),
+        ...cat
+      };
+    }
+  }
+  // Return standard categories followed by any new custom ones
+  const standardIds = new Set(STORAGE_CATEGORIES.map(c => c.id));
+  const newCustom = customCategories.filter(c => c && c.id && !standardIds.has(c.id));
+  return [
+    ...STORAGE_CATEGORIES.map(c => map[c.id] || c),
+    ...newCustom
+  ];
+}
+
+export function getCategoryMeta(categoryId, customCategories = []) {
+  const merged = mergeCategories(customCategories);
+  const found = merged.find(c => c.id === categoryId || c.key === categoryId);
+  if (found) return found;
+
   return CATEGORY_MAP[categoryId] || CATEGORY_MAP['other'] || {
     id: categoryId,
+    key: categoryId,
     icon: '📦',
     color: '#94a3b8',
     bgColor: 'rgba(148, 163, 184, 0.12)',
@@ -267,8 +294,8 @@ export function getCategoryMeta(categoryId) {
   };
 }
 
-export function getCategoryLabel(categoryId, lang = 'en', short = false) {
-  const meta = getCategoryMeta(categoryId);
+export function getCategoryLabel(categoryId, lang = 'en', short = false, customCategories = []) {
+  const meta = getCategoryMeta(categoryId, customCategories);
   const dict = short ? meta.shortTranslations : meta.translations;
   return dict?.[lang] || dict?.['en'] || categoryId;
 }
