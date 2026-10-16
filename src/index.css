@@ -955,6 +955,28 @@ body[data-theme="light"] {
   color: var(--text-main) !important;
 }
 
+/* Responsive Header & Navigation Utilities */
+.desktop-nav-tabs {
+  white-space: nowrap;
+}
+
+.desktop-nav-tabs a {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1180px) {
+  .role-logged-text {
+    display: none !important;
+  }
+}
+
+@media (max-width: 990px) {
+  .profile-btn-text {
+    display: none !important;
+  }
+}
+
 /* Mobile-First Responsive Styles */
 @media (max-width: 768px) {
   body {

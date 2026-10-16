@@ -84,122 +84,145 @@ export const Navbar = ({
       >
         <div
           style={{
-            maxWidth: '1360px',
+            maxWidth: '1440px',
             margin: '0 auto',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             height: '56px',
-            gap: '16px'
+            gap: '12px'
           }}
         >
           {/* Left: Brand Logo & Title */}
           <Link
             to="dashboard"
-            style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', textDecoration: 'none' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', cursor: 'pointer', textDecoration: 'none', flexShrink: 0 }}
           >
             <div
               style={{
                 background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
-                width: '34px',
-                height: '34px',
-                borderRadius: '9px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.2) inset'
+                boxShadow: '0 2px 10px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset',
+                flexShrink: 0
               }}
             >
-              <Package size={18} color="#ffffff" />
+              <Package size={17} color="#ffffff" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main, #ffffff)', margin: 0, letterSpacing: '-0.3px', whiteSpace: 'nowrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main, #ffffff)', margin: 0, letterSpacing: '-0.3px', whiteSpace: 'nowrap' }}>
                 {t.appName ? (t.appName.includes(' - ') ? t.appName.split(' - ')[0] : t.appName) : 'EduOps'}
-              </h1>
-              <span className="mobile-hide" style={{ height: '12px', width: '1px', background: 'rgba(255, 255, 255, 0.15)' }} />
-              <span className="mobile-hide" style={{ fontSize: '12px', color: 'var(--text-muted, #94a3b8)', fontWeight: '500', whiteSpace: 'nowrap' }}>
-                {t.subtitle || 'Facilities & Operations'}
+              </span>
+              <span
+                className="mobile-hide"
+                style={{
+                  fontSize: '9.5px',
+                  fontWeight: '700',
+                  letterSpacing: '0.5px',
+                  padding: '2px 6px',
+                  borderRadius: '5px',
+                  background: 'rgba(99, 102, 241, 0.15)',
+                  color: '#818cf8',
+                  border: '1px solid rgba(99, 102, 241, 0.25)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                CAMPUS
               </span>
             </div>
           </Link>
 
-          {/* Center: Modern Navigation Tabs */}
+          {/* Center: Modern Segmented Navigation Tabs */}
           <nav
             className="desktop-nav-tabs"
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              height: '100%',
-              gap: '4px'
+              background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+              padding: '3px',
+              borderRadius: '9px',
+              border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+              gap: '2px',
+              flexShrink: 0
             }}
           >
             <Link
               to="dashboard"
               style={{
-                height: '36px',
-                padding: '0 14px',
-                fontSize: '13px',
+                height: '30px',
+                padding: '0 12px',
+                fontSize: '12.5px',
                 fontWeight: activeTab === 'dashboard' ? '600' : '500',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '7px',
-                color: activeTab === 'dashboard' ? '#818cf8' : '#94a3b8',
-                background: activeTab === 'dashboard' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-                border: activeTab === 'dashboard' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
-                borderRadius: '8px',
+                gap: '6px',
+                color: activeTab === 'dashboard' ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
+                background: activeTab === 'dashboard' ? 'rgba(99, 102, 241, 0.22)' : 'transparent',
+                border: activeTab === 'dashboard' ? '1px solid rgba(99, 102, 241, 0.38)' : '1px solid transparent',
+                borderRadius: '7px',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                textDecoration: 'none'
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                boxShadow: activeTab === 'dashboard' ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
               }}
               onMouseEnter={(e) => {
                 if (activeTab !== 'dashboard') {
-                  e.currentTarget.style.color = '#ffffff';
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.currentTarget.style.color = 'var(--text-main, #ffffff)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (activeTab !== 'dashboard') {
-                  e.currentTarget.style.color = '#94a3b8';
+                  e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
                   e.currentTarget.style.background = 'transparent';
                 }
               }}
             >
-              <LayoutDashboard size={15} color={activeTab === 'dashboard' ? '#818cf8' : 'currentColor'} />
+              <LayoutDashboard size={14} color={activeTab === 'dashboard' ? '#818cf8' : 'currentColor'} />
               <span>{t.nav.dashboard}</span>
             </Link>
 
             <Link
               to="tickets"
               style={{
-                height: '36px',
-                padding: '0 14px',
-                fontSize: '13px',
+                height: '30px',
+                padding: '0 12px',
+                fontSize: '12.5px',
                 fontWeight: activeTab === 'tickets' ? '600' : '500',
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '7px',
-                color: activeTab === 'tickets' ? '#818cf8' : '#94a3b8',
-                background: activeTab === 'tickets' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-                border: activeTab === 'tickets' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
-                borderRadius: '8px',
+                gap: '6px',
+                color: activeTab === 'tickets' ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
+                background: activeTab === 'tickets' ? 'rgba(99, 102, 241, 0.22)' : 'transparent',
+                border: activeTab === 'tickets' ? '1px solid rgba(99, 102, 241, 0.38)' : '1px solid transparent',
+                borderRadius: '7px',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                textDecoration: 'none'
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                boxShadow: activeTab === 'tickets' ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
               }}
               onMouseEnter={(e) => {
                 if (activeTab !== 'tickets') {
-                  e.currentTarget.style.color = '#ffffff';
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.currentTarget.style.color = 'var(--text-main, #ffffff)';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (activeTab !== 'tickets') {
-                  e.currentTarget.style.color = '#94a3b8';
+                  e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
                   e.currentTarget.style.background = 'transparent';
                 }
               }}
             >
-              <ClipboardList size={15} color={activeTab === 'tickets' ? '#818cf8' : 'currentColor'} />
+              <ClipboardList size={14} color={activeTab === 'tickets' ? '#818cf8' : 'currentColor'} />
               <span>{t.nav.tickets}</span>
             </Link>
 
@@ -207,36 +230,39 @@ export const Navbar = ({
               <Link
                 to="inventory"
                 style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '13px',
+                  height: '30px',
+                  padding: '0 12px',
+                  fontSize: '12.5px',
                   fontWeight: activeTab === 'inventory' ? '600' : '500',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '7px',
-                  color: activeTab === 'inventory' ? '#818cf8' : '#94a3b8',
-                  background: activeTab === 'inventory' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-                  border: activeTab === 'inventory' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
-                  borderRadius: '8px',
+                  gap: '6px',
+                  color: activeTab === 'inventory' ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
+                  background: activeTab === 'inventory' ? 'rgba(99, 102, 241, 0.22)' : 'transparent',
+                  border: activeTab === 'inventory' ? '1px solid rgba(99, 102, 241, 0.38)' : '1px solid transparent',
+                  borderRadius: '7px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  textDecoration: 'none'
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  boxShadow: activeTab === 'inventory' ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
                 }}
                 onMouseEnter={(e) => {
                   if (activeTab !== 'inventory') {
-                    e.currentTarget.style.color = '#ffffff';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.color = 'var(--text-main, #ffffff)';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (activeTab !== 'inventory') {
-                    e.currentTarget.style.color = '#94a3b8';
+                    e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
                     e.currentTarget.style.background = 'transparent';
                   }
                 }}
               >
-                <Package size={15} color={activeTab === 'inventory' ? '#818cf8' : 'currentColor'} />
-                <span>{role === 'teacher' ? (t.nav?.catalog || (lang === 'ru' ? 'Каталог канцтоваров' : 'Supplies Catalog')) : t.nav.inventory}</span>
+                <Package size={14} color={activeTab === 'inventory' ? '#818cf8' : 'currentColor'} />
+                <span>{role === 'teacher' ? (t.nav?.catalog || 'Catalog') : t.nav.inventory}</span>
               </Link>
             )}
 
@@ -244,71 +270,93 @@ export const Navbar = ({
               <Link
                 to="users"
                 style={{
-                  height: '36px',
-                  padding: '0 14px',
-                  fontSize: '13px',
+                  height: '30px',
+                  padding: '0 12px',
+                  fontSize: '12.5px',
                   fontWeight: activeTab === 'users' ? '600' : '500',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '7px',
-                  color: activeTab === 'users' ? '#818cf8' : '#94a3b8',
-                  background: activeTab === 'users' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-                  border: activeTab === 'users' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
-                  borderRadius: '8px',
+                  gap: '6px',
+                  color: activeTab === 'users' ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
+                  background: activeTab === 'users' ? 'rgba(99, 102, 241, 0.22)' : 'transparent',
+                  border: activeTab === 'users' ? '1px solid rgba(99, 102, 241, 0.38)' : '1px solid transparent',
+                  borderRadius: '7px',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  textDecoration: 'none'
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  boxShadow: activeTab === 'users' ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
                 }}
                 onMouseEnter={(e) => {
                   if (activeTab !== 'users') {
-                    e.currentTarget.style.color = '#ffffff';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.color = 'var(--text-main, #ffffff)';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (activeTab !== 'users') {
-                    e.currentTarget.style.color = '#94a3b8';
+                    e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
                     e.currentTarget.style.background = 'transparent';
                   }
                 }}
               >
-                <Users size={15} color={activeTab === 'users' ? '#818cf8' : 'currentColor'} />
+                <Users size={14} color={activeTab === 'users' ? '#818cf8' : 'currentColor'} />
                 <span>{t.nav?.users || 'Staff & Roles'}</span>
               </Link>
             )}
-
-            {/* "+ New Request" Primary Button */}
-            {onOpenNewTicket && (
-              <div style={{ marginLeft: '12px' }}>
-                <button
-                  onClick={onOpenNewTicket}
-                  className="fluent-btn-primary"
-                  style={{
-                    height: '32px',
-                    padding: '0 14px',
-                    fontSize: '12px'
-                  }}
-                >
-                  <Plus size={14} />
-                  <span>{t.nav.newTicket}</span>
-                </button>
-              </div>
-            )}
           </nav>
 
-          {/* Right Section: Controls, Language, Notifications & Profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            
+          {/* Right Section: Action CTA + Controls Cluster */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            {/* Primary Action Button: + New Request */}
+            {onOpenNewTicket && (
+              <button
+                onClick={onOpenNewTicket}
+                className="fluent-btn-primary"
+                style={{
+                  height: '32px',
+                  padding: '0 13px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  whiteSpace: 'nowrap',
+                  borderRadius: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 10px rgba(99, 102, 241, 0.35)'
+                }}
+              >
+                <Plus size={14} strokeWidth={2.5} />
+                <span>{t.nav.newTicket}</span>
+              </button>
+            )}
+
+            {/* Subtle Divider */}
+            <span
+              className="mobile-hide"
+              style={{
+                height: '18px',
+                width: '1px',
+                background: 'var(--border-color, rgba(255, 255, 255, 0.12))',
+                margin: '0 2px',
+                flexShrink: 0
+              }}
+            />
+
             {/* Language Switcher */}
             <div
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
-                padding: '5px 9px',
+                height: '32px',
+                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+                padding: '0 8px',
                 borderRadius: '8px',
-                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))'
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                flexShrink: 0
               }}
             >
               <Globe size={13} color="var(--text-muted, #94a3b8)" />
@@ -338,54 +386,45 @@ export const Navbar = ({
               onClick={toggleTheme}
               title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
               style={{
-                width: '34px',
-                height: '34px',
+                width: '32px',
+                height: '32px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
+                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
                 border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
                 borderRadius: '8px',
                 color: theme === 'light' ? '#d97706' : '#818cf8',
                 cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.08)';
-                e.currentTarget.style.borderColor = theme === 'light' ? '#d97706' : '#818cf8';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.1))';
+                flexShrink: 0,
+                transition: 'all 0.15s ease'
               }}
             >
-              {theme === 'light' ? <Sun size={16} /> : <Moon size={16} />}
+              {theme === 'light' ? <Sun size={15} /> : <Moon size={15} />}
             </button>
 
             {/* Notification Bell */}
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
               <button
                 onClick={() => setIsNotificationOpen(prev => !prev)}
                 title={t.notifications?.title || 'Notifications'}
                 style={{
                   position: 'relative',
-                  width: '34px',
-                  height: '34px',
+                  width: '32px',
+                  height: '32px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: isNotificationOpen ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: isNotificationOpen ? 'rgba(255, 255, 255, 0.12)' : 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
                   borderRadius: '8px',
-                  color: isNotificationOpen ? '#ffffff' : '#94a3b8',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)')}
-                onMouseLeave={(e) => {
-                  if (!isNotificationOpen) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  color: isNotificationOpen ? '#ffffff' : 'var(--text-muted, #94a3b8)',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease'
                 }}
               >
-                <Bell size={16} />
+                <Bell size={15} />
                 {unreadCount > 0 && (
                   <span
                     style={{
@@ -394,16 +433,16 @@ export const Navbar = ({
                       right: '2px',
                       background: '#ef4444',
                       color: '#ffffff',
-                      fontSize: '10px',
+                      fontSize: '9px',
                       fontWeight: '700',
-                      minWidth: '15px',
-                      height: '15px',
-                      borderRadius: '8px',
+                      minWidth: '14px',
+                      height: '14px',
+                      borderRadius: '7px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      padding: '0 3px',
-                      boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)'
+                      padding: '0 2px',
+                      boxShadow: '0 0 6px rgba(239, 68, 68, 0.6)'
                     }}
                   >
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -431,21 +470,21 @@ export const Navbar = ({
                   : 'Connected to SQLite database (click for diagnostics)'
               }
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                padding: '5px 10px',
+                height: '32px',
+                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                padding: '0 9px',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                color: '#94a3b8',
+                color: 'var(--text-muted, #94a3b8)',
                 fontSize: '11px',
                 fontWeight: '600',
+                flexShrink: 0,
                 transition: 'all 0.15s ease'
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)')}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)')}
             >
               <Database size={13} color={cloudStatus === 'syncing' ? '#6366f1' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981'} />
               <span
@@ -454,50 +493,54 @@ export const Navbar = ({
                   height: '6px',
                   borderRadius: '50%',
                   background: cloudStatus === 'syncing' ? '#6366f1' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981',
-                  boxShadow: cloudStatus === 'connected' ? '0 0 6px rgba(16, 185, 129, 0.6)' : 'none'
+                  boxShadow: cloudStatus === 'connected' ? '0 0 6px rgba(16, 185, 129, 0.6)' : 'none',
+                  flexShrink: 0
                 }}
               />
-              <span className="profile-btn-text">
+              <span className="profile-btn-text" style={{ whiteSpace: 'nowrap' }}>
                 {cloudStatus === 'syncing' ? 'Syncing' : cloudStatus === 'offline' ? 'Offline' : 'Connected'}
               </span>
             </button>
 
-            {/* Authenticated User OR Guest/Parent Role Selector & Sign In/Register */}
+            {/* Authenticated User OR Guest/Parent Auth Controls */}
             {isAuthenticated ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                 {/* Account Avatar & Role */}
                 <Link
                   to="profile"
                   onClick={onOpenProfile}
                   title={`${currentUser?.name || 'User'} (${t.roles[role]})`}
                   style={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
                     gap: '8px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    padding: '4px 10px 4px 5px',
+                    height: '32px',
+                    background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                    padding: '0 10px 0 4px',
                     borderRadius: '8px',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
-                    textDecoration: 'none'
+                    textDecoration: 'none',
+                    flexShrink: 0
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.1))')}
                 >
                   <div
                     style={{
-                      width: '28px',
-                      height: '28px',
+                      width: '24px',
+                      height: '24px',
                       borderRadius: '50%',
                       background: role === 'director' ? 'linear-gradient(135deg, #8b5cf6, #6366f1)' : 'linear-gradient(135deg, #3b82f6, #4f46e5)',
                       color: '#ffffff',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '11px',
+                      fontSize: '10px',
                       fontWeight: '700',
-                      position: 'relative'
+                      position: 'relative',
+                      flexShrink: 0
                     }}
                   >
                     {currentUser?.avatar ? (
@@ -509,25 +552,24 @@ export const Navbar = ({
                     ) : (
                       getUserInitials(currentUser?.name)
                     )}
-                    {/* Active presence dot */}
                     <span
                       style={{
                         position: 'absolute',
                         bottom: '-1px',
                         right: '-1px',
-                        width: '7px',
-                        height: '7px',
+                        width: '6px',
+                        height: '6px',
                         borderRadius: '50%',
                         background: '#10b981',
                         border: '1px solid #0a0f1d'
                       }}
                     />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left' }}>
-                    <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600', color: '#f8fafc', lineHeight: 1.2 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', textAlign: 'left', lineHeight: 1 }}>
+                    <span className="profile-btn-text" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main, #f8fafc)', whiteSpace: 'nowrap' }}>
                       {currentUser?.name ? currentUser.name.split(' ')[0] : 'User'}
                     </span>
-                    <span className="role-logged-text" style={{ fontSize: '10px', color: '#94a3b8', lineHeight: 1 }}>
+                    <span className="role-logged-text" style={{ fontSize: '9.5px', color: 'var(--text-muted, #94a3b8)', marginTop: '2px', whiteSpace: 'nowrap' }}>
                       {t.roles[role]}
                     </span>
                   </div>
@@ -540,16 +582,17 @@ export const Navbar = ({
                   onClick={() => logout()}
                   title={t.auth?.logout || 'Sign Out'}
                   style={{
-                    width: '34px',
-                    height: '34px',
+                    width: '32px',
+                    height: '32px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
                     borderRadius: '8px',
-                    color: '#94a3b8',
+                    color: 'var(--text-muted, #94a3b8)',
                     cursor: 'pointer',
+                    flexShrink: 0,
                     transition: 'all 0.15s ease'
                   }}
                   onMouseEnter={(e) => {
@@ -558,44 +601,46 @@ export const Navbar = ({
                     e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.color = '#94a3b8';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.background = 'var(--bg-subtle, rgba(255, 255, 255, 0.04))';
+                    e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
+                    e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.1))';
                   }}
                 >
-                  <LogOut size={15} />
+                  <LogOut size={14} />
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                 {/* Guest / Parent Selector Pills */}
                 <div
                   className="mobile-hide"
                   style={{
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
+                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
                     borderRadius: '8px',
-                    padding: '2px'
+                    padding: '2px',
+                    flexShrink: 0
                   }}
                 >
                   <button
                     type="button"
                     onClick={() => setRole('guest')}
                     style={{
-                      padding: '5px 9px',
+                      padding: '4px 8px',
                       borderRadius: '6px',
                       border: 'none',
                       fontSize: '11px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      color: role === 'guest' ? '#ffffff' : '#94a3b8',
+                      color: role === 'guest' ? '#ffffff' : 'var(--text-muted, #94a3b8)',
                       background: role === 'guest' ? 'linear-gradient(135deg, #6366f1, #4f46e5)' : 'transparent',
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px',
-                      transition: 'all 0.15s ease'
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     <Compass size={12} />
@@ -605,18 +650,19 @@ export const Navbar = ({
                     type="button"
                     onClick={() => setRole('parent')}
                     style={{
-                      padding: '5px 9px',
+                      padding: '4px 8px',
                       borderRadius: '6px',
                       border: 'none',
                       fontSize: '11px',
                       fontWeight: '600',
                       cursor: 'pointer',
-                      color: role === 'parent' ? '#ffffff' : '#94a3b8',
+                      color: role === 'parent' ? '#ffffff' : 'var(--text-muted, #94a3b8)',
                       background: role === 'parent' ? 'linear-gradient(135deg, #8b5cf6, #6366f1)' : 'transparent',
-                      display: 'flex',
+                      display: 'inline-flex',
                       alignItems: 'center',
                       gap: '4px',
-                      transition: 'all 0.15s ease'
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     <Users size={12} />
@@ -629,7 +675,7 @@ export const Navbar = ({
                   type="button"
                   onClick={onOpenLogin}
                   className="fluent-btn-secondary"
-                  style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
+                  style={{ height: '32px', padding: '0 11px', fontSize: '12px', whiteSpace: 'nowrap', borderRadius: '8px' }}
                 >
                   <LogIn size={13} />
                   <span>{t.auth?.loginWindow || t.auth?.signIn || 'Sign In'}</span>
@@ -640,7 +686,7 @@ export const Navbar = ({
                   type="button"
                   onClick={onOpenRegister}
                   className="fluent-btn-primary mobile-hide"
-                  style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
+                  style={{ height: '32px', padding: '0 11px', fontSize: '12px', whiteSpace: 'nowrap', borderRadius: '8px' }}
                 >
                   <UserPlus size={13} />
                   <span>{t.auth?.registerWindow || 'Register'}</span>
@@ -666,20 +712,21 @@ export const Navbar = ({
                 background: 'transparent',
                 border: 'none',
                 borderRadius: '8px',
-                color: '#64748b',
+                color: 'var(--text-dim, #64748b)',
                 cursor: 'pointer',
+                flexShrink: 0,
                 transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.color = '#94a3b8';
+                e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#64748b';
+                e.currentTarget.style.color = 'var(--text-dim, #64748b)';
               }}
             >
-              <RotateCcw size={14} />
+              <RotateCcw size={13} />
             </button>
           </div>
         </div>

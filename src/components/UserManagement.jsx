@@ -584,7 +584,7 @@ export const UserManagement = () => {
           }}
         >
           <ShieldCheck size={16} />
-          <span>{lang === 'ru' ? 'Задачи и Доступ к Складу по Ролям' : lang === 'kk' ? 'Рөлдердің Міндеттері мен Қойма Құқықтары' : 'Role Tasks & Storage Matrix'} ({totalRoles})</span>
+          <span>{lang === 'ru' ? 'Роли и задачи' : lang === 'kk' ? 'Рөлдер мен міндеттер' : 'Roles & Tasks'} ({totalRoles})</span>
         </button>
 
         <button
@@ -605,7 +605,7 @@ export const UserManagement = () => {
           }}
         >
           <Boxes size={16} />
-          <span>{lang === 'ru' ? 'Категории Склада' : lang === 'kk' ? 'Қойма Санаттары' : 'Storage Categories'} ({totalCategories})</span>
+          <span>{lang === 'ru' ? 'Категории склада' : lang === 'kk' ? 'Қойма санаттары' : 'Storage Categories'} ({totalCategories})</span>
         </button>
       </div>
 
