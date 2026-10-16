@@ -7,7 +7,18 @@ import {
   Layers,
   Sparkles,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Crown,
+  GraduationCap,
+  Users,
+  Truck,
+  Wrench,
+  Laptop,
+  Compass,
+  Zap,
+  BookOpen,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { getCategoryLabel } from '../storageCategories';
 
@@ -19,6 +30,118 @@ const COLOR_PRESETS = [
   { color: '#f97316', bg: 'rgba(249, 115, 22, 0.15)', border: 'rgba(249, 115, 22, 0.35)', name: 'Orange' },
   { color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)', border: 'rgba(236, 72, 153, 0.35)', name: 'Pink' },
   { color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.15)', border: 'rgba(167, 139, 250, 0.35)', name: 'Purple' }
+];
+
+const AVAILABLE_ICONS = [
+  { name: 'Crown', label: 'Leadership', Icon: Crown },
+  { name: 'GraduationCap', label: 'Academic', Icon: GraduationCap },
+  { name: 'Users', label: 'Staff Crew', Icon: Users },
+  { name: 'ShieldCheck', label: 'Security', Icon: ShieldCheck },
+  { name: 'Package', label: 'Storage', Icon: Package },
+  { name: 'Truck', label: 'Logistics', Icon: Truck },
+  { name: 'Wrench', label: 'Engineering', Icon: Wrench },
+  { name: 'Laptop', label: 'IT Tech', Icon: Laptop },
+  { name: 'Sparkles', label: 'Lab / Hygiene', Icon: Sparkles },
+  { name: 'Compass', label: 'Visitor Guide', Icon: Compass }
+];
+
+const ROLE_PRESET_TEMPLATES = [
+  {
+    key: 'lab_assistant',
+    label: 'Lab Assistant',
+    labelRu: 'Лаборант кабинетов',
+    labelKk: 'Зертхана көмекшісі',
+    icon: 'Sparkles',
+    color: '#38bdf8',
+    bg: 'rgba(56, 189, 248, 0.15)',
+    border: 'rgba(56, 189, 248, 0.35)',
+    scope: 'Science lab equipment maintenance, reagent safety, and preparation of physics, chemistry and biology experiments.',
+    scopeRu: 'Обслуживание оборудования лабораторий, химических реактивов и подготовка кабинетов физики и химии.',
+    scopeKk: 'Зертханалық жабдықтарды күту, химиялық реактивтер және физика, химия кабинеттерін дайындау.',
+    canViewStorage: true,
+    canManageStock: false,
+    allowedCategories: ['stationary', 'stationary_loan', 'electronics', 'other']
+  },
+  {
+    key: 'librarian',
+    label: 'School Librarian',
+    labelRu: 'Библиотекарь школы',
+    labelKk: 'Мектеп кітапханашысы',
+    icon: 'GraduationCap',
+    color: '#a78bfa',
+    bg: 'rgba(167, 139, 250, 0.15)',
+    border: 'rgba(167, 139, 250, 0.35)',
+    scope: 'Textbook cataloging, library circulation, student reading hall supervision, and educational supply distribution.',
+    scopeRu: 'Учет и выдача учебников, работа читального зала, заказ книг и учебных материалов для классов.',
+    scopeKk: 'Оқулықтарды есепке алу және беру, оқу залы, сыныптар үшін кітаптар мен оқу құралдарына тапсырыс беру.',
+    canViewStorage: true,
+    canManageStock: false,
+    allowedCategories: ['stationary', 'stationary_loan', 'other']
+  },
+  {
+    key: 'security',
+    label: 'Campus Security',
+    labelRu: 'Служба безопасности / Охрана',
+    labelKk: 'Қауіпсіздік қызметі / Күзет',
+    icon: 'ShieldCheck',
+    color: '#f97316',
+    bg: 'rgba(249, 115, 22, 0.15)',
+    border: 'rgba(249, 115, 22, 0.35)',
+    scope: 'Campus perimeter security, entrance gates access control, visitor registry, and emergency evacuation protocols.',
+    scopeRu: 'Пропускной режим кампуса, контроль периметра, журнал посетителей и реагирование на инциденты.',
+    scopeKk: 'Кампустың кіру режимі, периметрді бақылау, келушілер журналы және қауіпсіздікті қамтамасыз ету.',
+    canViewStorage: false,
+    canManageStock: false,
+    allowedCategories: []
+  },
+  {
+    key: 'nurse',
+    label: 'School Medical Nurse',
+    labelRu: 'Медицинский пункт / Медсестра',
+    labelKk: 'Мектеп дәрігері / Медбике',
+    icon: 'Users',
+    color: '#34d399',
+    bg: 'rgba(52, 211, 153, 0.15)',
+    border: 'rgba(52, 211, 153, 0.35)',
+    scope: 'First aid, student health checks, cafeteria sanitary inspections, and medical dispensary inventory requests.',
+    scopeRu: 'Оказание первой помощи, медосмотры учащихся, санитарный контроль столовой и заказ медикаментов.',
+    scopeKk: 'Алғашқы медициналық көмек, оқушыларды тексеру, асхананың санитарлық бақылауы және медпункт қажеттіліктері.',
+    canViewStorage: true,
+    canManageStock: false,
+    allowedCategories: ['cleaning', 'other']
+  },
+  {
+    key: 'accountant',
+    label: 'Accountant / Bursar',
+    labelRu: 'Бухгалтерия / Финансист',
+    labelKk: 'Бухгалтер / Қаржыгер',
+    icon: 'Crown',
+    color: '#fbbf24',
+    bg: 'rgba(251, 191, 36, 0.15)',
+    border: 'rgba(251, 191, 36, 0.35)',
+    scope: 'Asset auditing, material expenditure approvals, supplier invoice reconciliation, and inventory write-off reviews.',
+    scopeRu: 'Аудит материальных ценностей, согласование закупок, сверка счетов поставщиков и списание инвентаря.',
+    scopeKk: 'Материалдық құндылықтар аудиті, сатып алуды мақұлдау, шот-фактураларды салыстыру және мүлікті есептен шығару.',
+    canViewStorage: true,
+    canManageStock: true,
+    allowedCategories: ['all']
+  },
+  {
+    key: 'dorm_supervisor',
+    label: 'Dormitory Supervisor',
+    labelRu: 'Комендант общежития',
+    labelKk: 'Жатақхана коменданты',
+    icon: 'Truck',
+    color: '#ec4899',
+    bg: 'rgba(236, 72, 153, 0.15)',
+    border: 'rgba(236, 72, 153, 0.35)',
+    scope: 'Residential room inspection, linen inventory, student curfew safety, and urgent maintenance ticketing.',
+    scopeRu: 'Контроль жилых комнат общежития, постельного белья, порядок студентов и заявки на срочный ремонт.',
+    scopeKk: 'Жатақхана бөлмелерін тексеру, төсек-орын жабдықтары, оқушылар тәртібі және шұғыл жөндеуге өтінімдер.',
+    canViewStorage: true,
+    canManageStock: false,
+    allowedCategories: ['furniture', 'cleaning', 'other']
+  }
 ];
 
 export const RoleEditorModal = ({
@@ -96,6 +219,27 @@ export const RoleEditorModal = ({
   }, [editingRole, isOpen, allCategories]);
 
   if (!isOpen) return null;
+
+  const handleApplyPresetTemplate = (tmpl) => {
+    const isAll = tmpl.allowedCategories.includes('all');
+    setFormData({
+      key: tmpl.key,
+      label: tmpl.label,
+      labelRu: tmpl.labelRu,
+      labelKk: tmpl.labelKk,
+      color: tmpl.color,
+      bg: tmpl.bg,
+      border: tmpl.border,
+      icon: tmpl.icon,
+      scope: tmpl.scope,
+      scopeRu: tmpl.scopeRu,
+      scopeKk: tmpl.scopeKk,
+      canViewStorage: tmpl.canViewStorage,
+      canManageStock: tmpl.canManageStock,
+      allowedCategories: isAll ? allCategories.map(c => c.id || c.key) : tmpl.allowedCategories
+    });
+    setSelectAllCategories(isAll);
+  };
 
   const handleToggleCategory = (catId) => {
     setFormData(prev => {
@@ -187,7 +331,7 @@ export const RoleEditorModal = ({
       <div
         style={{
           width: '100%',
-          maxWidth: '640px',
+          maxWidth: '680px',
           maxHeight: '92vh',
           background: '#242424',
           border: '1px solid #383838',
@@ -210,8 +354,8 @@ export const RoleEditorModal = ({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
+              width: '38px',
+              height: '38px',
               borderRadius: '10px',
               background: formData.bg,
               border: `1px solid ${formData.border}`,
@@ -220,17 +364,17 @@ export const RoleEditorModal = ({
               justifyContent: 'center',
               color: formData.color
             }}>
-              <ShieldCheck size={20} />
+              <ShieldCheck size={22} />
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#fff' }}>
                 {isEditing
                   ? (lang === 'ru' ? `Настройка роли: ${formData.label}` : `Adjust Role & Tasks: ${formData.label}`)
-                  : (lang === 'ru' ? 'Создание новой роли' : 'Create New Campus Role')}
+                  : (lang === 'ru' ? 'Создание новой роли школы' : 'Create New Campus Role')}
               </h3>
               <p style={{ margin: 0, fontSize: '11px', color: '#8a8a8a' }}>
                 {lang === 'ru'
-                  ? 'Определите обязанности роли, видимость склада и доступные категории товаров'
+                  ? 'Определите обязанности роли, видимость склада и разрешенные категории товаров'
                   : 'Configure tasks, warehouse storage visibility, and permitted categories'}
               </p>
             </div>
@@ -267,18 +411,59 @@ export const RoleEditorModal = ({
             </div>
           )}
 
+          {/* Quick-Start School Role Templates (Only when creating new role) */}
+          {!isEditing && (
+            <div style={{
+              background: 'rgba(99, 102, 241, 0.08)',
+              border: '1px solid rgba(99, 102, 241, 0.25)',
+              borderRadius: '12px',
+              padding: '12px 14px'
+            }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: '#818cf8', textTransform: 'uppercase', marginBottom: '8px' }}>
+                {lang === 'ru' ? 'Быстрые шаблоны школьных ролей (нажмите для автозаполнения):' : 'Quick School Role Templates (click to prefill):'}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px' }}>
+                {ROLE_PRESET_TEMPLATES.map(tmpl => (
+                  <button
+                    key={tmpl.key}
+                    type="button"
+                    onClick={() => handleApplyPresetTemplate(tmpl)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      background: formData.key === tmpl.key ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+                      border: formData.key === tmpl.key ? '1.5px solid #818cf8' : '1px solid rgba(255, 255, 255, 0.08)',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff' }}>
+                      {lang === 'ru' ? tmpl.labelRu : tmpl.label}
+                    </span>
+                    <span style={{ fontSize: '9.5px', color: '#8a8a8a', fontFamily: 'monospace', marginTop: '2px' }}>
+                      {tmpl.key}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Role Key and Titles */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '12px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '5px' }}>
-                Role Key / ID {isEditing && '(Fixed)'}
+                Role Identifier / Key {isEditing && '(Fixed)'} *
               </label>
               <input
                 type="text"
                 disabled={isEditing}
                 value={formData.key}
                 onChange={(e) => setFormData(prev => ({ ...prev, key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') }))}
-                placeholder="e.g. librarian, security"
+                placeholder="e.g. librarian, security, nurse"
                 style={{
                   width: '100%',
                   padding: '9px 12px',
@@ -301,7 +486,7 @@ export const RoleEditorModal = ({
                 required
                 value={formData.label}
                 onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
-                placeholder="e.g. School Librarian"
+                placeholder="e.g. Science Lab Assistant"
                 style={{
                   width: '100%',
                   padding: '9px 12px',
@@ -323,7 +508,7 @@ export const RoleEditorModal = ({
                 type="text"
                 value={formData.labelRu}
                 onChange={(e) => setFormData(prev => ({ ...prev, labelRu: e.target.value }))}
-                placeholder="например, Библиотекарь"
+                placeholder="например, Лаборант кабинетов"
                 style={{
                   width: '100%',
                   padding: '9px 12px',
@@ -338,53 +523,90 @@ export const RoleEditorModal = ({
             </div>
           </div>
 
-          {/* Color Preset Palette */}
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '6px' }}>
-              Badge Color Preset
-            </label>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {COLOR_PRESETS.map((p, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setFormData(prev => ({
-                    ...prev,
-                    color: p.color,
-                    bg: p.bg,
-                    border: p.border
-                  }))}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '5px 10px',
-                    borderRadius: '8px',
-                    background: p.bg,
-                    border: formData.color === p.color ? `2px solid ${p.color}` : `1px solid ${p.border}`,
-                    color: p.color,
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.color }} />
-                  <span>{p.name}</span>
-                </button>
-              ))}
+          {/* Icon and Color Customization */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+            {/* Icon Picker */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '6px' }}>
+                Role Icon Symbol
+              </label>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {AVAILABLE_ICONS.map(item => {
+                  const IconComp = item.Icon;
+                  const isSelected = formData.icon === item.name;
+                  return (
+                    <button
+                      key={item.name}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, icon: item.name }))}
+                      title={item.label}
+                      style={{
+                        padding: '7px 10px',
+                        borderRadius: '8px',
+                        background: isSelected ? formData.bg : '#1f1f1f',
+                        border: isSelected ? `2px solid ${formData.color}` : '1px solid #383838',
+                        color: isSelected ? formData.color : '#8a8a8a',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <IconComp size={16} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Color Preset Palette */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '6px' }}>
+                Badge Color Preset
+              </label>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {COLOR_PRESETS.map((p, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      color: p.color,
+                      bg: p.bg,
+                      border: p.border
+                    }))}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '5px 9px',
+                      borderRadius: '8px',
+                      background: p.bg,
+                      border: formData.color === p.color ? `2px solid ${p.color}` : `1px solid ${p.border}`,
+                      color: p.color,
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: p.color }} />
+                    <span>{p.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Tasks & Scope */}
+          {/* Tasks & Scope (Responsibilities) */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '5px' }}>
-              {lang === 'ru' ? 'Обязанности и задачи роли (Scope / Responsibilities)' : 'Assigned Tasks & Responsibilities (Scope)'}
+              {lang === 'ru' ? 'Обязанности и функциональные задачи роли (Operational Tasks)' : 'Assigned Role Tasks & Responsibilities (Scope)'}
             </label>
             <textarea
               rows={3}
               value={formData.scope}
               onChange={(e) => setFormData(prev => ({ ...prev, scope: e.target.value }))}
-              placeholder="e.g. Library book distribution, learning materials archiving, and classroom reading supplies..."
+              placeholder="e.g. Science lab equipment maintenance, chemical reagent safety, and preparing classroom experiment materials..."
               style={{
                 width: '100%',
                 padding: '9px 12px',
@@ -414,7 +636,7 @@ export const RoleEditorModal = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Package size={17} color="#fbbf24" />
               <strong style={{ fontSize: '13px', color: '#f3f2f1' }}>
-                {lang === 'ru' ? 'Доступ к складу и каталогу материалов' : 'Warehouse Storage & Catalog Access'}
+                {lang === 'ru' ? 'Настройки доступа к складу и разрешенные категории' : 'Warehouse Storage Visibility & Category Permissions'}
               </strong>
             </div>
 
@@ -438,11 +660,11 @@ export const RoleEditorModal = ({
                 />
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: '700', color: '#fff' }}>
-                    {lang === 'ru' ? 'Может видеть склад / каталог' : 'Can View Storage Catalog'}
+                    {lang === 'ru' ? 'Может видеть каталог склада' : 'Can View Storage Catalog'}
                   </div>
                   <div style={{ fontSize: '11px', color: '#8a8a8a', marginTop: '2px' }}>
                     {lang === 'ru'
-                      ? 'Отображает вкладку «Каталог / Склад» в панели навигации'
+                      ? 'Отображает вкладку «Склад / Каталог» в панели навигации'
                       : 'Shows warehouse inventory & catalog tab for this role'}
                   </div>
                 </div>
@@ -466,12 +688,12 @@ export const RoleEditorModal = ({
                 />
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: '700', color: '#fff' }}>
-                    {lang === 'ru' ? 'Может управлять остатками' : 'Can Manage Stock Levels'}
+                    {lang === 'ru' ? 'Право управления остатками' : 'Can Deduct & Restock'}
                   </div>
                   <div style={{ fontSize: '11px', color: '#8a8a8a', marginTop: '2px' }}>
                     {lang === 'ru'
-                      ? 'Списание, пополнение остатков, добавление товаров и подтверждение возвратов'
-                      : 'Permission to deduct, restock, edit quantities, and confirm item returns'}
+                      ? 'Списание, изменение остатков и подтверждение возвратов товаров'
+                      : 'Permission to deduct, edit quantities, and confirm loan returns'}
                   </div>
                 </div>
               </label>
@@ -482,7 +704,7 @@ export const RoleEditorModal = ({
               <div style={{ marginTop: '6px', borderTop: '1px solid #2d2d2d', paddingTop: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ fontSize: '12px', fontWeight: '700', color: '#cbd5e1' }}>
-                    {lang === 'ru' ? 'Разрешенные категории склада для этой роли:' : 'Allowed Storage Categories for this Role:'}
+                    {lang === 'ru' ? 'Категории товаров, которые видит эта роль:' : 'Categories Permitted for this Role:'}
                   </div>
 
                   <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#38bdf8', cursor: 'pointer', fontWeight: '600' }}>
@@ -571,7 +793,9 @@ export const RoleEditorModal = ({
             >
               {saving
                 ? (lang === 'ru' ? 'Сохранение...' : 'Saving...')
-                : (lang === 'ru' ? 'Сохранить роль' : 'Save Role Configuration')}
+                : isEditing 
+                ? (lang === 'ru' ? 'Сохранить изменения' : 'Save Adjustments')
+                : (lang === 'ru' ? 'Создать роль' : 'Create Role')}
             </button>
           </div>
         </form>

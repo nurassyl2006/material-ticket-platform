@@ -74,6 +74,7 @@ export const UserManagement = () => {
     customCategories,
     updateRoleConfig,
     createRole,
+    deleteRole,
     createStorageCategory,
     updateStorageCategory,
     inventory
@@ -264,6 +265,28 @@ export const UserManagement = () => {
         showFeedback(err.message || 'Failed to delete user', true);
       } finally {
         setLoadingAction(null);
+      }
+    }
+  };
+
+  // Handle Delete Custom Role
+  const handleDeleteRole = async (targetRole) => {
+    if (DEFAULT_ROLES[targetRole.key]) {
+      showFeedback('Default system roles cannot be deleted.', true);
+      return;
+    }
+
+    const assignedCount = (usersList || []).filter(u => (u.role || u.roleKey) === targetRole.key).length;
+    const warningMsg = assignedCount > 0
+      ? `Are you sure you want to delete role "${targetRole.label}"? ${assignedCount} staff member(s) currently assigned to this role will fallback to Teacher.`
+      : `Are you sure you want to delete custom role "${targetRole.label}"?`;
+
+    if (window.confirm(warningMsg)) {
+      try {
+        await deleteRole(targetRole.key);
+        showFeedback(`Role "${targetRole.label}" was deleted successfully.`);
+      } catch (err) {
+        showFeedback(err.message || 'Failed to delete role', true);
       }
     }
   };
@@ -968,8 +991,21 @@ export const UserManagement = () => {
                           <IconComp size={20} />
                         </div>
                         <div>
-                          <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff' }}>
-                            {roleTitle}
+                          <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>{roleTitle}</span>
+                            {!DEFAULT_ROLES[r.key] && (
+                              <span style={{
+                                fontSize: '10px',
+                                fontWeight: '700',
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                background: 'rgba(99, 102, 241, 0.25)',
+                                color: '#a5b4fc',
+                                border: '1px solid rgba(99, 102, 241, 0.4)'
+                              }}>
+                                Custom Role
+                              </span>
+                            )}
                           </div>
                           <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                             role: {r.key}
@@ -1084,24 +1120,47 @@ export const UserManagement = () => {
                       )}
                     </div>
 
-                    <button
-                      onClick={() => {
-                        setEditingRole(r);
-                        setIsRoleModalOpen(true);
-                      }}
-                      className="fluent-btn-secondary"
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <Edit3 size={13} />
-                      <span>{lang === 'ru' ? 'Настроить роль и доступ' : 'Adjust Tasks & Access'}</span>
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button
+                        onClick={() => {
+                          setEditingRole(r);
+                          setIsRoleModalOpen(true);
+                        }}
+                        className="fluent-btn-secondary"
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          fontSize: '12px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <Edit3 size={13} />
+                        <span>{lang === 'ru' ? 'Настроить роль и доступ' : 'Adjust Tasks & Access'}</span>
+                      </button>
+
+                      {!DEFAULT_ROLES[r.key] && (
+                        <button
+                          onClick={() => handleDeleteRole(r)}
+                          className="fluent-btn-secondary"
+                          title="Delete Custom Role"
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            color: '#f87171',
+                            borderColor: 'rgba(239, 68, 68, 0.35)',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

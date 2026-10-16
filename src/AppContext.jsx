@@ -1392,6 +1392,21 @@ export const AppProvider = ({ children }) => {
     return true;
   }, []);
 
+  const deleteRole = useCallback(async (roleKey) => {
+    if (!roleKey) return false;
+    if (['director', 'teacher', 'admin', 'engineer', 'it_support', 'cleaning', 'storage_manager', 'facilities_manager'].includes(roleKey)) {
+      throw new Error('Default system roles cannot be deleted.');
+    }
+    setRolesConfig(prev => {
+      const updated = { ...prev };
+      delete updated[roleKey];
+      localStorage.setItem('app_roles_config_v1', JSON.stringify(updated));
+      saveRolesApi(updated).catch(() => {});
+      return updated;
+    });
+    return true;
+  }, []);
+
   // -------------------------------------------------------------
   // Storage Categories Matrix Management (Director Controls)
   // -------------------------------------------------------------
@@ -1599,6 +1614,7 @@ export const AppProvider = ({ children }) => {
       customCategories,
       updateRoleConfig,
       createRole,
+      deleteRole,
       createStorageCategory,
       updateStorageCategory,
       canAccessStorage: (r = role) => canRoleAccessStorage(r, rolesConfig),
