@@ -174,8 +174,13 @@ export async function bulkSyncTicketsToDb(tickets) {
 // -------------------------------------------------------------
 // Storage List of Goods (Inventory) API
 // -------------------------------------------------------------
-export async function fetchInventoryFromDb() {
-  return request('/inventory');
+export async function fetchInventoryFromDb(category) {
+  const query = category && category !== 'all' ? `?category=${encodeURIComponent(category)}` : '';
+  return request(`/inventory${query}`);
+}
+
+export async function fetchInventoryCategoriesFromDb() {
+  return request('/inventory/categories');
 }
 
 export async function createInventoryItemInDb(itemData) {

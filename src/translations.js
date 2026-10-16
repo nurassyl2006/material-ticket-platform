@@ -293,14 +293,26 @@ export const translations = {
       actions: "Actions",
       categories: {
         stationary: "Stationery & Paper",
-        electronics: "Electronics & Audio",
+        marketing: "Marketing & Promotional Materials",
         furniture: "Furniture & Desks",
-        lab: "Science & Lab Equipment",
-        cleaning: "Cleaning Chemicals & Tools",
+        electronics: "Electronics & Audio",
         electrical: "Electrical & Lighting",
+        cleaning: "Cleaning Chemicals & Tools",
         hvac: "AC & Climate Control",
+        lab: "Science & Lab Equipment",
         other: "General Assets"
-      }
+      },
+      allCategories: "All Categories",
+      viewGrouped: "Grouped by Category",
+      viewTable: "All Items Table",
+      filterByCategory: "Filter by Category",
+      categoryOverview: "Warehouse Categories Overview",
+      searchPlaceholder: "Search storage items or locations...",
+      noItemsInCategory: "No items cataloged in this category.",
+      addToCategory: "Add to this category",
+      totalQuantity: "Total in stock",
+      itemsCount: "items",
+      lowStockWarning: "low stock alert"
     },
     dashboard: {
       welcome: "Welcome back,",
@@ -677,14 +689,26 @@ export const translations = {
       actions: "Действия",
       categories: {
         stationary: "Канцелярия и бумага",
-        electronics: "Электроника и кабели",
+        marketing: "Маркетинг, PR и полиграфия",
         furniture: "Мебель, парты и стулья",
-        lab: "Лабораторные реактивы и посуда",
-        cleaning: "Хозтовары и чистящие средства",
+        electronics: "Электроника и кабели",
         electrical: "Электрика и освещение",
+        cleaning: "Хозтовары и чистящие средства",
         hvac: "Кондиционеры и климат",
+        lab: "Лабораторные реактивы и посуда",
         other: "Общий инвентарь"
-      }
+      },
+      allCategories: "Все категории",
+      viewGrouped: "По категориям",
+      viewTable: "Таблица позиций",
+      filterByCategory: "Фильтр по категориям",
+      categoryOverview: "Обзор категорий склада",
+      searchPlaceholder: "Поиск по наименованию или месту хранения...",
+      noItemsInCategory: "В этой категории пока нет товаров.",
+      addToCategory: "Добавить в категорию",
+      totalQuantity: "Всего на складе",
+      itemsCount: "позиций",
+      lowStockWarning: "требует пополнения"
     },
     dashboard: {
       welcome: "Добро пожаловать,",
@@ -1061,14 +1085,26 @@ export const translations = {
       actions: "Әрекеттер",
       categories: {
         stationary: "Кеңсе және қағаз",
-        electronics: "Электроника және кабельдер",
+        marketing: "Маркетинг және полиграфия",
         furniture: "Жиһаз, парталар және орындықтар",
-        lab: "Зертханалық құралдар мен ыдыстар",
-        cleaning: "Шаруашылық тауарлары мен жуғыш құралдар",
+        electronics: "Электроника және кабельдер",
         electrical: "Электрика және жарық",
+        cleaning: "Шаруашылық тауарлары мен жуғыш құралдар",
         hvac: "Кондиционерлер және климат",
+        lab: "Зертханалық құралдар мен ыдыстар",
         other: "Жалпы инвентарь"
-      }
+      },
+      allCategories: "Барлық санаттар",
+      viewGrouped: "Санаттар бойынша",
+      viewTable: "Толық кесте",
+      filterByCategory: "Санат бойынша сүзу",
+      categoryOverview: "Қойма санаттарына шолу",
+      searchPlaceholder: "Тауар атауы немесе сақтау орны бойынша іздеу...",
+      noItemsInCategory: "Бұл санатта әлі тауар тіркелмеген.",
+      addToCategory: "Санатқа тауар қосу",
+      totalQuantity: "Қоймадағы барлық қалдық",
+      itemsCount: "позиция",
+      lowStockWarning: "қоймада аз қалды"
     },
     dashboard: {
       welcome: "Қош келдіңіз,",

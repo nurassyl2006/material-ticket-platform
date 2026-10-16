@@ -680,11 +680,37 @@ app.post('/api/tickets/bulk', (req, res) => {
 // Storage List of Goods (Inventory) API Endpoints
 // -------------------------------------------------------------
 
-// GET all inventory items
+// GET inventory items (supports ?category=... filter)
 app.get('/api/inventory', (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM inventory ORDER BY name ASC').all();
+    const { category } = req.query;
+    let rows;
+    if (category && category !== 'all') {
+      rows = db.prepare('SELECT * FROM inventory WHERE category = ? ORDER BY name ASC').all(category);
+    } else {
+      rows = db.prepare('SELECT * FROM inventory ORDER BY category ASC, name ASC').all();
+    }
     res.json(rows.map(formatInventory));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET inventory categories breakdown & statistics
+app.get('/api/inventory/categories', (req, res) => {
+  try {
+    const stats = db.prepare(`
+      SELECT 
+        category,
+        COUNT(*) as itemCount,
+        COALESCE(SUM(quantity), 0) as totalQty,
+        SUM(CASE WHEN quantity <= minLevel THEN 1 ELSE 0 END) as lowStockCount,
+        SUM(CASE WHEN quantity = 0 THEN 1 ELSE 0 END) as outOfStockCount
+      FROM inventory
+      GROUP BY category
+      ORDER BY category ASC
+    `).all();
+    res.json(stats);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

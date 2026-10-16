@@ -1,4 +1,5 @@
 export const mockInventory = [
+  // --- Stationary (Канцелярия и бумага) ---
   {
     id: "inv-1",
     name: "Whiteboard Markers Set (Red/Blue/Black)",
@@ -18,14 +19,90 @@ export const mockInventory = [
     location: "Storage Cabinet 102 - Shelf B"
   },
   {
-    id: "inv-3",
-    name: "HDMI to VGA & DisplayPort Adapter Kit",
-    category: "electronics",
-    quantity: 8,
-    unit: "pcs",
-    minLevel: 5,
-    location: "IT Server Room 204"
+    id: "inv-s3",
+    name: "Clear Document Folders & Sheet Protectors",
+    category: "stationary",
+    quantity: 35,
+    unit: "pack",
+    minLevel: 10,
+    location: "Storage Cabinet 102 - Shelf C"
   },
+  {
+    id: "inv-s4",
+    name: "Heavy-Duty Desktop Stapler & 24/6 Staples Kit",
+    category: "stationary",
+    quantity: 14,
+    unit: "set",
+    minLevel: 4,
+    location: "Storage Cabinet 103 - Shelf A"
+  },
+  {
+    id: "inv-s5",
+    name: "Adhesive Sticky Notes 76x76mm (Neon Set)",
+    category: "stationary",
+    quantity: 60,
+    unit: "pad",
+    minLevel: 15,
+    location: "Storage Cabinet 103 - Shelf B"
+  },
+
+  // --- Marketing (Маркетинг, PR и полиграфия) ---
+  {
+    id: "inv-m1",
+    name: "School Roll-Up Banners (Open Day & Admissions)",
+    category: "marketing",
+    quantity: 4,
+    unit: "pcs",
+    minLevel: 2,
+    location: "Marketing Storage Room B-1"
+  },
+  {
+    id: "inv-m2",
+    name: "Branded Welcome Tote Bags & Swag Sets",
+    category: "marketing",
+    quantity: 120,
+    unit: "pcs",
+    minLevel: 20,
+    location: "Marketing Storage Room B-2"
+  },
+  {
+    id: "inv-m3",
+    name: "School Information Brochures & Prospectuses 2026/2027",
+    category: "marketing",
+    quantity: 350,
+    unit: "pcs",
+    minLevel: 50,
+    location: "Marketing Storage Room B-2"
+  },
+  {
+    id: "inv-m4",
+    name: "Event Participant Badges & Branded Lanyards",
+    category: "marketing",
+    quantity: 200,
+    unit: "pcs",
+    minLevel: 30,
+    location: "Marketing Storage Room B-1"
+  },
+  {
+    id: "inv-m5",
+    name: "Promotional Branded Metal Pens with School Logo",
+    category: "marketing",
+    quantity: 150,
+    unit: "pcs",
+    minLevel: 25,
+    location: "Marketing Storage Room B-3"
+  },
+  {
+    id: "inv-m6",
+    name: "Official School Photo Backdrop & Press Wall (3x2.5m)",
+    category: "marketing",
+    quantity: 2,
+    unit: "set",
+    minLevel: 1,
+    location: "Marketing Storage Room B-4"
+  },
+
+  // --- Furniture (Мебель и парты) ---
   {
     id: "inv-4",
     name: "Ergonomic Student Chairs (Blue)",
@@ -54,6 +131,55 @@ export const mockInventory = [
     location: "Facilities Workshop 105"
   },
   {
+    id: "inv-f4",
+    name: "Teacher Presentation Lectern / Mobile Podium",
+    category: "furniture",
+    quantity: 2,
+    unit: "pcs",
+    minLevel: 1,
+    location: "Facilities Warehouse Block A"
+  },
+  {
+    id: "inv-f5",
+    name: "Mobile Magnetic Whiteboard on Wheels (120x90cm)",
+    category: "furniture",
+    quantity: 5,
+    unit: "pcs",
+    minLevel: 2,
+    location: "Facilities Warehouse Block A"
+  },
+
+  // --- Electronics & IT (Электроника и IT) ---
+  {
+    id: "inv-3",
+    name: "HDMI to VGA & DisplayPort Adapter Kit",
+    category: "electronics",
+    quantity: 8,
+    unit: "pcs",
+    minLevel: 5,
+    location: "IT Server Room 204"
+  },
+  {
+    id: "inv-e2",
+    name: "USB-C Multi-Port Hub (HDMI, USB 3.0, Ethernet)",
+    category: "electronics",
+    quantity: 10,
+    unit: "pcs",
+    minLevel: 4,
+    location: "IT Server Room 204"
+  },
+  {
+    id: "inv-e3",
+    name: "Wireless Presentation Clicker with Laser Pointer",
+    category: "electronics",
+    quantity: 6,
+    unit: "pcs",
+    minLevel: 2,
+    location: "IT Server Room 204"
+  },
+
+  // --- Cleaning & Hygiene (Хозтовары и чистящие средства) ---
+  {
     id: "inv-7",
     name: "Disinfectant Surface Sanitizing Wipes",
     category: "cleaning",
@@ -62,6 +188,26 @@ export const mockInventory = [
     minLevel: 10,
     location: "Cleaning Depot Basement"
   },
+  {
+    id: "inv-c2",
+    name: "Heavy-Duty Waste Bags 120L (Roll of 25)",
+    category: "cleaning",
+    quantity: 25,
+    unit: "roll",
+    minLevel: 8,
+    location: "Cleaning Depot Basement"
+  },
+  {
+    id: "inv-c3",
+    name: "Antibacterial Liquid Soap Refill (5L)",
+    category: "cleaning",
+    quantity: 8,
+    unit: "canister",
+    minLevel: 3,
+    location: "Cleaning Depot Basement"
+  },
+
+  // --- Lab & Science (Лабораторные реактивы и посуда) ---
   {
     id: "inv-8",
     name: "Chemistry Lab Test Tubes Set",
@@ -72,6 +218,17 @@ export const mockInventory = [
     location: "Science Lab Storage 301"
   },
   {
+    id: "inv-l2",
+    name: "Student Protective Safety Goggles",
+    category: "lab",
+    quantity: 30,
+    unit: "pcs",
+    minLevel: 10,
+    location: "Science Lab Storage 301"
+  },
+
+  // --- Electrical (Электрика и освещение) ---
+  {
     id: "inv-9",
     name: "LED Ceiling Panel 36W (600x600)",
     category: "electrical",
@@ -81,15 +238,6 @@ export const mockInventory = [
     location: "Engineering Workshop 106 - Shelf A"
   },
   {
-    id: "inv-10",
-    name: "Split AC Washable Air Filters & Drain Hose Kit",
-    category: "hvac",
-    quantity: 6,
-    unit: "set",
-    minLevel: 2,
-    location: "Engineering Workshop 106 - Shelf B"
-  },
-  {
     id: "inv-11",
     name: "Heavy Duty Grounded Wall Sockets (16A 250V)",
     category: "electrical",
@@ -97,6 +245,17 @@ export const mockInventory = [
     unit: "pcs",
     minLevel: 5,
     location: "Engineering Workshop 106 - Shelf C"
+  },
+
+  // --- HVAC & Climate (Кондиционеры и вентиляция) ---
+  {
+    id: "inv-10",
+    name: "Split AC Washable Air Filters & Drain Hose Kit",
+    category: "hvac",
+    quantity: 6,
+    unit: "set",
+    minLevel: 2,
+    location: "Engineering Workshop 106 - Shelf B"
   }
 ];
 

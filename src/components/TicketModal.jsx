@@ -4,6 +4,7 @@ import { PlusCircle, X, Truck, Camera, ImagePlus, ArrowRight, Globe, Languages, 
 import { CampusLocationSelector } from './CampusLocationSelector';
 import { DEPARTMENTS, resolveDepartment, getSubcategories } from '../departments';
 import { translateText } from '../services/translator';
+import { STORAGE_CATEGORIES, getCategoryLabel } from '../storageCategories';
 
 export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk' }) => {
   const { t, addTicket, inventory, currentUser, lang, role, isAuthenticated } = useApp();
@@ -27,6 +28,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   });
   const [photos, setPhotos] = useState([]);
   const [storageSearchTerm, setStorageSearchTerm] = useState('');
+  const [storageSelectedCategory, setStorageSelectedCategory] = useState('all');
   const [translatedPreview, setTranslatedPreview] = useState(null);
   const [isTranslatingPreview, setIsTranslatingPreview] = useState(false);
   const fileInputRef = useRef(null);
@@ -124,14 +126,20 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
   const filteredInventory = useMemo(() => {
     if (!inventory || !Array.isArray(inventory)) return [];
-    if (!storageSearchTerm.trim()) return inventory;
-    const term = storageSearchTerm.toLowerCase();
-    return inventory.filter(item => 
-      (item.name || '').toLowerCase().includes(term) ||
-      (item.category || '').toLowerCase().includes(term) ||
-      (item.location || '').toLowerCase().includes(term)
-    );
-  }, [inventory, storageSearchTerm]);
+    let items = inventory;
+    if (storageSelectedCategory !== 'all') {
+      items = items.filter(item => (item.category || 'other') === storageSelectedCategory);
+    }
+    if (storageSearchTerm.trim()) {
+      const term = storageSearchTerm.toLowerCase();
+      items = items.filter(item => 
+        (item.name || '').toLowerCase().includes(term) ||
+        (item.category || '').toLowerCase().includes(term) ||
+        (item.location || '').toLowerCase().includes(term)
+      );
+    }
+    return items;
+  }, [inventory, storageSelectedCategory, storageSearchTerm]);
 
   const matchedStockItem = useMemo(() => {
     if (!inventory || !formData.itemTitle) return null;
@@ -506,6 +514,52 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   ✕
                 </button>
               )}
+            </div>
+
+            {/* Category Filter Pills */}
+            <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setStorageSelectedCategory('all')}
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  fontWeight: storageSelectedCategory === 'all' ? '700' : '500',
+                  background: storageSelectedCategory === 'all' ? '#fbbf24' : 'rgba(255, 255, 255, 0.08)',
+                  color: storageSelectedCategory === 'all' ? '#0f172a' : '#cbd5e1'
+                }}
+              >
+                {t.inventory?.allCategories || 'All'} ({(inventory || []).length})
+              </button>
+              {STORAGE_CATEGORIES.map(cat => {
+                const count = (inventory || []).filter(i => (i.category || 'other') === cat.id).length;
+                if (count === 0) return null;
+                const isCatActive = storageSelectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setStorageSelectedCategory(cat.id)}
+                    style={{
+                      padding: '3px 8px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      fontWeight: isCatActive ? '700' : '500',
+                      background: isCatActive ? cat.color : 'rgba(255, 255, 255, 0.08)',
+                      color: isCatActive ? '#fff' : '#cbd5e1'
+                    }}
+                  >
+                    {cat.icon} {getCategoryLabel(cat.id, lang, true)} ({count})
+                  </button>
+                );
+              })}
             </div>
 
             {/* Scrollable list of items */}
