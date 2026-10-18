@@ -369,7 +369,7 @@ export const UserManagement = () => {
       <div className="glass-panel" style={{
         padding: '18px 24px',
         borderRadius: '12px',
-        background: 'rgba(24, 24, 27, 0.85)',
+        background: 'var(--bg-card, rgba(24, 24, 27, 0.85))',
         border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
         display: 'flex',
         alignItems: 'center',
@@ -538,12 +538,13 @@ export const UserManagement = () => {
       )}
 
       {/* Sub-Tabs Switcher */}
-      <div style={{
+      <div className="mobile-overflow-x" style={{
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
         borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-        paddingBottom: '4px'
+        paddingBottom: '4px',
+        whiteSpace: 'nowrap'
       }}>
         <button
           onClick={() => setAdminTab('users')}
@@ -559,6 +560,7 @@ export const UserManagement = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
+            flexShrink: 0,
             transition: 'all 0.15s ease'
           }}
         >
@@ -580,6 +582,7 @@ export const UserManagement = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
+            flexShrink: 0,
             transition: 'all 0.15s ease'
           }}
         >
@@ -601,6 +604,7 @@ export const UserManagement = () => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
+            flexShrink: 0,
             transition: 'all 0.15s ease'
           }}
         >
@@ -615,7 +619,7 @@ export const UserManagement = () => {
       {adminTab === 'users' && (
         <>
           {/* Summary KPI Cards */}
-          <div style={{
+          <div className="dashboard-stats-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '14px'
@@ -969,8 +973,8 @@ export const UserManagement = () => {
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     gap: '16px',
-                    border: `1.5px solid ${r.border || 'rgba(255, 255, 255, 0.08)'}`,
-                    background: 'rgba(24, 24, 27, 0.75)'
+                    border: `1.5px solid ${r.border || 'var(--border-color, rgba(255, 255, 255, 0.08))'}`,
+                    background: 'var(--bg-card, rgba(24, 24, 27, 0.75))'
                   }}
                 >
                   <div>
@@ -1227,8 +1231,8 @@ export const UserManagement = () => {
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     gap: '16px',
-                    border: `1.5px solid ${cat.borderColor || 'rgba(255, 255, 255, 0.08)'}`,
-                    background: 'rgba(24, 24, 27, 0.75)'
+                    border: `1.5px solid ${cat.borderColor || 'var(--border-color, rgba(255, 255, 255, 0.08))'}`,
+                    background: 'var(--bg-card, rgba(24, 24, 27, 0.75))'
                   }}
                 >
                   <div>
@@ -1353,9 +1357,11 @@ export const UserManagement = () => {
           zIndex: 1000,
           padding: '16px'
         }}>
-          <div className="glass-panel" style={{
+          <div className="glass-panel modal-dialog-responsive" style={{
             width: '100%',
             maxWidth: '520px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
             borderRadius: '16px',
             padding: '24px',
             background: 'var(--bg-modal, #18181b)',
@@ -1577,9 +1583,11 @@ export const UserManagement = () => {
           zIndex: 1000,
           padding: '16px'
         }}>
-          <div className="glass-panel" style={{
+          <div className="glass-panel modal-dialog-responsive" style={{
             width: '100%',
             maxWidth: '440px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
             borderRadius: '16px',
             padding: '24px',
             background: 'var(--bg-modal, #18181b)',

@@ -469,9 +469,37 @@ body[data-theme="light"] {
 /* Light Theme Comprehensive Contrast Overrides */
 [data-theme="light"] div[style*="background: rgba(18, 25, 44"],
 [data-theme="light"] div[style*="background: rgb(18, 25, 44"],
+[data-theme="light"] div[style*="background: rgba(30, 41, 59"],
+[data-theme="light"] div[style*="background: rgb(30, 41, 59"],
+[data-theme="light"] div[style*="background: rgba(15, 23, 42"],
+[data-theme="light"] div[style*="background: rgb(15, 23, 42"],
+[data-theme="light"] div[style*="background: rgba(24, 24, 27"],
+[data-theme="light"] div[style*="background: rgb(24, 24, 27"],
 [data-theme="light"] div[style*="background: #292929"],
 [data-theme="light"] div[style*="background: rgb(41, 41, 41)"] {
   background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+[data-theme="light"] tr[style*="background: rgba(15, 23, 42"],
+[data-theme="light"] tr[style*="background: rgb(15, 23, 42"],
+[data-theme="light"] thead tr {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-muted) !important;
+}
+
+[data-theme="light"] tr[style*="border-bottom: 1px solid rgba(255, 255, 255"],
+[data-theme="light"] tr[style*="border-bottom: 1px solid rgba(255,255,255"] {
+  border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="light"] input[style*="background: rgba(15, 23, 42"],
+[data-theme="light"] input[style*="background: rgb(15, 23, 42"],
+[data-theme="light"] input[style*="background: rgba(30, 41, 59"],
+[data-theme="light"] input[style*="background: rgb(30, 41, 59"] {
+  background: #ffffff !important;
   border-color: var(--border-color) !important;
   color: var(--text-main) !important;
 }
@@ -539,6 +567,20 @@ body[data-theme="light"] {
 [data-theme="light"] .fluent-btn-primary *,
 [data-theme="light"] button[style*="linear-gradient"],
 [data-theme="light"] button[style*="linear-gradient"] *,
+[data-theme="light"] button[style*="background: #3b82f6"],
+[data-theme="light"] button[style*="background: #3b82f6"] *,
+[data-theme="light"] button[style*="background: #f97316"],
+[data-theme="light"] button[style*="background: #f97316"] *,
+[data-theme="light"] button[style*="background: #ec4899"],
+[data-theme="light"] button[style*="background: #ec4899"] *,
+[data-theme="light"] button[style*="background: #10b981"],
+[data-theme="light"] button[style*="background: #10b981"] *,
+[data-theme="light"] button[style*="background: #8b5cf6"],
+[data-theme="light"] button[style*="background: #8b5cf6"] *,
+[data-theme="light"] button[style*="background: #06b6d4"],
+[data-theme="light"] button[style*="background: #06b6d4"] *,
+[data-theme="light"] button[style*="background: #64748b"],
+[data-theme="light"] button[style*="background: #64748b"] *,
 [data-theme="light"] button[style*="background: #107c41"],
 [data-theme="light"] button[style*="background: #107c41"] *,
 [data-theme="light"] button[style*="background: rgb(16, 124, 65)"],
@@ -965,6 +1007,16 @@ body[data-theme="light"] {
   flex-shrink: 0;
 }
 
+.mobile-overflow-x {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-overflow-x::-webkit-scrollbar {
+  display: none;
+}
+
 @media (max-width: 1180px) {
   .role-logged-text {
     display: none !important;
@@ -1023,10 +1075,18 @@ body[data-theme="light"] {
     padding-bottom: 6px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   .mobile-overflow-x::-webkit-scrollbar {
     display: none;
+  }
+
+  .header-profile-btn {
+    padding: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    justify-content: center !important;
   }
 
   .grid-mobile-1col {
@@ -1052,6 +1112,33 @@ body[data-theme="light"] {
 }
 
 @media (max-width: 640px) {
+  .category-overview-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .inventory-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .inventory-search-box {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .inventory-status-pills {
+    overflow-x: auto !important;
+    width: 100% !important;
+    padding-bottom: 4px !important;
+  }
+
+  .user-kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
   .guest-banner-card {
     flex-direction: column !important;
     align-items: stretch !important;

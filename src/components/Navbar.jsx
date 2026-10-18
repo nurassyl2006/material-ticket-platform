@@ -313,7 +313,7 @@ export const Navbar = ({
             {onOpenNewTicket && (
               <button
                 onClick={onOpenNewTicket}
-                className="fluent-btn-primary"
+                className="fluent-btn-primary mobile-hide"
                 style={{
                   height: '32px',
                   padding: '0 13px',
@@ -510,6 +510,7 @@ export const Navbar = ({
                   to="profile"
                   onClick={onOpenProfile}
                   title={`${currentUser?.name || 'User'} (${t.roles[role]})`}
+                  className="header-profile-btn"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',

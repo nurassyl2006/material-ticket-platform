@@ -450,9 +450,9 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                 borderRadius: '6px',
                 fontSize: '12px',
                 fontWeight: viewMode === 'grouped' ? '700' : '500',
-                background: viewMode === 'grouped' ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
-                color: viewMode === 'grouped' ? '#fbbf24' : 'var(--text-muted)',
-                border: 'none',
+                background: viewMode === 'grouped' ? 'var(--primary-tint, rgba(99, 102, 241, 0.15))' : 'transparent',
+                color: viewMode === 'grouped' ? 'var(--primary, #4f46e5)' : 'var(--text-muted)',
+                border: viewMode === 'grouped' ? '1px solid var(--border-hover, rgba(99, 102, 241, 0.3))' : '1px solid transparent',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
               }}
@@ -471,9 +471,9 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                 borderRadius: '6px',
                 fontSize: '12px',
                 fontWeight: viewMode === 'table' ? '700' : '500',
-                background: viewMode === 'table' ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
-                color: viewMode === 'table' ? '#fbbf24' : 'var(--text-muted)',
-                border: 'none',
+                background: viewMode === 'table' ? 'var(--primary-tint, rgba(99, 102, 241, 0.15))' : 'transparent',
+                color: viewMode === 'table' ? 'var(--primary, #4f46e5)' : 'var(--text-muted)',
+                border: viewMode === 'table' ? '1px solid var(--border-hover, rgba(99, 102, 241, 0.3))' : '1px solid transparent',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
               }}
@@ -516,7 +516,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               }}
               title={lang === 'ru' ? 'Создать категорию склада' : 'Create Storage Category'}
             >
-              <Plus size={15} /> <span>{lang === 'ru' ? '+ Категория' : '+ Category'}</span>
+              <Plus size={15} /> <span>{lang === 'ru' ? 'Категория' : 'Category'}</span>
             </button>
           )}
         </div>
@@ -697,7 +697,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
           )}
         </div>
 
-        <div style={{
+        <div className="category-overview-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
           gap: '10px'
@@ -706,8 +706,8 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
           <div
             onClick={() => setSelectedCategory('all')}
             style={{
-              background: selectedCategory === 'all' ? 'rgba(245, 158, 11, 0.16)' : 'rgba(30, 41, 59, 0.6)',
-              border: selectedCategory === 'all' ? '2px solid #fbbf24' : '1px solid rgba(255, 255, 255, 0.08)',
+              background: selectedCategory === 'all' ? 'var(--primary-tint, rgba(99, 102, 241, 0.15))' : 'var(--bg-card, rgba(30, 41, 59, 0.6))',
+              border: selectedCategory === 'all' ? '2px solid var(--primary, #6366f1)' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
               borderRadius: '12px',
               padding: '12px 14px',
               cursor: 'pointer',
@@ -715,7 +715,8 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              gap: '8px'
+              gap: '8px',
+              boxShadow: selectedCategory === 'all' ? '0 4px 16px rgba(99, 102, 241, 0.25)' : 'var(--shadow-depth-2)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -724,8 +725,9 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                 <span style={{ 
                   fontSize: '11px', 
                   fontWeight: '700', 
-                  background: 'rgba(255,255,255,0.1)', 
-                  color: '#fff', 
+                  background: 'var(--bg-subtle, rgba(255,255,255,0.1))', 
+                  color: 'var(--text-main, #fff)', 
+                  border: '1px solid var(--border-color)',
                   padding: '2px 8px', 
                   borderRadius: '10px' 
                 }}>
@@ -734,7 +736,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               )}
             </div>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: '700', color: selectedCategory === 'all' ? '#fbbf24' : '#fff' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: selectedCategory === 'all' ? 'var(--primary, #4f46e5)' : 'var(--text-main, #fff)' }}>
                 {t.inventory.allCategories || 'All Categories'}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
@@ -756,8 +758,8 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                 key={cat.id}
                 onClick={() => setSelectedCategory(isSelected ? 'all' : cat.id)}
                 style={{
-                  background: isSelected ? cat.bgColor : 'rgba(30, 41, 59, 0.55)',
-                  border: isSelected ? `2px solid ${cat.color}` : '1px solid rgba(255, 255, 255, 0.08)',
+                  background: isSelected ? cat.bgColor : 'var(--bg-card, rgba(30, 41, 59, 0.55))',
+                  border: isSelected ? `2px solid ${cat.color}` : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                   borderRadius: '12px',
                   padding: '12px 14px',
                   cursor: 'pointer',
@@ -766,7 +768,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   gap: '8px',
-                  boxShadow: isSelected ? `0 4px 20px ${cat.bgColor}` : 'none'
+                  boxShadow: isSelected ? `0 4px 20px ${cat.bgColor}` : 'var(--shadow-depth-2)'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -800,8 +802,9 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                       <span style={{ 
                         fontSize: '11px', 
                         fontWeight: '700', 
-                        background: 'rgba(255,255,255,0.08)', 
+                        background: 'var(--bg-subtle, rgba(255,255,255,0.08))', 
                         color: cat.color, 
+                        border: '1px solid var(--border-color)',
                         padding: '2px 8px', 
                         borderRadius: '10px' 
                       }}>
@@ -815,7 +818,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                   <div style={{ 
                     fontSize: '13px', 
                     fontWeight: '700', 
-                    color: isSelected ? cat.color : '#fff',
+                    color: isSelected ? cat.color : 'var(--text-main, #fff)',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
@@ -840,7 +843,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
       <div className="glass-panel" style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         
         {/* Category Pill Tabs */}
-        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div className="mobile-overflow-x" style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
           <button
             onClick={() => setSelectedCategory('all')}
             style={{
@@ -848,11 +851,11 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               borderRadius: '20px',
               fontSize: '12px',
               fontWeight: selectedCategory === 'all' ? '700' : '500',
-              border: 'none',
+              border: selectedCategory === 'all' ? '1px solid var(--primary, #6366f1)' : '1px solid var(--border-color)',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              background: selectedCategory === 'all' ? '#fbbf24' : 'rgba(255, 255, 255, 0.08)',
-              color: selectedCategory === 'all' ? '#0f172a' : '#cbd5e1',
+              background: selectedCategory === 'all' ? 'var(--primary, #4f46e5)' : 'var(--bg-card, rgba(255, 255, 255, 0.08))',
+              color: selectedCategory === 'all' ? '#ffffff' : 'var(--text-muted)',
               transition: 'all 0.15s ease'
             }}
           >
@@ -872,11 +875,11 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                   borderRadius: '20px',
                   fontSize: '12px',
                   fontWeight: isCatActive ? '700' : '500',
-                  border: isCatActive ? `1px solid ${cat.color}` : '1px solid transparent',
+                  border: isCatActive ? `1px solid ${cat.color}` : '1px solid var(--border-color)',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  background: isCatActive ? cat.color : 'rgba(255, 255, 255, 0.08)',
-                  color: isCatActive ? '#fff' : '#cbd5e1',
+                  background: isCatActive ? cat.color : 'var(--bg-card, rgba(255, 255, 255, 0.08))',
+                  color: isCatActive ? '#ffffff' : 'var(--text-muted)',
                   transition: 'all 0.15s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -887,7 +890,8 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                 <span>{getCategoryLabel(cat.id, lang, true)}</span>
                 {canManageStock && (
                   <span style={{ 
-                    background: isCatActive ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.12)', 
+                    background: isCatActive ? 'rgba(0,0,0,0.25)' : 'var(--bg-subtle, rgba(255,255,255,0.12))', 
+                    color: isCatActive ? '#ffffff' : 'var(--text-main)',
                     padding: '1px 6px', 
                     borderRadius: '10px', 
                     fontSize: '10px' 
@@ -901,11 +905,11 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
         </div>
 
         {/* Search & Status Filters */}
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="inventory-filter-bar" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
           
           {/* Search Input */}
-          <div style={{ position: 'relative', flex: '1', minWidth: '240px' }}>
-            <Search size={15} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          <div className="inventory-search-box" style={{ position: 'relative', flex: '1', minWidth: '240px' }}>
+            <Search size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="text"
               value={searchTerm}
@@ -913,11 +917,11 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               placeholder={t.inventory.searchPlaceholder || 'Search storage items, categories or shelf locations...'}
               style={{
                 width: '100%',
-                background: 'rgba(15, 23, 42, 0.7)',
+                background: 'var(--bg-card, rgba(15, 23, 42, 0.7))',
                 border: '1px solid var(--border-color)',
                 borderRadius: '8px',
                 padding: '8px 12px 8px 36px',
-                color: '#fff',
+                color: 'var(--text-main, #fff)',
                 fontSize: '13px'
               }}
             />
@@ -941,7 +945,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
           </div>
 
           {/* Stock Status Pills */}
-          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <div className="mobile-overflow-x inventory-status-pills" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Filter size={13} /> {lang === 'ru' ? 'Статус:' : lang === 'kk' ? 'Күйі:' : 'Stock:'}
             </span>
@@ -1040,7 +1044,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                 {/* Category Section Header */}
                 <div style={{
                   padding: '16px 20px',
-                  background: cat.bgColor || 'rgba(15, 23, 42, 0.6)',
+                  background: cat.bgColor || 'var(--bg-card, rgba(15, 23, 42, 0.6))',
                   borderBottom: `1px solid ${cat.borderColor || 'var(--border-color)'}`,
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -1053,18 +1057,18 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                       width: '38px',
                       height: '38px',
                       borderRadius: '10px',
-                      background: 'rgba(15, 23, 42, 0.7)',
+                      background: 'var(--bg-card, rgba(15, 23, 42, 0.7))',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontSize: '20px',
-                      border: `1px solid ${cat.borderColor || 'rgba(255,255,255,0.1)'}`
+                      border: `1px solid ${cat.borderColor || 'var(--border-color)'}`
                     }}>
                       {cat.icon}
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', margin: 0 }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main, #fff)', margin: 0 }}>
                           {getCategoryLabel(cat.id, lang)}
                         </h3>
                         <span style={{
@@ -1100,21 +1104,19 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {canManageStock && (
                       <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        {t.inventory.totalQuantity || 'Total Stock'}: <strong style={{ color: '#fff' }}>{cat.totalUnits}</strong>
+                        {t.inventory.totalQuantity || 'Total Stock'}: <strong style={{ color: 'var(--text-main, #fff)' }}>{cat.totalUnits}</strong>
                       </span>
                     )}
 
                     {canManageStock && (
                       <button
                         onClick={() => handleOpenAddModal(cat.id)}
+                        className="fluent-btn-secondary"
                         style={{
                           padding: '5px 12px',
                           borderRadius: '6px',
                           fontSize: '12px',
                           fontWeight: '600',
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          border: '1px solid rgba(255, 255, 255, 0.2)',
-                          color: '#fff',
                           cursor: 'pointer',
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -1137,7 +1139,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                       <thead>
-                        <tr style={{ background: 'rgba(15, 23, 42, 0.4)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>
+                        <tr style={{ background: 'var(--bg-subtle, rgba(15, 23, 42, 0.4))', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '11px', textTransform: 'uppercase' }}>
                           <th style={{ padding: '12px 20px' }}>{t.inventory.itemName}</th>
                           {canManageStock ? (
                             <>
@@ -1158,11 +1160,11 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                             <tr 
                               key={item.id} 
                               style={{ 
-                                borderBottom: idx !== cat.items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                borderBottom: idx !== cat.items.length - 1 ? '1px solid var(--border-color, rgba(255,255,255,0.05))' : 'none',
                                 transition: 'background 0.15s ease'
                               }}
                             >
-                              <td style={{ padding: '14px 20px', fontWeight: '600', color: '#fff' }}>
+                              <td style={{ padding: '14px 20px', fontWeight: '600', color: 'var(--text-main, #fff)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                   {/* Item Photo Thumbnail */}
                                   <div style={{ position: 'relative', width: '42px', height: '42px', flexShrink: 0 }}>
@@ -1432,7 +1434,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
         <div className="glass-panel" style={{ overflowX: 'auto', padding: '0' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
             <thead>
-              <tr style={{ background: 'rgba(15, 23, 42, 0.6)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>
+              <tr style={{ background: 'var(--bg-subtle, rgba(15, 23, 42, 0.6))', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>
                 <th style={{ padding: '16px 20px' }}>{t.inventory.itemName}</th>
                 <th style={{ padding: '16px 20px' }}>{t.inventory.category}</th>
                 {canManageStock ? (
@@ -1459,8 +1461,8 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
                   const meta = getCategoryMeta(item.category);
                   const hasPhotos = item.photos && item.photos.length > 0;
                   return (
-                    <tr key={item.id} style={{ borderBottom: idx !== filteredInventory.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                      <td style={{ padding: '16px 20px', fontWeight: '600', color: '#fff' }}>
+                    <tr key={item.id} style={{ borderBottom: idx !== filteredInventory.length - 1 ? '1px solid var(--border-color, rgba(255,255,255,0.05))' : 'none' }}>
+                      <td style={{ padding: '16px 20px', fontWeight: '600', color: 'var(--text-main, #fff)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <div style={{ position: 'relative', width: '38px', height: '38px', flexShrink: 0 }}>
                             {hasPhotos ? (

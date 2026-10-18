@@ -120,6 +120,7 @@ export const CategoryEditorModal = ({
       onClick={onClose}
     >
       <div
+        className="modal-dialog-responsive"
         style={{
           width: '100%',
           maxWidth: '540px',

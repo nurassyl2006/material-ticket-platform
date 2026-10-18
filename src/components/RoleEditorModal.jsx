@@ -329,6 +329,7 @@ export const RoleEditorModal = ({
       onClick={onClose}
     >
       <div
+        className="modal-dialog-responsive"
         style={{
           width: '100%',
           maxWidth: '680px',
