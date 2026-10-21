@@ -305,6 +305,44 @@ export const Navbar = ({
                 <span>{t.nav?.users || 'Staff & Roles'}</span>
               </Link>
             )}
+            {/* Interactive Presentation Launcher */}
+            <a
+              href="/presentation.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              title={lang === 'ru' ? 'Открыть презентацию платформы для персонала (в новой вкладке)' : lang === 'kk' ? 'Қызметкерлерге арналған таныстырылымды ашу' : 'Open Staff Training Presentation (New Tab)'}
+              style={{
+                height: '30px',
+                padding: '0 10px',
+                fontSize: '12px',
+                fontWeight: '600',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                color: '#cbd5e1',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '7px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
+                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#cbd5e1';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+              }}
+            >
+              <span>🎓</span>
+              <span>{lang === 'ru' ? 'Презентация' : lang === 'kk' ? 'Презентация' : 'Presentation'}</span>
+            </a>
           </nav>
 
           {/* Right Section: Action CTA + Controls Cluster */}

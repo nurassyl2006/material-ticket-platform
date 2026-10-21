@@ -465,41 +465,52 @@
   <!-- Main Slide Viewport -->
   <main class="viewport">
 
-    <!-- SLIDE 1: Title -->
+    <!-- SLIDE 1: Title & Overview -->
     <section class="slide active" data-slide="1">
       <div class="slide-badge">🏫 Официальный запуск • Ardingly College Kazakhstan</div>
-      <h1 class="slide-title">EduOps — Единая платформа заявок и сервиса кампуса</h1>
+      <h1 class="slide-title">EduOps — Единая платформа сервиса школы, склада и библиотеки</h1>
       <p class="slide-subtitle">
-        Интерактивное руководство для учителей, воспитателей и технических специалистов (IT, Инженерия, Клининг, АХЧ, Склад)
+        Интерактивное руководство для учителей, воспитателей и технических специалистов (IT, Инженерия, Плотницкие работы, Клининг, АХЧ, Склад, Библиотека Athenaeum)
       </p>
 
-      <div class="grid-3" style="margin-bottom: 24px;">
+      <div class="grid-4" style="margin-bottom: 24px;">
         <div class="card">
           <div class="card-icon">⚡</div>
           <div class="card-title">Быстрота</div>
-          <div class="card-text">Подача любой заявки за 30 секунд со смартфона или ПК прямо из класса.</div>
+          <div class="card-text">Подача любой заявки на ремонт или заказ канцелярии за 30 секунд со смартфона прямо из класса.</div>
         </div>
         <div class="card">
           <div class="card-icon">🎯</div>
           <div class="card-title">Точность</div>
-          <div class="card-text">Заявка сразу попадает нужному профильному мастеру с фото поломки.</div>
+          <div class="card-text">Заявка сразу попадает нужному профильному мастеру (электрик, плотник, сантехник, IT, завхоз) с фото поломки.</div>
         </div>
         <div class="card">
-          <div class="card-icon">✅</div>
-          <div class="card-title">Прозрачность</div>
-          <div class="card-text">Учитель видит статус и фото результата. Никаких потерянных сообщений в чатах.</div>
+          <div class="card-icon">📦</div>
+          <div class="card-title">Канцелярия в класс</div>
+          <div class="card-text">Бумага А4, маркеры и временные материалы на 1-2 урока доставляются прямо в кабинет без беготни по школе.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📚</div>
+          <div class="card-title">Библиотека Athenaeum</div>
+          <div class="card-text">Учет учебников, читательские билеты учеников и QR-сканирование выдачи на защищенном портале библиотеки.</div>
         </div>
       </div>
 
-      <div class="card" style="background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3);">
-        <strong style="color: #fff;">🌐 Доступ:</strong> 
-        <span style="color: #a5b4fc; font-family: monospace;">http://10.1.13.50:5001</span> или 
-        <span style="color: #a5b4fc; font-family: monospace;">http://ardingly.service.kz</span>
+      <div class="card" style="background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <strong style="color: #fff;">🌐 Сервер платформы EduOps:</strong> 
+          <span style="color: #a5b4fc; font-family: monospace; font-size: 14px;">http://10.1.13.50:5001</span>
+          <span style="color: var(--text-muted); font-size: 13px; margin-left: 8px;">(или <strong>ardingly.service.kz</strong>)</span>
+        </div>
+        <div>
+          <strong style="color: #fff;">📖 Библиотека Athenaeum:</strong>
+          <span style="color: #38bdf8; font-family: monospace; font-size: 14px;">http://10.1.13.50:5002</span>
+        </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Коллеги, добрый день! Сегодня мы запускаем платформу EduOps. Больше не нужно искать завхоза на перемене, писать в личку в WhatsApp или передавать просьбы через третьих лиц. Отныне любая проблема в кабинете фиксируется официально и решается по четкому регламенту.»
+        «Коллеги, добрый день! Сегодня мы запускаем обновленную единую экосистему EduOps для школы Ardingly. Теперь в одном месте собраны все сервисы кампуса: заявки на ремонт техники и мебели, заказ канцтоваров прямо в кабинет, временная выдача кликеров на урок, а также полноценная библиотечная система Athenaeum для учета учебников. Больше никаких записок, устных просьб и потерянных сообщений в WhatsApp!»
       </div>
     </section>
 
@@ -518,26 +529,26 @@
             <li>• Заявки терялись в общих группах WhatsApp и забывались</li>
             <li>• Учитель не знал, придет мастер сегодня или через неделю</li>
             <li>• Мастер приходил в класс без нужной детали или инструмента</li>
-            <li>• Сложно доказать факт выполнения работы при спорах</li>
-            <li>• Учет расходных материалов велся «на глаз» на бумаге</li>
+            <li>• Чтобы получить пачку бумаги или кликер, приходилось искать завхоза по школе</li>
+            <li>• Учет учебников и читателей велся вручную на бумажных бланках</li>
           </ul>
         </div>
 
         <div class="card" style="border-left: 4px solid var(--success);">
           <div class="card-title" style="color: #4ade80;">✅ Как работает EduOps:</div>
           <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--text-muted); margin-top: 12px;">
-            <li>• Каждая заявка получает номер тикета и видна руководству</li>
-            <li>• Видно, кто из мастеров назначен и когда выехал</li>
-            <li>• Фотография поломки позволяет мастеру сразу взять запчасти</li>
-            <li>• Обязательный фотоотчет после окончания ремонта</li>
-            <li>• Списание лампочек, кабелей и материалов со склада в 1 клик</li>
+            <li>• Каждая заявка получает официальный номер тикета (TCK-XXXX) и видна руководству</li>
+            <li>• Видно, кто из мастеров назначен и когда взял заявку в работу</li>
+            <li>• Фото поломки позволяет плотнику или электрику сразу взять нужные детали</li>
+            <li>• Заказ канцелярии прямо в кабинет в 2 клика с доставкой завскладом</li>
+            <li>• Электронная библиотека Athenaeum со штрих-кодами и формулярами читателей</li>
           </ul>
         </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Посмотрите на левую колонку: хаос в WhatsApp отнимает нервы и у учителей, и у мастеров. Правая колонка — это порядок. Вы подали заявку, занимаетесь уроком, мастер всё сделал и прикрепил фото. Полная прозрачность и взаимное уважение времени друг друга.»
+        «Посмотрите на левую колонку: хаос в чатах отнимал время и у преподавателей, и у мастеров. Правая колонка — это порядок. Вы подали заявку со смартфона, занимаетесь уроком, мастер всё сделал и прикрепил фотоотчет. Полная прозрачность и взаимное уважение времени друг друга.»
       </div>
     </section>
 
@@ -552,25 +563,25 @@
       <div class="grid-4" style="margin-bottom: 20px;">
         <div class="card" style="text-align: center;">
           <div style="font-size: 24px; font-weight: 800; color: #818cf8; margin-bottom: 4px;">БЛОК A</div>
-          <div class="card-text">Старшая школа<br>Администрация кампуса</div>
+          <div class="card-text">Старшая школа (Senior)<br>Администрация кампуса</div>
         </div>
         <div class="card" style="text-align: center;">
           <div style="font-size: 24px; font-weight: 800; color: #38bdf8; margin-bottom: 4px;">БЛОК B</div>
-          <div class="card-text">Средняя школа<br>Младшие классы (Primary)</div>
+          <div class="card-text">Средняя школа (Middle)<br>Младшие классы (Primary) & Библиотека</div>
         </div>
         <div class="card" style="text-align: center;">
           <div style="font-size: 24px; font-weight: 800; color: #34d399; margin-bottom: 4px;">БЛОК C</div>
-          <div class="card-text">Спортивный комплекс<br>Столовая, Актовый зал</div>
+          <div class="card-text">Спортивный комплекс<br>Столовая, Актовый зал, Склад</div>
         </div>
         <div class="card" style="text-align: center;">
           <div style="font-size: 24px; font-weight: 800; color: #fbbf24; margin-bottom: 4px;">БЛОК D</div>
-          <div class="card-text">Лаборатории & STEM<br>Искусство, Мастерские</div>
+          <div class="card-text">Лаборатории & STEM<br>Искусство, Мастерские инженерии</div>
         </div>
       </div>
 
       <div class="card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
         <div>
-          <strong style="color: #fff; font-size: 14px;">Структура этажей:</strong>
+          <strong style="color: #fff; font-size: 14px;">Структура уровней кампуса:</strong>
           <span style="color: var(--text-muted); font-size: 13px; margin-left: 10px;">
             <span class="pill pill-blue">0 (Basement / Цоколь)</span>
             <span class="pill pill-blue">1 этаж</span>
@@ -585,104 +596,173 @@
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Здание школы разделено на четыре основных блока: A, B, C и D, а также четыре уровня: цоколь и три этажа. При создании заявки вы просто нажимаете кнопку нужного блока — система сама предложит список кабинетов. Никаких опечаток!»
+        «Здание школы разделено на четыре основных блока: A, B, C и D, а также четыре уровня: цоколь и три этажа. При создании заявки вы просто нажимаете кнопку нужного блока — система сама предложит список кабинетов. Никаких ошибок в номерах комнат!»
       </div>
     </section>
 
-    <!-- SLIDE 4: Departments -->
+    <!-- SLIDE 4: Departments (8 Core School Departments) -->
     <section class="slide" data-slide="4">
       <div class="slide-badge">Зоны ответственности</div>
-      <h2 class="slide-title">В какой отдел направлять заявку?</h2>
+      <h2 class="slide-title">В какой отдел направлять заявку? (8 направлений)</h2>
       <p class="slide-subtitle">
         Правильный выбор отдела гарантирует, что заявка сразу придет нужному специалисту:
       </p>
 
-      <div class="grid-3">
+      <div class="grid-4">
         <div class="card">
           <div class="card-icon">💻</div>
           <div class="card-title">IT Helpdesk</div>
-          <div class="card-text">Проектор, интерактивная доска, Wi-Fi, принтеры, аудио/видео аппаратура, ноутбуки учителей.</div>
+          <div class="card-text">Проекторы, интерактивные доски, Wi-Fi, принтеры, аудио/микрофоны, ноутбуки учителей, доступ к порталу.</div>
         </div>
         <div class="card">
           <div class="card-icon">⚡</div>
-          <div class="card-title">Инженерия & Свет</div>
-          <div class="card-text">Освещение, розетки, кондиционеры, отопление, вентиляция, выключатели, щитки.</div>
+          <div class="card-title">Инженерия & Электрика</div>
+          <div class="card-text">Освещение, розетки, кондиционеры (AC), отопление, вентиляция, выключатели, электрощиты.</div>
         </div>
         <div class="card">
           <div class="card-icon">🚰</div>
           <div class="card-title">Сантехника</div>
-          <div class="card-text">Засор раковины, капает кран, неисправность слива, слабый напор, бойлеры.</div>
+          <div class="card-text">Засор раковины, капает кран, неисправность слива в санузле, слабый напор воды, бойлеры.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🪚</div>
+          <div class="card-title">Плотницкие работы & Мебель</div>
+          <div class="card-text">Сломана парта/стул, заедает замок двери, ручки окон, вешалки, карнизы, ремонт полок <em>(ведется инженерами)</em>.</div>
         </div>
         <div class="card">
           <div class="card-icon">🧹</div>
           <div class="card-title">Клининг & Чистота</div>
-          <div class="card-text">Разлита жидкость, помыть доску, закончилось жидкое мыло или полотенца в санузле, вынос мусора.</div>
-        </div>
-        <div class="card">
-          <div class="card-icon">🪑</div>
-          <div class="card-title">АХЧ & Мебель</div>
-          <div class="card-text">Сломана ножка стула/парты, заедает замок двери, перестановка шкафа, жалюзи, окна.</div>
+          <div class="card-text">Разлита жидкость в классе, помыть доску, вынести мусор, закончилось жидкое мыло или салфетки.</div>
         </div>
         <div class="card">
           <div class="card-icon">📦</div>
-          <div class="card-title">Складской учет</div>
-          <div class="card-text">Выдача бумаги А4, маркеров для белых досок, батареек, канцелярских наборов.</div>
+          <div class="card-title">Склад (Заказ в кабинет)</div>
+          <div class="card-text">Выдача бумаги А4, маркеров, папок насовсем + кликеры, калькуляторы, степлеры на 1-2 урока.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📚</div>
+          <div class="card-title">Библиотека Athenaeum</div>
+          <div class="card-text">Выдача учебников по классам, читательские билеты, сканирование штрих-кодов, учет возвратов.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🚚</div>
+          <div class="card-title">АХЧ & Мероприятия</div>
+          <div class="card-text">Перемещение мебели между кабинетами, расстановка стульев, сборка сцены для школьных праздников.</div>
         </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Пожалуйста, обращайте внимание на эти 6 категорий. Если не работает проектор — это IT. Если погас свет в классе — Инженерия. Если оторвалась ручка на двери — АХЧ. Если сомневаетесь, выбирайте самый близкий вариант — координатор перенаправит.»
+        «Обратите внимание: теперь плотницкие работы и ремонт мебели вынесены в отдельный раздел и закреплены за инженерами по эксплуатации! Если сломалась парта или заела дверь — выбирайте "Плотницкие работы". Если нужен мел или бумага А4 — выбирайте "Склад". Библиотекарь ведет книжный фонд в отдельной вкладке Athenaeum.»
       </div>
     </section>
 
-    <!-- SLIDE 5: Teacher Guide -->
+    <!-- SLIDE 5: Teacher Guide: Repairs + Supplies Orders -->
     <section class="slide" data-slide="5">
       <div class="slide-badge">Часть 1 • Для учителей</div>
-      <h2 class="slide-title">Как учителю подать заявку за 30 секунд</h2>
+      <h2 class="slide-title">Как учителю подать заявку или заказать материалы</h2>
       <p class="slide-subtitle">
-        Простой пошаговый алгоритм без бюрократии и очередей:
+        Простой алгоритм: оформление ремонта кабинета или получение канцелярии за 30 секунд:
       </p>
 
       <div class="step-list">
         <div class="step-item">
           <div class="step-num">1</div>
           <div class="step-content">
-            <h4>Нажмите «+ Подать заявку»</h4>
-            <p>Большая синяя кнопка в правом верхнем углу (на телефоне — круглый «+» внизу по центру).</p>
+            <h4>Нажмите «+ Новая заявка»</h4>
+            <p>Синяя кнопка в шапке сайта на ПК или удобная круглая кнопка «+» внизу экрана на смартфоне.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>Выберите категорию и кабинет</h4>
-            <p>Кликните по отделу (IT, Клининг, Инженерия и т.д.) и выберите номер своего класса (например, B-204).</p>
+            <h4>Выберите направление: Ремонт или Склад канцелярии</h4>
+            <p>
+              • <strong>Для ремонта:</strong> нажмите IT, Инженерия, Плотницкие работы, Сантехника или Клининг.<br>
+              • <strong>Для канцелярии в класс:</strong> нажмите <strong>«📦 Склад (Заказ в кабинет)»</strong> и выберите нужный предмет из быстрых кнопок (Бумага А4, Маркеры для досок, Файлы).
+            </p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">3</div>
           <div class="step-content">
-            <h4>Кратко напишите суть и сделайте фото 📷</h4>
-            <p>Достаточно одной фразы: <em>«Кабель HDMI поврежден, проектор не видит ноутбук»</em>. Фотографируйте прямо с камеры смартфона!</p>
+            <h4>Укажите тип выдачи (для складских позиций)</h4>
+            <p>
+              • ✏️ <strong>Без возврата (Consumable):</strong> бумага, маркеры, тетради выдаются учителю насовсем.<br>
+              • ⏱️ <strong>На 1-2 урока (С возвратом):</strong> кликеры для презентаций, степлеры, комплекты калькуляторов берутся на урок и подлежат возврату завскладу.
+            </p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">4</div>
           <div class="step-content">
-            <h4>Нажмите синюю кнопку «Подать заявку»</h4>
-            <p>Заявка мгновенно появляется на планшетах дежурных мастеров. Вы можете продолжать урок!</p>
+            <h4>Выберите номер кабинета и прикрепите фото 📷</h4>
+            <p>Система автоматически подставит ваш кабинет. Для поломок обязательно сделайте снимок на камеру телефона — мастер увидит проблему заранее!</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h4>Нажмите «Отправить»</h4>
+            <p>Заявка сразу появляется у дежурного мастера или заведующего складом. Вы можете спокойно продолжать урок!</p>
           </div>
         </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Уважаемые учителя! Обратите внимание на Шаг 3: фото поломки. Фотография экономит огромное количество времени. Мастеру не нужно сначала приходить, смотреть, уходить на склад за кабелем и возвращаться. Он сразу берет с собой нужную модель кабеля или лампы.»
+        «Уважаемые учителя! Обратите внимание на Шаг 3: теперь вам не нужно лично идти на склад за маркерами или кликером. Просто выбираете "Склад", указываете свой кабинет, и завскладом подготовит доставку. А если берете кликер на 1 урок — укажите срок аренды, система сама напомнит о возврате.»
       </div>
     </section>
 
-    <!-- SLIDE 6: Status Tracking -->
+    <!-- SLIDE 6: NEW - Athenaeum Library System -->
     <section class="slide" data-slide="6">
+      <div class="slide-badge">📚 Библиотечный модуль • Athenaeum</div>
+      <h2 class="slide-title">Библиотечная система Athenaeum (Атеней)</h2>
+      <p class="slide-subtitle">
+        Автоматизированный учет учебников, читального зала и книговыдачи школы:
+      </p>
+
+      <div class="grid-4" style="margin-bottom: 20px;">
+        <div class="card">
+          <div class="card-icon">📖</div>
+          <div class="card-title">Фонд учебников</div>
+          <div class="card-text">Каталог всех школьных комплектов учебников и литературы с фильтрами по авторам, ISBN, годам и параллелям 1–12 классов.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🏷️</div>
+          <div class="card-title">Штрих-коды & QR</div>
+          <div class="card-text">Мгновенная выдача и прием книг через камеру смартфона, планшета или ручной лазерный сканер за 2 секунды.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">👥</div>
+          <div class="card-title">Формуляры читателей</div>
+          <div class="card-text">Персональные электронные карточки учеников и учителей с историей чтения, списком учебников на руках и сроками сдачи.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔒</div>
+          <div class="card-title">Защищенный доступ</div>
+          <div class="card-text">Личный кабинет библиотекаря и администрации по паролю на выделенном защищенном порту <code>:5002</code>.</div>
+        </div>
+      </div>
+
+      <div class="card" style="background: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.28); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <div>
+          <strong style="color: #38bdf8; font-size: 14px;">Адрес библиотечной системы:</strong>
+          <span style="font-family: monospace; color: #fff; font-size: 14px; margin-left: 8px;">http://10.1.13.50:5002</span>
+          <span style="color: var(--text-muted); font-size: 12px; margin-left: 8px;">(авторизация: библиотекарь и руководство школы)</span>
+        </div>
+        <span class="pill pill-blue">Интегрировано с EduOps</span>
+      </div>
+
+      <div class="speaker-notes">
+        <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
+        «В единую систему нашей школы теперь входит Athenaeum — современный библиотечный сервис. Библиотекарь быстро сканирует учебники при выдаче классу в начале четверти, а в конце года система мгновенно показывает, кто из учеников еще не сдал книги. Полный порядок в книжном фонде!»
+      </div>
+    </section>
+
+    <!-- SLIDE 7: Status Tracking -->
+    <section class="slide" data-slide="7">
       <div class="slide-badge">Контроль и связь</div>
       <h2 class="slide-title">Отслеживание статуса и прямая связь</h2>
       <p class="slide-subtitle">
@@ -698,7 +778,7 @@
         <div class="card" style="border-top: 3px solid var(--info);">
           <div class="pill pill-blue" style="margin-bottom: 10px;">🔵 В работе (In Progress)</div>
           <div class="card-title">Мастер выехал</div>
-          <div class="card-text">Конкретный мастер нажал кнопку. В карточке указано его ФИО и должность.</div>
+          <div class="card-text">Конкретный специалист нажал кнопку. В карточке указано его ФИО и должность.</div>
         </div>
         <div class="card" style="border-top: 3px solid var(--success);">
           <div class="pill pill-green" style="margin-bottom: 10px;">🟢 Выполнено (Resolved)</div>
@@ -710,7 +790,7 @@
       <div class="card" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
         <strong style="color: #4ade80;">📞 Связь в 1 клик:</strong>
         <span style="color: var(--text-muted); font-size: 13px; margin-left: 8px;">
-          В карточке каждой заявки есть иконки <strong>Звонка</strong> и чата <strong>WhatsApp</strong>. Мастер и учитель могут связаться без поиска номера в контактах.
+          В карточке каждой заявки есть иконки <strong>Звонка</strong> и чата <strong>WhatsApp</strong>. Мастер и учитель могут связаться без поиска номера в личных контактах.
         </span>
       </div>
 
@@ -720,8 +800,8 @@
       </div>
     </section>
 
-    <!-- SLIDE 7: Multilingual -->
-    <section class="slide" data-slide="7">
+    <!-- SLIDE 8: Multilingual -->
+    <section class="slide" data-slide="8">
       <div class="slide-badge">Языковая доступность</div>
       <h2 class="slide-title">Многоязычность и Умный автоперевод</h2>
       <p class="slide-subtitle">
@@ -750,22 +830,22 @@
           <div style="margin-top: 10px; font-size: 13px; color: #4ade80;">
             Мастер читает в один клик:<br>
             <strong>«Смартборд зависает при подключении HDMI-кабеля.»</strong>
-          </p>
+          </div>
         </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «В нашей школе работают преподаватели из разных стран. Теперь иностранным учителям не нужно просить коллег перевести заявку. Пишите на английском — система сама переведет текст для дежурного мастера.»
+        «В нашей школе работают преподаватели из Великобритании и других стран. Теперь иностранным учителям не нужно просить коллег перевести заявку. Пишите на английском — система сама переведет текст для дежурного мастера на русский или казахский.»
       </div>
     </section>
 
-    <!-- SLIDE 8: Worker Guide -->
-    <section class="slide" data-slide="8">
-      <div class="slide-badge">Часть 2 • Для мастеров и рабочих</div>
-      <h2 class="slide-title">Как мастеру принимать и вести заявку</h2>
+    <!-- SLIDE 9: Worker & Engineer Guide (Updated for Carpentry & Maintenance) -->
+    <section class="slide" data-slide="9">
+      <div class="slide-badge">Часть 2 • Для мастеров и инженеров</div>
+      <h2 class="slide-title">Как инженерной службе и мастерам вести заявки</h2>
       <p class="slide-subtitle">
-        Простые правила для инженеров, сантехников, электриков и клининга:
+        Инженеры теперь контролируют электрику, сантехнику и плотницкие работы (ремонт мебели):
       </p>
 
       <div class="step-list">
@@ -773,33 +853,47 @@
           <div class="step-num">1</div>
           <div class="step-content">
             <h4>Откройте сайт под своим логином сотрудника</h4>
-            <p>Войдите со своего смартфона или служебного планшета. Во вкладке «Все заявки» включите фильтр своего отдела.</p>
+            <p>Войдите со своего смартфона или служебного планшета под личным логином и паролем сотрудника.</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">2</div>
           <div class="step-content">
-            <h4>Нажмите синюю кнопку «В работу»</h4>
-            <p><strong>Обязательно!</strong> Как только вы берете заявку — нажмите кнопку. Это исключит ситуацию, когда на одну заявку приходят два мастера.</p>
+            <h4>Используйте фильтры отделов: Электрика, Сантехника, Плотницкие работы</h4>
+            <p>Во вкладке «Все заявки» инженеры видят не только свет и отопление, но и <strong>🪚 Плотницкие работы</strong> (ремонт парт, стульев, регулировку дверей и замков).</p>
           </div>
         </div>
         <div class="step-item">
           <div class="step-num">3</div>
           <div class="step-content">
+            <h4>Нажмите кнопку «В работу»</h4>
+            <p><strong>Обязательно!</strong> Как только вы берете заявку — нажмите кнопку. Это исключит ситуацию, когда на одну поломку приходят два мастера, а учитель сразу увидит, кто идет на помощь.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
             <h4>Посмотрите прикрепленные фото и номер кабинета</h4>
-            <p>Заранее возьмите нужный инструмент, лампу или моющее средство на складе.</p>
+            <p>Заранее возьмите нужный инструмент, саморезы, дверную петлю или лампу со склада в мастерской (Кабинет 106).</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h4>Спишите запчасти со склада и прикрепите фото готовой работы 📷</h4>
+            <p>Списание со склада делается в 1 клик. Сделайте фото отремонтированного стула или замка и нажмите «Выполнено».</p>
           </div>
         </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Уважаемые мастера! Главное требование к нам с вами — нажимать "В работу". Когда вы нажимаете эту кнопку, директор видит, что служба работает, а учитель в кабинете спокоен, потому что знает: к нему уже идет мастер.»
+        «Уважаемые инженеры и мастера! Главное требование — нажимать "В работу". Когда вы нажимаете эту кнопку, директор видит, что служба работает, а учитель в кабинете спокоен. А теперь, когда плотницкие работы и мебель объединены с инженерной службой, все ремонты в классах закрываются гораздо быстрее.»
       </div>
     </section>
 
-    <!-- SLIDE 9: Completion & Proof -->
-    <section class="slide" data-slide="9">
+    <!-- SLIDE 10: Completion & Proof -->
+    <section class="slide" data-slide="10">
       <div class="slide-badge">Завершение и отчетность</div>
       <h2 class="slide-title">Закрытие заявки и фотоотчет мастера</h2>
       <p class="slide-subtitle">
@@ -814,9 +908,10 @@
             После устранения поломки нажмите иконку камеры прямо в карточке заявки:
           </div>
           <ul style="list-style: none; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
-            <li>✓ Горящий отремонтированный светильник</li>
-            <li>✓ Сухой и чистый пол в классе</li>
-            <li>✓ Исправно работающий замок двери</li>
+            <li>✓ Отремонтированная и закрепленная парта / стул</li>
+            <li>✓ Исправный дверной замок или ручка окна</li>
+            <li>✓ Горящий отремонтированный LED-светильник</li>
+            <li>✓ Сухой и чистый пол в санузле</li>
           </ul>
         </div>
 
@@ -824,10 +919,10 @@
           <div class="card-icon">📦</div>
           <div class="card-title">Списание расходных материалов</div>
           <div class="card-text" style="margin-bottom: 12px;">
-            Если при ремонте вы взяли деталь со склада — укажите её:
+            Если при ремонте вы использовали деталь со склада — укажите её:
           </div>
           <div style="background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 8px; font-size: 12px; color: #a5b4fc;">
-            Пример: <em>«Списано: Лампа LED E27 — 2 шт.»</em><br>
+            Пример: <em>«Списано: Петля дверная — 1 шт., саморезы»</em><br>
             Остаток на складе спишется автоматически!
           </div>
         </div>
@@ -841,51 +936,56 @@
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Фотография после ремонта защищает самого мастера! Никто не сможет сказать "к нам никто не приходил", потому что в системе есть время, дата и фото исправной работы.»
+        «Фотография после ремонта защищает самого мастера! Никто не сможет сказать "к нам никто не приходил", потому что в системе зафиксировано точное время, автор работы и фото исправной мебели или оборудования.»
       </div>
     </section>
 
-    <!-- SLIDE 10: Inventory -->
-    <section class="slide" data-slide="10">
+    <!-- SLIDE 11: Warehouse & Inventory -->
+    <section class="slide" data-slide="11">
       <div class="slide-badge">Склад и запасы</div>
-      <h2 class="slide-title">Складской учет материалов (`/inventory`)</h2>
+      <h2 class="slide-title">Складской учет материалов и выдача на уроки</h2>
       <p class="slide-subtitle">
-        Раздел для Завхоза, Заведующего складом и начальника эксплуатации:
+        Четкое разделение: учителя заказывают канцтовары, завхоз и инженеры ведут учет остатков:
       </p>
 
       <div class="grid-3" style="margin-bottom: 20px;">
         <div class="card">
           <div class="card-title" style="color: #4ade80;">🟢 В наличии (OK)</div>
-          <div class="card-text">Материала достаточно для ежедневных нужд школы.</div>
+          <div class="card-text">Материала достаточно на полках склада (бумага А4, маркеры, лампы, батарейки).</div>
         </div>
         <div class="card">
           <div class="card-title" style="color: #fbbf24;">🟡 Заканчивается (Low)</div>
-          <div class="card-text">Остаток приблизился к минимальному лимиту. Пора подавать заявку на закупку.</div>
+          <div class="card-text">Остаток приблизился к минимальному лимиту. Пора заблаговременно формировать закупку.</div>
         </div>
         <div class="card">
           <div class="card-title" style="color: #f87171;">🔴 Закончилось (Out)</div>
-          <div class="card-text">Срочно требуется пополнение. Позиция подсвечена красным.</div>
+          <div class="card-text">Срочно требуется пополнение. Позиция подсвечена красным для завскладом.</div>
         </div>
       </div>
 
-      <div class="card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
-        <div>
-          <strong style="color: #fff;">Быстрые кнопки изменения:</strong>
-          <span style="color: var(--text-muted); font-size: 13px; margin-left: 8px;">
-            Кнопка <strong>[ - ]</strong> для списания и <strong>[ + ]</strong> для оприходования партии в один клик.
-          </span>
+      <div class="grid-2">
+        <div class="card" style="background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3);">
+          <div class="card-title" style="color: #fbbf24;">📦 Для учителей:</div>
+          <div class="card-text">
+            Учителя не видят внутренние складские остатки — только удобные карточки заказа (бумага, маркеры, папки). Вы просто выбираете предмет и кабинет, а завхоз организует выдачу.
+          </div>
         </div>
-        <button class="btn btn-primary" style="pointer-events: none;">+ Добавить материал</button>
+        <div class="card" style="background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.3);">
+          <div class="card-title" style="color: #818cf8;">⏱️ Временная аренда (1-2 урока):</div>
+          <div class="card-text">
+            Кликеры, калькуляторы и демонстрационные макеты выдаются со статусом займа. При возврате завскладом нажимает «Подтвердить возврат» — и предмет снова свободен!
+          </div>
+        </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Складской раздел позволяет заранее видеть, когда заканчивается бумага А4 или чистящие средства. Мы не ждем, пока всё закончится в ноль, а заблаговременно формируем закупку.»
+        «Складской раздел обеспечивает бесперебойную работу школы. Учитель получает нужные маркеры в кабинет, завхоз видит, какие материалы на исходе, а инженеры списывают розетки и лампы прямо по ходу ремонтов.»
       </div>
     </section>
 
-    <!-- SLIDE 11: Mobile Usage -->
-    <section class="slide" data-slide="11">
+    <!-- SLIDE 12: Mobile Usage -->
+    <section class="slide" data-slide="12">
       <div class="slide-badge">Смартфоны & Планшеты</div>
       <h2 class="slide-title">Работа с телефона на бегу (Mobile First)</h2>
       <p class="slide-subtitle">
@@ -896,97 +996,107 @@
         <div class="card">
           <div class="card-icon">📱</div>
           <div class="card-title">Иконка на экран Домой</div>
-          <div class="card-text">Нажмите в браузере Safari/Chrome «Поделиться» ➔ «На экран Домой». Сайт откроется как приложение.</div>
+          <div class="card-text">Нажмите в Safari/Chrome «Поделиться» ➔ «На экран Домой». Сайт откроется как полноценное мобильное приложение.</div>
         </div>
         <div class="card">
           <div class="card-icon">🔘</div>
           <div class="card-title">Кнопка «+» под палец</div>
-          <div class="card-text">Внизу экрана всегда доступна круглая кнопка быстрого создания заявки.</div>
+          <div class="card-text">Внизу экрана всегда доступна плавающая кнопка быстрого создания заявки, где бы вы ни находились.</div>
         </div>
         <div class="card">
           <div class="card-icon">📸</div>
           <div class="card-title">Прямой доступ к камере</div>
-          <div class="card-text">Не нужно сохранять файлы в галерею: щелкнули поломку — фото сразу в заявке.</div>
+          <div class="card-text">Не нужно сохранять файлы в галерею: сфотографировали поломку прямо из приложения — фото сразу в заявке.</div>
         </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Рекомендую каждому прямо сегодня добавить иконку сайта на экран своего телефона. Это занимает ровно 10 секунд. И тогда в любой момент, идя по коридору, вы сможете вызвать мастера в два клика.»
+        «Рекомендую каждому прямо сегодня добавить иконку сайта на экран своего телефона. Это занимает ровно 10 секунд. И тогда в любой момент, идя по коридору или находясь на дежурстве, вы сможете вызвать мастера в два клика.»
       </div>
     </section>
 
-    <!-- SLIDE 12: Golden Rules & FAQ -->
-    <section class="slide" data-slide="12">
-      <div class="slide-badge">Памятка • Безопасность</div>
-      <h2 class="slide-title">Золотые правила и экстренные случаи</h2>
+    <!-- SLIDE 13: Accounts, Authentication & School Server -->
+    <section class="slide" data-slide="13">
+      <div class="slide-badge">Доступ и безопасность</div>
+      <h2 class="slide-title">Учетные записи, вход и школьный сервер</h2>
       <p class="slide-subtitle">
-        Что делать в нестандартных и критических ситуациях:
+        Персональный доступ для учителей и мастеров с локальной синхронизацией:
       </p>
 
-      <div class="card" style="border-left: 4px solid var(--danger); margin-bottom: 20px; background: rgba(239, 68, 68, 0.08);">
-        <strong style="color: #f87171; font-size: 15px;">⚠️ При аварийных ЧП (прорыв трубы, искры, запах гари):</strong>
+      <div class="grid-3" style="margin-bottom: 20px;">
+        <div class="card">
+          <div class="card-icon">🔑</div>
+          <div class="card-title">Именные аккаунты</div>
+          <div class="card-text">У каждого учителя, инженера и библиотекаря есть личный логин и пароль. В заявках автоматически видно имя автора.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🖥️</div>
+          <div class="card-title">Локальный сервер школы</div>
+          <div class="card-text">Сервер расположен внутри кампуса (<code>10.1.13.50</code>). Данные школы защищены и работают быстро даже без внешнего интернета.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">👥</div>
+          <div class="card-title">Гостевой доступ</div>
+          <div class="card-text">Родители и гости школы могут подать обращение без сложной регистрации — достаточно указать имя и телефон.</div>
+        </div>
+      </div>
+
+      <div class="card" style="border-left: 4px solid var(--danger); background: rgba(239, 68, 68, 0.08);">
+        <strong style="color: #f87171; font-size: 14px;">⚠️ Золотое правило безопасности:</strong>
         <p style="font-size: 13px; color: var(--text-main); margin-top: 6px; line-height: 1.5;">
-          1. <strong>Сначала безопасность:</strong> обесточьте прибор / перекройте вентиль или вызовите дежурного по рации/телефону голосом!<br>
-          2. После устранения непосредственной угрозы создайте тикет в EduOps для фиксации ремонта.
+          При аварийных ЧП (прорыв трубы, искры, запах гари, угроза детям) — <strong>сначала безопасность людей!</strong> Немедленно голосом вызовите дежурного или перекройте вентиль, и только после устранения угрозы оформите тикет в системе.
         </p>
       </div>
 
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">❓ Забыли пароль?</div>
-          <div class="card-text">Воспользуйтесь быстрым входом без пароля (режим Гостя/Родителя) или обратитесь к IT администратору за мгновенным сбросом.</div>
-        </div>
-        <div class="card">
-          <div class="card-title">❓ 1 кабинет = 1 заявка</div>
-          <div class="card-text">Пожалуйста, не объединяйте в одну заявку проектор в B-201 и раковину в B-105. Создайте две разные заявки для разных мастеров.</div>
-        </div>
-      </div>
-
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Главное правило: при авариях — сначала безопасность людей, затем оформление тикета. А в обычной жизни помните: чем точнее описана проблема, тем быстрее она будет решена!»
+        «Все ваши данные хранятся на школьном сервере в безопасности. Если вы забыли пароль — обратитесь к IT-специалисту или координатору, сброс занимает полминуты. И помните главное правило: безопасность учеников и персонала всегда на первом месте!»
       </div>
     </section>
 
-    <!-- SLIDE 13: Summary & Contacts -->
-    <section class="slide" data-slide="13">
+    <!-- SLIDE 14: Summary & Contacts -->
+    <section class="slide" data-slide="14">
       <div class="slide-badge">Готовы к работе!</div>
-      <h2 class="slide-title">Вместе делаем школу Ardingly лучше!</h2>
+      <h2 class="slide-title">Вместе делаем школу Ardingly еще лучше!</h2>
       <p class="slide-subtitle">
-        Платформа запущена и готова к приему ваших обращений прямо сейчас.
+        Платформа запущена и готова к приему ваших обращений прямо сейчас:
       </p>
 
-      <div class="card" style="text-align: center; padding: 36px; background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.35); margin-bottom: 24px;">
-        <div style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px;">
-          Адрес платформы:
+      <div class="card" style="text-align: center; padding: 28px; background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.35); margin-bottom: 20px;">
+        <div style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px;">
+          Адрес платформы сервиса и заявок (EduOps):
         </div>
-        <div style="font-size: 28px; font-weight: 800; color: #818cf8; letter-spacing: -0.5px; font-family: monospace;">
-          http://10.1.13.50:5001
+        <div style="font-size: 26px; font-weight: 800; color: #818cf8; letter-spacing: -0.5px; font-family: monospace;">
+          http://10.1.13.50:5001 &nbsp;•&nbsp; ardingly.service.kz
         </div>
         <div style="font-size: 14px; color: var(--text-muted); margin-top: 8px;">
-          (Также доступно по корпоративному адресу: <strong>ardingly.service.kz</strong>)
+          Адрес библиотеки Athenaeum: <strong style="color: #38bdf8; font-family: monospace;">http://10.1.13.50:5002</strong>
         </div>
       </div>
 
-      <div class="grid-3" style="text-align: center;">
+      <div class="grid-4" style="text-align: center;">
         <div class="card">
-          <strong style="color: #fff;">IT поддержка:</strong><br>
-          <span style="font-size: 13px; color: var(--text-muted);">Кабинет A-108 • Внутр. тел: 108</span>
+          <strong style="color: #fff;">💻 IT поддержка:</strong><br>
+          <span style="font-size: 12px; color: var(--text-muted);">Кабинет A-108 • Внутр: 108</span>
         </div>
         <div class="card">
-          <strong style="color: #fff;">Служба АХЧ:</strong><br>
-          <span style="font-size: 13px; color: var(--text-muted);">Кабинет A-004 • Внутр. тел: 104</span>
+          <strong style="color: #fff;">⚡ Инженеры & Плотники:</strong><br>
+          <span style="font-size: 12px; color: var(--text-muted);">Мастерская D-106 • Внутр: 106</span>
         </div>
         <div class="card">
-          <strong style="color: #fff;">Заведующий складом:</strong><br>
-          <span style="font-size: 13px; color: var(--text-muted);">Блок C (Склад) • Внутр. тел: 112</span>
+          <strong style="color: #fff;">📦 Служба АХЧ & Склад:</strong><br>
+          <span style="font-size: 12px; color: var(--text-muted);">Блок C (Склад) • Внутр: 112</span>
+        </div>
+        <div class="card">
+          <strong style="color: #fff;">📚 Библиотека Athenaeum:</strong><br>
+          <span style="font-size: 12px; color: var(--text-muted);">Блок B, 2 этаж • Библиотека</span>
         </div>
       </div>
 
       <div class="speaker-notes">
         <div class="speaker-notes-label">🗣️ Реплика докладчика</div>
-        «Спасибо за внимание! Давайте перейдем к вопросам. Сейчас я готов показать на интерактивной доске, как создать тестовую заявку прямо с телефона любого из вас.»
+        «Спасибо за внимание! Давайте перейдем к вашим вопросам. Прямо сейчас на интерактивной доске мы создадим первую тестовую заявку со смартфона любого из вас.»
       </div>
     </section>
 
@@ -994,7 +1104,7 @@
 
   <!-- Bottom Navigation & Counter -->
   <footer>
-    <div class="slide-counter" id="slideCounter">Слайд 1 из 13</div>
+    <div class="slide-counter" id="slideCounter">Слайд 1 из 14</div>
     <div class="nav-buttons">
       <button class="btn" id="prevBtn" title="Предыдущий слайд (Стрелка влево)">
         ← Назад
