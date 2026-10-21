@@ -1028,17 +1028,27 @@ app.get('/api/search/suggestions', (req, res) => {
     const results = { borrowers: [], books: [] };
 
     if (type === 'borrower' || type === 'all') {
+      const qNoSpace = q.toLowerCase().replace(/\s+/g, '');
       results.borrowers = db.prepare(`
         SELECT br.id, br.name, br.role, br.class, br.status, br.email,
           (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
           (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
         FROM borrowers br
-        WHERE br.id LIKE ? OR br.name LIKE ? OR br.class LIKE ? OR br.email LIKE ?
+        WHERE br.id LIKE ? 
+           OR br.name LIKE ? 
+           OR REPLACE(LOWER(br.name), ' ', '') LIKE ?
+           OR br.class LIKE ? 
+           OR br.email LIKE ?
         ORDER BY 
-          CASE WHEN LOWER(br.name) = LOWER(?) THEN 1 WHEN br.name LIKE ? THEN 2 ELSE 3 END,
+          CASE 
+            WHEN LOWER(br.name) = LOWER(?) THEN 1 
+            WHEN REPLACE(LOWER(br.name), ' ', '') = ? THEN 2
+            WHEN br.name LIKE ? THEN 3 
+            ELSE 4 
+          END,
           br.name ASC
         LIMIT 10
-      `).all(term, term, term, term, q, `${q}%`);
+      `).all(term, term, `%${qNoSpace}%`, term, term, q, qNoSpace, `${q}%`);
     }
 
     if (type === 'book' || type === 'all') {
@@ -1155,14 +1165,16 @@ app.get('/api/lookup/:code', (req, res) => {
 
     if (book) return formatBookResponse(book);
 
-    // 3. Search Borrower by exact or partial Name
+    // 3. Search Borrower by exact or whitespace-normalized Name
+    const rawNoSpace = raw.toLowerCase().replace(/\s+/g, '');
     borrower = db.prepare(`
       SELECT br.*,
         (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
         (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
       FROM borrowers br
       WHERE LOWER(br.name) = LOWER(?)
-    `).get(raw);
+         OR REPLACE(LOWER(br.name), ' ', '') = ?
+    `).get(raw, rawNoSpace);
 
     if (borrower) return formatBorrowerResponse(borrower);
 
@@ -1176,18 +1188,23 @@ app.get('/api/lookup/:code', (req, res) => {
 
     if (book) return formatBookResponse(book);
 
-    // 5. Search Borrower by partial Name (e.g. "Tagir", "Aknur", "Sharon")
+    // 5. Search Borrower by partial Name (e.g. "Tagir", "Aknur", "Aigerim", "Makibayeva")
     borrower = db.prepare(`
       SELECT br.*,
         (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
         (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
       FROM borrowers br
       WHERE LOWER(br.name) LIKE ?
+         OR REPLACE(LOWER(br.name), ' ', '') LIKE ?
       ORDER BY 
-        CASE WHEN LOWER(br.name) LIKE ? THEN 1 ELSE 2 END,
+        CASE 
+          WHEN LOWER(br.name) LIKE ? THEN 1 
+          WHEN REPLACE(LOWER(br.name), ' ', '') LIKE ? THEN 2 
+          ELSE 3 
+        END,
         br.name ASC
       LIMIT 1
-    `).get(`%${raw.toLowerCase()}%`, `${raw.toLowerCase()}%`);
+    `).get(`%${raw.toLowerCase()}%`, `%${rawNoSpace}%`, `${raw.toLowerCase()}%`, `${rawNoSpace}%`);
 
     if (borrower) return formatBorrowerResponse(borrower);
 

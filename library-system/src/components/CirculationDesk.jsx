@@ -34,12 +34,56 @@ export default function CirculationDesk({
   const [showBookDropdown, setShowBookDropdown] = useState(false);
 
   useEffect(() => {
-    if (preselectedBook) setSelectedBook(preselectedBook);
+    if (preselectedBook) {
+      if (!preselectedBook.activeLoans || !Array.isArray(preselectedBook.activeLoans)) {
+        api.lookupCode(preselectedBook.barcode)
+          .then(res => {
+            if (res.type === 'book') setSelectedBook(res.data);
+            else setSelectedBook(preselectedBook);
+          })
+          .catch(() => setSelectedBook(preselectedBook));
+      } else {
+        setSelectedBook(preselectedBook);
+      }
+    }
   }, [preselectedBook]);
 
   useEffect(() => {
-    if (preselectedBorrower) setSelectedBorrower(preselectedBorrower);
+    if (preselectedBorrower) {
+      if (!preselectedBorrower.loans || !Array.isArray(preselectedBorrower.loans)) {
+        api.lookupCode(preselectedBorrower.id)
+          .then(res => {
+            if (res.type === 'borrower') setSelectedBorrower(res.data);
+            else setSelectedBorrower(preselectedBorrower);
+          })
+          .catch(() => setSelectedBorrower(preselectedBorrower));
+      } else {
+        setSelectedBorrower(preselectedBorrower);
+      }
+    }
   }, [preselectedBorrower]);
+
+  // Extra safety watcher: if selectedBorrower is set by any path without loans array, auto-fetch!
+  useEffect(() => {
+    if (selectedBorrower?.id && (!selectedBorrower.loans || !Array.isArray(selectedBorrower.loans))) {
+      api.lookupCode(selectedBorrower.id)
+        .then(res => {
+          if (res.type === 'borrower') setSelectedBorrower(res.data);
+        })
+        .catch(() => {});
+    }
+  }, [selectedBorrower?.id]);
+
+  // Extra safety watcher: if selectedBook is set by any path without activeLoans array, auto-fetch!
+  useEffect(() => {
+    if (selectedBook?.barcode && (!selectedBook.activeLoans || !Array.isArray(selectedBook.activeLoans))) {
+      api.lookupCode(selectedBook.barcode)
+        .then(res => {
+          if (res.type === 'book') setSelectedBook(res.data);
+        })
+        .catch(() => {});
+    }
+  }, [selectedBook?.barcode]);
 
   // Due Date & Loan Options
   const [calculatedDueDate, setCalculatedDueDate] = useState('');
@@ -634,15 +678,15 @@ export default function CirculationDesk({
                   <span className="metadata-label">Loans Breakdown</span>
                   <span className="metadata-value" style={{ fontSize: '0.78rem' }}>
                     <span style={{ color: 'var(--rose-500)', fontWeight: 700 }}>
-                      {selectedBorrower.overdueLoansCount || selectedBorrower.loans?.filter(l => l.status === 'overdue').length || 0} overdue
+                      {selectedBorrower.overdueLoansCount !== undefined ? selectedBorrower.overdueLoansCount : (selectedBorrower.loans?.filter(l => l.status === 'overdue').length || 0)} overdue
                     </span>
                     <span style={{ margin: '0 4px', color: 'var(--text-muted)' }}>•</span>
                     <span style={{ color: 'var(--emerald-500)', fontWeight: 700 }}>
-                      {selectedBorrower.activeLoans?.length || selectedBorrower.loans?.filter(l => l.status === 'active').length || 0} active
+                      {selectedBorrower.activeLoansCount !== undefined ? selectedBorrower.activeLoansCount : (selectedBorrower.activeLoans?.length || selectedBorrower.loans?.filter(l => l.status === 'active' || l.status === 'overdue').length || 0)} active
                     </span>
                     <span style={{ margin: '0 4px', color: 'var(--text-muted)' }}>•</span>
                     <span style={{ color: 'var(--text-muted)' }}>
-                      {selectedBorrower.totalLoansCount || selectedBorrower.loans?.length || 0} total
+                      {selectedBorrower.totalLoansCount !== undefined ? selectedBorrower.totalLoansCount : (selectedBorrower.loans?.length || 0)} total
                     </span>
                   </span>
                 </div>
