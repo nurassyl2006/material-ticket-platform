@@ -82,7 +82,13 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
   if (role === 'cleaning' && resolvedDept === 'cleaning') {
     return true;
   }
-  if (role === 'engineer' && (resolvedDept === 'plumbing' || resolvedDept === 'electrical' || resolvedDept === 'engineering')) {
+  if (role === 'engineer' && (
+    resolvedDept === 'plumbing' || 
+    resolvedDept === 'electrical' || 
+    resolvedDept === 'engineering' || 
+    resolvedDept === 'carpentry' || 
+    resolvedDept === 'facilities'
+  )) {
     return true;
   }
   if ((role === 'storage_manager' || role === 'workerA') && (

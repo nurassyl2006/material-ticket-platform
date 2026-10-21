@@ -42,7 +42,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const cleaningTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'cleaning');
   const storageTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'storage');
   const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id));
-  const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing'].includes(resolveDepartment(t.department).id));
+  const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing', 'carpentry'].includes(resolveDepartment(t.department).id));
 
 
   const lowStockItems = inventory.filter(item => item.quantity <= item.minLevel);

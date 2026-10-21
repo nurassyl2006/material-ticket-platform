@@ -494,7 +494,7 @@ export const AppProvider = ({ children }) => {
                       isForMe = true;
                     } else if (curRole === 'it_support' && (deptId === 'it_helpdesk' || deptId === 'it')) {
                       isForMe = true;
-                    } else if (curRole === 'engineer' && ['plumbing', 'electrical', 'engineering', 'facilities'].includes(deptId)) {
+                    } else if (curRole === 'engineer' && ['plumbing', 'electrical', 'engineering', 'facilities', 'carpentry'].includes(deptId)) {
                       isForMe = true;
                     } else if (curRole === 'facilities_manager' && ['carpentry', 'event_prep', 'grounds', 'facilities', 'cleaning', 'plumbing', 'electrical'].includes(deptId)) {
                       isForMe = true;
@@ -657,7 +657,7 @@ export const AppProvider = ({ children }) => {
       (myName && (recip === myName || recip.includes(myName) || myName.includes(recip))) ||
       (role === 'it_support' && (recip.includes('it') || recip.includes('helpdesk') || notifTitle.includes('it') || notifMsg.includes('wifi') || notifMsg.includes('laptop'))) ||
       (role === 'cleaning' && (recip.includes('clean') || notifTitle.includes('clean') || notifMsg.includes('clean'))) ||
-      (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || notifMsg.includes('leak') || notifMsg.includes('pipe') || notifMsg.includes('electric'))) ||
+      (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || notifMsg.includes('leak') || notifMsg.includes('pipe') || notifMsg.includes('electric') || notifMsg.includes('carpentr') || notifMsg.includes('furnitur'))) ||
       ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse') || isBroadCast || notifTitle.includes('return') || notifMsg.includes('paper') || notifMsg.includes('station'))) ||
       (role === 'facilities_manager' && (recip.includes('facilities') || isBroadCast));
 
@@ -1513,7 +1513,7 @@ export const AppProvider = ({ children }) => {
           // Responsible department specialists
           if (role === 'cleaning' && deptId === 'cleaning') return true;
           if (role === 'it_support' && (deptId === 'it_helpdesk' || deptId === 'it')) return true;
-          if (role === 'engineer' && ['plumbing', 'electrical', 'engineering'].includes(deptId)) return true;
+          if (role === 'engineer' && ['plumbing', 'electrical', 'engineering', 'carpentry', 'facilities'].includes(deptId)) return true;
           if (role === 'facilities_manager' && ['carpentry', 'event_prep', 'grounds', 'facilities', 'cleaning', 'plumbing', 'electrical'].includes(deptId)) return true;
           if ((role === 'storage_manager' || role === 'workerA') && ['storage', 'other'].includes(deptId)) return true;
 
@@ -1524,7 +1524,7 @@ export const AppProvider = ({ children }) => {
       // 2. Department-level notifications
       if (role === 'it_support' && (recip.includes('it') || recip.includes('helpdesk'))) return true;
       if (role === 'cleaning' && recip.includes('clean')) return true;
-      if (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || recip.includes('electric') || recip.includes('plumb'))) return true;
+      if (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || recip.includes('electric') || recip.includes('plumb') || recip.includes('carpentr') || recip.includes('furnitur'))) return true;
       if ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse'))) return true;
       if (role === 'facilities_manager' && (recip.includes('facilities') || recip.includes('deputy') || recip.includes('carpentry'))) return true;
 

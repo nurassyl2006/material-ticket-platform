@@ -67,8 +67,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   const departmentList = Object.values(DEPARTMENTS);
 
   // Storage Manager, Engineer, and Leadership can view/manage live numerical stock counts
-  const canManageStock = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role));
-  const isTeacher = !canManageStock;
+  const canManageStock = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin', 'facilities_manager'].includes(role));
+  const canAccessCatalog = Boolean(isAuthenticated && ['storage_manager', 'workerA', 'engineer', 'director', 'admin', 'facilities_manager'].includes(role));
   const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
 
   const allowedCategoryIds = useMemo(() => {
@@ -80,7 +80,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   }, [customCategories]);
 
   const visibleCategories = useMemo(() => {
-    if (role === 'director' || role === 'admin' || role === 'storage_manager' || role === 'workerA') {
+    if (role === 'director' || role === 'admin' || role === 'storage_manager' || role === 'workerA' || role === 'facilities_manager' || role === 'engineer') {
       return allAvailableCategories;
     }
     return allAvailableCategories.filter(cat => allowedCategoryIds.includes(cat.id || cat.key));
@@ -537,7 +537,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
           </div>
         )}
 
-        {department === 'storage' && hasStorageAccess && (
+        {department === 'storage' && canAccessCatalog && (
           <div style={{
             marginBottom: '16px',
             background: 'rgba(245, 158, 11, 0.07)',

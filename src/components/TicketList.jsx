@@ -69,7 +69,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'cleaning');
     }
     if (role === 'engineer') {
-      return allDepartments.filter(d => d.id === 'all' || d.id === 'plumbing' || d.id === 'electrical');
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'plumbing' || d.id === 'electrical' || d.id === 'carpentry');
     }
     if (role === 'storage_manager' || role === 'workerA') {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'storage' || d.id === 'other');
@@ -267,7 +267,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     const dept = resolveDepartment(ticket.department).id;
     if (role === 'it_support') return dept === 'it_helpdesk';
     if (role === 'cleaning') return dept === 'cleaning';
-    if (role === 'engineer') return dept === 'plumbing' || dept === 'electrical';
+    if (role === 'engineer') return dept === 'plumbing' || dept === 'electrical' || dept === 'carpentry';
     if (role === 'facilities_manager') return dept === 'carpentry' || dept === 'event_prep' || dept === 'grounds';
     if (role === 'storage_manager' || role === 'workerA') return dept === 'storage' || dept === 'other';
     return false;

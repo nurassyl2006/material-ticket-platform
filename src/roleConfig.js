@@ -62,9 +62,9 @@ export const DEFAULT_ROLES = {
     bg: 'rgba(249, 115, 22, 0.15)',
     border: 'rgba(249, 115, 22, 0.35)',
     icon: 'Wrench',
-    scope: 'Lighting, air conditioning, sockets, heating & ventilation',
-    scopeRu: 'Освещение, кондиционеры, розетки, отопление и вентиляция',
-    scopeKk: 'Жарықтандыру, кондиционерлер, розеткалар, жылыту және желдету',
+    scope: 'Lighting, air conditioning, sockets, heating, ventilation, carpentry & furniture repairs',
+    scopeRu: 'Освещение, кондиционеры, розетки, отопление, вентиляция, плотницкие работы и ремонт мебели',
+    scopeKk: 'Жарықтандыру, кондиционерлер, розеткалар, жылыту, желдету, ағаш ұсталық жұмыстары мен жиһаз жөндеу',
     canViewStorage: true,
     canManageStock: true,
     allowedCategories: ['electrical', 'hvac', 'furniture', 'other']
