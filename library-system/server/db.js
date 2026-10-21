@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { importCsvData } from './importCsvData.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -375,9 +376,23 @@ export function seedInitialUsers() {
   }
 }
 
+// Ensure CSV staff & student circulation loans and book catalog are seeded
+export function seedCsvDataIfNeeded() {
+  try {
+    const loanCount = db.prepare('SELECT COUNT(*) as count FROM loans').get().count;
+    if (loanCount < 50) {
+      console.log(`📚 Current loan count (${loanCount}) is under 50. Auto-importing full CSV catalog...`);
+      importCsvData(db);
+    }
+  } catch (err) {
+    console.error('⚠️ Could not check/seed CSV loans:', err.message);
+  }
+}
+
 // Auto-run schema & seed
 initSchema();
 seedInitialData();
+seedCsvDataIfNeeded();
 seedInitialUsers();
 
 export default db;

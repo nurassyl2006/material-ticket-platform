@@ -65,6 +65,10 @@ if [ -n "$REMOTE_HASH" ] && [ "$LOCAL_HASH" != "$REMOTE_HASH" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📚 Building Library client bundle (npm run library:build)..." >> "$LOG_FILE"
   npm run library:build >> "$LOG_FILE" 2>&1 || true
 
+  # Ensure CSV catalog & loan records are seeded in library database
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📖 Seeding CSV library catalog & circulation data..." >> "$LOG_FILE"
+  node scripts/import_all_library_data.js >> "$LOG_FILE" 2>&1 || true
+
   # Restart service cleanly
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Reloading EduOps server process..." >> "$LOG_FILE"
   if command -v pm2 >/dev/null 2>&1 && pm2 describe eduops >/dev/null 2>&1; then

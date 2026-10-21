@@ -5,6 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import db, { generateLoanId, hashPassword, verifyPassword } from './db.js';
+import { importCsvData } from './importCsvData.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -199,8 +200,20 @@ app.use('/api', (req, res, next) => {
 });
 
 // ==========================================
-// 0.1 USER MANAGEMENT API (Admin only)
+// 0.1 USER MANAGEMENT & CSV SYNC API
 // ==========================================
+app.post('/api/admin/sync-csv', (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, error: 'Administrator access required' });
+    }
+    const result = importCsvData(db);
+    res.json({ success: true, message: 'CSV data synchronization completed', result });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get('/api/users', (req, res) => {
   try {
     if (req.user.role !== 'admin') {
