@@ -1413,15 +1413,16 @@ app.get('/api/db/table/:name', (req, res) => {
 
 // Serve static build in production
 const distPath = path.resolve(__dirname, '../dist');
-if (fs.existsSync(distPath)) {
-  app.use(express.static(distPath));
-  app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.startsWith('/api')) {
-      return res.sendFile(path.resolve(distPath, 'index.html'));
+app.use(express.static(distPath));
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    const indexPath = path.resolve(distPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
     }
-    next();
-  });
-}
+  }
+  next();
+});
 
 // Start Server
 app.listen(PORT, '0.0.0.0', () => {
