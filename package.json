@@ -25,7 +25,12 @@
     "library:server": "node library-system/server/index.js",
     "library:dev": "concurrently -n \"LIB_SRV,LIB_UI\" -c \"magenta,cyan\" \"node --watch library-system/server/index.js\" \"vite library-system --port 5174\"",
     "library:build": "vite build library-system",
-    "library:app": "google-chrome --app=http://localhost:5002 || chromium --app=http://localhost:5002 || firefox http://localhost:5002"
+    "library:app": "google-chrome --app=http://localhost:5002 || chromium --app=http://localhost:5002 || firefox http://localhost:5002",
+    "library:status": "systemctl --user status athenaeum-library --no-pager 2>/dev/null || curl -s http://localhost:5002/api/health",
+    "library:restart": "systemctl --user restart athenaeum-library 2>/dev/null || npm run library:server",
+    "library:logs": "journalctl --user -u athenaeum-library -f",
+    "library:service:install": "bash scripts/install-library-service.sh",
+    "library:keepalive": "bash scripts/keepalive-library.sh"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.6",

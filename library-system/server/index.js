@@ -179,6 +179,17 @@ app.post('/api/auth/change-password', authenticateToken, (req, res) => {
   }
 });
 
+// Health check endpoints for supervisor & keep-alive monitoring
+app.get(['/api/health', '/health'], (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'athenaeum-library-system',
+    timestamp: new Date().toISOString(),
+    uptime: Math.round(process.uptime()),
+    database: 'connected'
+  });
+});
+
 // Protect all remaining /api endpoints
 app.use('/api', (req, res, next) => {
   if (req.path.startsWith('/auth/login') || req.path === '/health') {

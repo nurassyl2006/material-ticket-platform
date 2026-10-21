@@ -61,6 +61,10 @@ if [ -n "$REMOTE_HASH" ] && [ "$LOCAL_HASH" != "$REMOTE_HASH" ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔨 Building client bundle (npm run build)..." >> "$LOG_FILE"
   npm run build >> "$LOG_FILE" 2>&1
 
+  # Rebuild Athenaeum Library System client bundle
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] 📚 Building Library client bundle (npm run library:build)..." >> "$LOG_FILE"
+  npm run library:build >> "$LOG_FILE" 2>&1 || true
+
   # Restart service cleanly
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Reloading EduOps server process..." >> "$LOG_FILE"
   if command -v pm2 >/dev/null 2>&1 && pm2 describe eduops >/dev/null 2>&1; then
@@ -80,6 +84,12 @@ if [ -n "$REMOTE_HASH" ] && [ "$LOCAL_HASH" != "$REMOTE_HASH" ]; then
     sleep 1
     nohup node server/index.js >> "$HOME/server.log" 2>&1 &
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] Standalone server restarted with nohup (PID $!)." >> "$LOG_FILE"
+  fi
+
+  # Restart or ensure Athenaeum Library service
+  if systemctl --user is-active --quiet athenaeum-library 2>/dev/null; then
+    systemctl --user restart athenaeum-library >> "$LOG_FILE" 2>&1
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] systemd user service 'athenaeum-library' restarted." >> "$LOG_FILE"
   fi
 
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Auto-update successfully completed to $REMOTE_HASH" >> "$LOG_FILE"

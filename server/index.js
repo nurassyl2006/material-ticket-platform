@@ -3,6 +3,8 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import http from 'http';
+import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import db, { resetDatabase, hashPassword, verifyPassword, DEFAULT_PASSWORDS } from './db.js';
 
@@ -1614,14 +1616,109 @@ if (fs.existsSync(distDir)) {
   });
 }
 
+// -------------------------------------------------------------
+// Athenaeum Library System Supervisor & Keep-Alive Engine
+// Ensures Library System (port 5002) is always running and healthy
+// -------------------------------------------------------------
+const LIBRARY_PORT = process.env.LIBRARY_PORT || 5002;
+let libraryProcess = null;
+let libraryRestartTimeout = null;
+let isShuttingDown = false;
+
+function checkLibraryHealth() {
+  return new Promise((resolve) => {
+    const req = http.get(`http://127.0.0.1:${LIBRARY_PORT}/api/health`, { timeout: 2500 }, (res) => {
+      resolve(res.statusCode >= 200 && res.statusCode < 400);
+    });
+    req.on('error', () => resolve(false));
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+}
+
+async function startLibrarySupervisor() {
+  if (isShuttingDown) return;
+  const isHealthy = await checkLibraryHealth();
+  if (isHealthy) {
+    console.log(`📖 [Library Supervisor] Athenaeum Library System confirmed active & healthy on port ${LIBRARY_PORT}.`);
+    return;
+  }
+
+  const libraryScript = path.resolve(__dirname, '../library-system/server/index.js');
+  if (!fs.existsSync(libraryScript)) {
+    console.warn('⚠️ [Library Supervisor] library-system/server/index.js not found at:', libraryScript);
+    return;
+  }
+
+  console.log(`🚀 [Library Supervisor] Athenaeum Library System is not detected on port ${LIBRARY_PORT}. Starting supervised instance...`);
+  try {
+    libraryProcess = spawn(process.execPath, [libraryScript], {
+      cwd: path.resolve(__dirname, '../library-system'),
+      stdio: ['ignore', 'inherit', 'inherit'],
+      env: { ...process.env, LIBRARY_PORT: String(LIBRARY_PORT) }
+    });
+
+    libraryProcess.on('error', (err) => {
+      console.error('❌ [Library Supervisor] Failed to spawn library system:', err.message);
+    });
+
+    libraryProcess.on('exit', (code, signal) => {
+      libraryProcess = null;
+      if (!isShuttingDown) {
+        console.warn(`⚠️ [Library Supervisor] Library process exited (code: ${code}, signal: ${signal}). Re-evaluating in 3 seconds...`);
+        clearTimeout(libraryRestartTimeout);
+        libraryRestartTimeout = setTimeout(startLibrarySupervisor, 3000);
+      }
+    });
+  } catch (err) {
+    console.error('❌ [Library Supervisor] Error starting library server:', err);
+    clearTimeout(libraryRestartTimeout);
+    libraryRestartTimeout = setTimeout(startLibrarySupervisor, 5000);
+  }
+}
+
+// Check every 20 seconds to guarantee it stays alive
+const libraryHealthInterval = setInterval(async () => {
+  if (isShuttingDown) return;
+  const alive = await checkLibraryHealth();
+  if (!alive && !libraryProcess) {
+    console.warn('⚠️ [Library Supervisor] Library health check missed - restarting library server...');
+    startLibrarySupervisor();
+  }
+}, 20000);
+
+// Endpoint to check library system status from platform
+app.get('/api/library/status', async (req, res) => {
+  const isHealthy = await checkLibraryHealth();
+  res.json({
+    online: isHealthy,
+    port: Number(LIBRARY_PORT),
+    url: `http://localhost:${LIBRARY_PORT}/`,
+    supervisor: 'active',
+    timestamp: new Date().toISOString()
+  });
+});
+
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`EduOps Server & SQLite Database running on http://0.0.0.0:${PORT}`);
   console.log(`API endpoints accessible at http://localhost:${PORT}/api/`);
+  // Ensure library system is up immediately upon server start
+  startLibrarySupervisor();
 });
 
 // Graceful process termination (prevents SQLite WAL corruption on reload)
 const handleShutdown = (signal) => {
   console.log(`\nReceived ${signal}. Gracefully stopping EduOps server...`);
+  isShuttingDown = true;
+  clearInterval(libraryHealthInterval);
+  clearTimeout(libraryRestartTimeout);
+  if (libraryProcess) {
+    try {
+      libraryProcess.kill('SIGTERM');
+    } catch {}
+  }
   server.close(() => {
     try {
       db.close();
