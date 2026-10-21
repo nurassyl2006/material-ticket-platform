@@ -85,7 +85,8 @@ export const translations = {
       ticketAssigned: "Ticket In Progress",
       ticketResolved: "Ticket Resolved",
       ticketPurchasing: "Item Procurement",
-      ticketIssued: "Item Issued from Stock"
+      ticketIssued: "Item Issued from Stock",
+      ticketDeclined: "Request Declined"
     },
     auth: {
       loginTitle: "School Staff Authorization",
@@ -240,8 +241,26 @@ export const translations = {
         returned: "Returned to Warehouse",
         purchasing: "To be Purchased",
         completed: "Completed / Resolved",
-        rejected: "Rejected"
+        rejected: "Declined",
+        declined: "Declined"
       },
+      decline: "Decline",
+      declineTicket: "Decline Request",
+      declineReasonTitle: "Decline Request",
+      declineReasonPrompt: "Please specify why this ticket is being declined. The requester will be notified of this reason.",
+      declineReasonPlaceholder: "State the reason for declining (required, e.g. duplicate request, materials unavailable, out of scope)...",
+      declineReasonRequired: "Please enter a reason for declining this request.",
+      confirmDecline: "Confirm Decline",
+      declinedBannerTitle: "Request Declined",
+      declineReasonLabel: "Reason for decline",
+      declinedByLabel: "Declined by",
+      quickReasons: [
+        "Duplicate request",
+        "Incorrect room / location",
+        "Out of department scope",
+        "Materials unavailable in warehouse",
+        "Cancelled by requester agreement"
+      ],
       returnItem: "🔄 I Have Returned This Item",
       confirmReturn: "✅ Confirm Return (Received in Warehouse)",
       loanNotice: "⚠️ Temporary Lesson Loan: This equipment is issued for 1-2 lessons and must be returned to the warehouse when your class finishes.",
@@ -517,7 +536,8 @@ export const translations = {
       ticketAssigned: "Заявка принята в работу",
       ticketResolved: "Заявка выполнена",
       ticketPurchasing: "Закупка товара",
-      ticketIssued: "Материал выдан со склада"
+      ticketIssued: "Материал выдан со склада",
+      ticketDeclined: "Заявка отклонена"
     },
     auth: {
       loginTitle: "Авторизация сотрудников школы",
@@ -672,8 +692,26 @@ export const translations = {
         returned: "Возврат подтвержден складом",
         purchasing: "Закупается",
         completed: "Выполнено / Решено",
-        rejected: "Отклонено"
+        rejected: "Отклонено",
+        declined: "Отклонено"
       },
+      decline: "Отклонить",
+      declineTicket: "Отклонить заявку",
+      declineReasonTitle: "Отклонение заявки",
+      declineReasonPrompt: "Пожалуйста, укажите причину отклонения заявки. Автор заявки получит уведомление с указанной причиной.",
+      declineReasonPlaceholder: "Укажите причину отклонения (обязательно: например, дубликат, неверный кабинет, нет комплектующих)...",
+      declineReasonRequired: "Необходимо обязательно указать причину отклонения заявки.",
+      confirmDecline: "Подтвердить отклонение",
+      declinedBannerTitle: "Заявка отклонена",
+      declineReasonLabel: "Причина отклонения",
+      declinedByLabel: "Отклонил(а)",
+      quickReasons: [
+        "Дубликат заявки",
+        "Неверно указан кабинет / локация",
+        "Вне компетенции службы",
+        "Нет комплектующих / материалов",
+        "Отменено по согласованию с автором"
+      ],
       returnItem: "🔄 Я вернул(а) этот предмет на склад",
       confirmReturn: "✅ Подтвердить прием возврата на склад",
       loanNotice: "⚠️ Временная выдача на 1-2 урока: этот предмет выдается на время урока и должен быть возвращен на склад сразу после занятия.",
@@ -949,7 +987,8 @@ export const translations = {
       ticketAssigned: "Өтінім жұмысқа қабылданды",
       ticketResolved: "Өтінім орындалды",
       ticketPurchasing: "Тауарды сатып алу",
-      ticketIssued: "Материал қоймадан берілді"
+      ticketIssued: "Материал қоймадан берілді",
+      ticketDeclined: "Өтінім қабылданбады"
     },
     auth: {
       loginTitle: "Мектеп қызметкерлерін авторизациялау",
@@ -1104,8 +1143,26 @@ export const translations = {
         returned: "Қоймаға қайтару расталды",
         purchasing: "Сатып алынуда",
         completed: "Орындалды / Шешілді",
-        rejected: "Қабылданбады"
+        rejected: "Қабылданбады",
+        declined: "Қабылданбады"
       },
+      decline: "Қабылдамау",
+      declineTicket: "Өтінімді қабылдамау",
+      declineReasonTitle: "Өтінімді қабылдамау",
+      declineReasonPrompt: "Өтінімді қабылдамау себебін көрсетіңіз. Өтінім авторына осы себеп туралы хабарлама жіберіледі.",
+      declineReasonPlaceholder: "Қабылдамау себебін жазыңыз (міндетті: мысалы, қайталанған өтінім, қате кабинет, бөлшектер жоқ)...",
+      declineReasonRequired: "Өтінімді қабылдамау себебін міндетті түрде көрсетіңіз.",
+      confirmDecline: "Қабылдамауды растау",
+      declinedBannerTitle: "Өтінім қабылданбады",
+      declineReasonLabel: "Қабылдамау себебі",
+      declinedByLabel: "Қабылдамаған",
+      quickReasons: [
+        "Қайталанған өтінім",
+        "Қате кабинет / орын көрсетілген",
+        "Бөлім құзыретіне жатпайды",
+        "Қажетті бөлшектер жоқ",
+        "Автормен келісім бойынша жойылды"
+      ],
       returnItem: "🔄 Затты қоймаға қайтардым",
       confirmReturn: "✅ Қайтаруды растау (Қоймаға қабылданды)",
       loanNotice: "⚠️ 1-2 сабаққа уақытша беріледі: бұл жабдық сабақ аяқталған соң дереу қоймаға қайтарылуы қажет.",

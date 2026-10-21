@@ -25,7 +25,8 @@ import {
   Footprints,
   DoorOpen,
   Globe,
-  RotateCcw
+  RotateCcw,
+  XCircle
 } from 'lucide-react';
 import { DepartmentActionModal } from './DepartmentActionModal';
 import { TicketCard } from './TicketCard';
@@ -172,6 +173,13 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             <CheckCircle size={12} /> {t.tickets?.status?.returned || 'Returned to Warehouse'}
           </span>
         );
+      case 'rejected':
+      case 'declined':
+        return (
+          <span className="ticket-badge-status ticket-badge-status-rejected">
+            <XCircle size={12} /> {t.tickets?.status?.rejected || 'Declined'}
+          </span>
+        );
       default:
         return (
           <span className="ticket-badge-status ticket-badge-status-default">
@@ -209,6 +217,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                           (ticket.assignedWorker || '').toLowerCase().includes(term);
     const matchesStatus = statusFilter === 'all' || 
       ticket.status === statusFilter ||
+      (statusFilter === 'rejected' && (ticket.status === 'rejected' || ticket.status === 'declined')) ||
       (statusFilter === 'on_loan' && (ticket.returnStatus === 'borrowed' || ticket.status === 'borrowed')) ||
       (statusFilter === 'returned_by_teacher' && ticket.returnStatus === 'returned_by_teacher');
     const resolvedDeptId = resolveDepartment(ticket.department).id;
@@ -358,6 +367,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               <option value="returned_by_teacher" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>⏳ {t.tickets?.status?.returned_by_teacher || 'Returned • Awaiting Warehouse'}</option>
               <option value="purchasing" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.purchasing}</option>
               <option value="completed" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.completed}</option>
+              <option value="rejected" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>🚫 {t.tickets.status.rejected || 'Declined'}</option>
             </select>
           </div>
 

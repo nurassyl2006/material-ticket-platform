@@ -136,7 +136,8 @@ export function filterVisibleTickets(tickets, currentUser, role, createdTicketId
     const isActive = ticket.status !== 'completed' && 
                      ticket.status !== 'delivered' && 
                      ticket.status !== 'cancelled' && 
-                     ticket.status !== 'rejected';
+                     ticket.status !== 'rejected' &&
+                     ticket.status !== 'declined';
 
     if (isActive) {
       return false;

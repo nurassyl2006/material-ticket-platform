@@ -50,7 +50,10 @@ function formatTicket(row) {
     returnConfirmedAt: row.returnConfirmedAt || null,
     returnConfirmedBy: row.returnConfirmedBy || null,
     createdById: row.createdById || null,
-    createdByRole: row.createdByRole || null
+    createdByRole: row.createdByRole || null,
+    declineReason: row.declineReason || '',
+    declinedBy: row.declinedBy || null,
+    declinedAt: row.declinedAt || null
   };
 }
 
@@ -529,7 +532,8 @@ app.patch('/api/tickets/:id', (req, res) => {
       'roomNumber', 'moveDetails', 'description', 'photos', 'completionPhotos',
       'isReturnable', 'returnStatus', 'borrowedAt', 'returnedAt', 'returnConfirmedAt', 'returnConfirmedBy',
       'teacherName', 'teacherPhone', 'createdById', 'createdByRole', 'status',
-      'assignedWorker', 'assignedRole', 'handledAction', 'purchaseCost', 'supplier', 'notes'
+      'assignedWorker', 'assignedRole', 'handledAction', 'declineReason', 'declinedBy', 'declinedAt',
+      'purchaseCost', 'supplier', 'notes'
     ];
 
     const fieldsToSet = [];
@@ -587,6 +591,66 @@ app.patch('/api/tickets/:id', (req, res) => {
 
     const updatedRow = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updatedRow));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST decline ticket with required reason
+app.post('/api/tickets/:id/decline', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason, declinedBy } = req.body;
+    if (!reason || typeof reason !== 'string' || !reason.trim()) {
+      return res.status(400).json({ error: 'Decline reason is required' });
+    }
+
+    const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const now = new Date().toISOString();
+    const cleanReason = reason.trim();
+    const who = declinedBy || 'Specialist';
+    const updatedNotes = ticket.notes 
+      ? `${ticket.notes} | Declined by ${who}: ${cleanReason}` 
+      : `Declined by ${who}: ${cleanReason}`;
+
+    db.prepare(`
+      UPDATE tickets 
+      SET status = 'rejected', declineReason = ?, declinedBy = ?, declinedAt = ?, notes = ?, updatedAt = ?
+      WHERE id = ?
+    `).run(cleanReason, who, now, updatedNotes, now, id);
+
+    // Send notification to requesting teacher/user
+    if (ticket.teacherName) {
+      const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      db.prepare(`
+        INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, 0, ?)
+      `).run(
+        notifId,
+        ticket.teacherName,
+        id,
+        'Request Declined',
+        `Request "${ticket.itemTitle}" was declined by ${who}. Reason: ${cleanReason}`,
+        'rejected',
+        now
+      );
+    }
+
+    sendTelegramAlert(
+      `🚫 <b>Ticket Declined in EduOps</b>\n` +
+      `<b>Item:</b> ${ticket.itemTitle}\n` +
+      `<b>Department:</b> ${ticket.department || 'General'}\n` +
+      `<b>Staff:</b> ${who}\n` +
+      `<b>Requester:</b> ${ticket.teacherName || 'Staff'}\n` +
+      `<b>Reason:</b> ${cleanReason}\n`
+    ).catch(() => {});
+
+    const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
+    res.json(formatTicket(updated));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

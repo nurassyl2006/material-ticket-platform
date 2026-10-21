@@ -10,11 +10,13 @@ import {
   RotateCcw,
   Sparkles,
   Clock,
-  Check
+  Check,
+  XCircle
 } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { translateText, detectLanguage, TRANSLATOR_LANGUAGES } from '../services/translator';
 import { translateSubcategory } from '../departments';
+import { DeclineTicketModal } from './DeclineTicketModal';
 
 export const TicketCard = ({
   ticket,
@@ -42,6 +44,8 @@ export const TicketCard = ({
   const cleanPhone = (ticket.teacherPhone || '').replace(/[^\d+]/g, '');
   const targetDept = ticket.department || 'storage';
   const isCompleted = ticket.status === 'completed' || ticket.status === 'delivered';
+  const isDeclined = ticket.status === 'rejected' || ticket.status === 'declined';
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
   const isStorageManager = role === 'storage_manager' || role === 'workerA' || role === 'director' || role === 'admin';
   const isMyTicket = Boolean(
     (currentUser?.name && ticket.teacherName && ticket.teacherName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
@@ -493,7 +497,7 @@ export const TicketCard = ({
           )}
 
           {/* Department Processing Button (Fluent Primary) */}
-          {canProcessTicket(ticket) && !isCompleted && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
+          {canProcessTicket(ticket) && !isCompleted && !isDeclined && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
             <button
               onClick={() => onSelectTicket(ticket)}
               className="fluent-btn-primary"
@@ -504,7 +508,7 @@ export const TicketCard = ({
           )}
 
           {/* Mark Completed Button (Fluent Success) */}
-          {canProcessTicket(ticket) && !isCompleted && ticket.status !== 'pending' && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
+          {canProcessTicket(ticket) && !isCompleted && !isDeclined && ticket.status !== 'pending' && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
             <button
               onClick={() => onCompleteTicket(ticket.id)}
               className="fluent-btn-primary"
@@ -515,9 +519,66 @@ export const TicketCard = ({
             </button>
           )}
 
+          {/* Decline Ticket Button for Workers */}
+          {canProcessTicket(ticket) && !isCompleted && !isDeclined && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
+            <button
+              type="button"
+              onClick={() => setShowDeclineModal(true)}
+              style={{
+                height: '28px',
+                padding: '0 10px',
+                fontSize: '12px',
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                color: '#f87171',
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title={t.tickets?.declineTicket || 'Decline Request'}
+            >
+              <XCircle size={13} />
+              <span>{t.tickets?.decline || 'Decline'}</span>
+            </button>
+          )}
+
         </div>
 
       </div>
+
+      {/* Declined Banner with Reason */}
+      {isDeclined && (
+        <div className="ticket-declined-banner">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171', fontWeight: '700', fontSize: '12px' }}>
+            <XCircle size={14} />
+            <span>{t.tickets?.declinedBannerTitle || 'Request Declined'}</span>
+            {ticket.declinedBy && (
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>
+                ({t.tickets?.declinedByLabel || 'by'}: <strong>{ticket.declinedBy}</strong>)
+              </span>
+            )}
+            {ticket.declinedAt && (
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal', marginLeft: 'auto' }}>
+                {new Date(ticket.declinedAt).toLocaleString()}
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: '13px', color: 'var(--text-main)', lineHeight: 1.45, marginTop: '2px' }}>
+            <strong style={{ color: '#fca5a5' }}>{t.tickets?.declineReasonLabel || 'Reason'}:</strong>{' '}
+            {ticket.declineReason || ticket.notes || '—'}
+          </div>
+        </div>
+      )}
+
+      {/* Decline Ticket Modal */}
+      <DeclineTicketModal
+        ticket={ticket}
+        isOpen={showDeclineModal}
+        onClose={() => setShowDeclineModal(false)}
+      />
 
       {/* Handler Notes Banner (if any) */}
       {displayNotes && (

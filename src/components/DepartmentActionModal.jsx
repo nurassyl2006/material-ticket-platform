@@ -15,10 +15,12 @@ import {
   Camera,
   ImagePlus,
   Globe,
-  RotateCcw
+  RotateCcw,
+  XCircle
 } from 'lucide-react';
 import { DEPARTMENTS, resolveDepartment, translateSubcategory } from '../departments';
 import { translateText, detectLanguage } from '../services/translator';
+import { DeclineTicketModal } from './DeclineTicketModal';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const { 
@@ -36,6 +38,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   } = useApp();
 
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
 
   // Storage states
   const [storageActionType, setStorageActionType] = useState('stock'); // 'stock' | 'purchase'
@@ -366,9 +369,35 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ticket #{ticket.id} • Assigned: <strong style={{ color: 'var(--text-primary)' }}>{currentUser.name}</strong></span>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.15s ease' }}>
-            <X size={16} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {ticket.status !== 'rejected' && ticket.status !== 'declined' && ticket.status !== 'completed' && (
+              <button
+                type="button"
+                onClick={() => setShowDeclineModal(true)}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.35)',
+                  color: '#f87171',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  padding: '6px 12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  transition: 'all 0.15s ease'
+                }}
+                title={t.tickets?.declineTicket || 'Decline Request'}
+              >
+                <XCircle size={14} />
+                <span>{t.tickets?.decline || 'Decline'}</span>
+              </button>
+            )}
+            <button onClick={onClose} style={{ background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.15s ease' }}>
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Ticket Snapshot Card */}
@@ -1229,6 +1258,17 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             </div>
           )}
         </div>
+
+        {/* Decline Ticket Modal */}
+        <DeclineTicketModal
+          ticket={ticket}
+          isOpen={showDeclineModal}
+          onClose={() => setShowDeclineModal(false)}
+          onDeclineSuccess={() => {
+            setShowDeclineModal(false);
+            onClose();
+          }}
+        />
 
       </div>
     </div>

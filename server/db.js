@@ -72,6 +72,9 @@ db.exec(`
     assignedWorker TEXT DEFAULT NULL,
     assignedRole TEXT DEFAULT NULL,
     handledAction TEXT DEFAULT NULL,
+    declineReason TEXT DEFAULT '',
+    declinedBy TEXT DEFAULT NULL,
+    declinedAt TEXT DEFAULT NULL,
     purchaseCost REAL DEFAULT 0,
     supplier TEXT DEFAULT '',
     notes TEXT DEFAULT '',
@@ -199,6 +202,22 @@ try {
   db.prepare("CREATE INDEX IF NOT EXISTS idx_tickets_returnStatus ON tickets(returnStatus)").run();
 } catch (err) {
   // Ticket return columns check
+}
+
+// Migration: Ensure declineReason, declinedBy, and declinedAt columns exist on tickets
+try {
+  const ticketColumns = db.prepare("PRAGMA table_info(tickets)").all().map(c => c.name);
+  if (!ticketColumns.includes('declineReason')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN declineReason TEXT DEFAULT ''").run();
+  }
+  if (!ticketColumns.includes('declinedBy')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN declinedBy TEXT DEFAULT NULL").run();
+  }
+  if (!ticketColumns.includes('declinedAt')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN declinedAt TEXT DEFAULT NULL").run();
+  }
+} catch (err) {
+  // Decline columns check
 }
 
 // Migration: Ensure isReturnable and photos columns exist on inventory table

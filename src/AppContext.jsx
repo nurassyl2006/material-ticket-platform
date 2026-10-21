@@ -29,6 +29,7 @@ import {
   logoutUserApi,
   markTicketReturnedByTeacherInDb,
   confirmTicketReturnInDb,
+  declineTicketInDb,
   fetchRolesApi,
   saveRolesApi,
   fetchCategoriesApi,
@@ -1176,6 +1177,58 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Decline ticket with required reason
+  const declineTicket = async (ticketId, reason) => {
+    if (!reason || !reason.trim()) {
+      throw new Error('Decline reason is required');
+    }
+    const cleanReason = reason.trim();
+    const updatedAt = new Date().toISOString();
+    const who = currentUser?.name || 'Staff Specialist';
+    let target = null;
+
+    setTickets(prev => prev.map(t => {
+      if (t.id === ticketId) {
+        target = t;
+        const newNotes = t.notes
+          ? `${t.notes} | Declined by ${who}: ${cleanReason}`
+          : `Declined by ${who}: ${cleanReason}`;
+        return {
+          ...t,
+          status: 'rejected',
+          declineReason: cleanReason,
+          declinedBy: who,
+          declinedAt: updatedAt,
+          notes: newNotes,
+          updatedAt
+        };
+      }
+      return t;
+    }));
+
+    try {
+      await declineTicketInDb(ticketId, { reason: cleanReason, declinedBy: who });
+    } catch {
+      updateTicketInDb(ticketId, {
+        status: 'rejected',
+        declineReason: cleanReason,
+        declinedBy: who,
+        declinedAt: updatedAt,
+        updatedAt
+      }).catch(() => {});
+    }
+
+    if (target && target.teacherName) {
+      addNotification(
+        target.teacherName,
+        ticketId,
+        t.notifications?.ticketDeclined || 'Request Declined',
+        `Request "${target.itemTitle}" was declined by ${who}. Reason: ${cleanReason}`,
+        'rejected'
+      );
+    }
+  };
+
   // Storage Manager: Mark item to be purchased
   const markTicketToPurchase = (ticketId, purchaseCost, supplier, notes) => {
     let target = null;
@@ -1602,6 +1655,7 @@ export const AppProvider = ({ children }) => {
       issueTicketFromStock,
       markTicketReturnedByTeacher,
       confirmTicketReturn,
+      declineTicket,
       markTicketToPurchase,
       completeTicketDelivery,
       updateFacilitiesMove,

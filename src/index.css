@@ -776,6 +776,18 @@ body[data-theme="light"] {
   border-color: #c4b5fd !important;
   color: #6d28d9 !important;
 }
+.ticket-badge-status-rejected,
+.ticket-badge-status-declined {
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+}
+[data-theme="light"] .ticket-badge-status-rejected,
+[data-theme="light"] .ticket-badge-status-declined {
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
 .ticket-badge-status-default {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -785,6 +797,21 @@ body[data-theme="light"] {
   background: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
   color: #475569 !important;
+}
+
+.ticket-declined-banner {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+[data-theme="light"] .ticket-declined-banner {
+  background: #fef2f2 !important;
+  border-color: #fecaca !important;
 }
 
 /* User Tags (Guest, Parent) */

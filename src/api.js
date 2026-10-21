@@ -185,6 +185,13 @@ export async function confirmTicketReturnInDb(id, { confirmedBy, notes } = {}) {
   });
 }
 
+export async function declineTicketInDb(id, { reason, declinedBy } = {}) {
+  return request(`/tickets/${id}/decline`, {
+    method: 'POST',
+    body: JSON.stringify({ reason, declinedBy })
+  });
+}
+
 // -------------------------------------------------------------
 // Storage List of Goods (Inventory) API
 // -------------------------------------------------------------
