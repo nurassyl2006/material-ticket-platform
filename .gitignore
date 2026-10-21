@@ -26,4 +26,4 @@ dist-ssr
 # SQLite Database
 server/data/*.db*
 library-system/server/data/*.db*
-library-system/dist
+
