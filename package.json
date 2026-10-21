@@ -21,7 +21,11 @@
     "autoupdate:install": "ssh -t service@10.1.13.50 \"cd ~/material-ticket-platform && git fetch origin main && git reset --hard origin/main && bash scripts/install-autoupdate-cron.sh\"",
     "autoupdate:logs": "ssh -t service@10.1.13.50 \"tail -n 50 -f ~/autoupdate.log\"",
     "autoupdate:run": "ssh -t service@10.1.13.50 \"bash ~/material-ticket-platform/scripts/autoupdate.sh\"",
-    "tunnel": "node server/tunnel.js"
+    "tunnel": "node server/tunnel.js",
+    "library:server": "node library-system/server/index.js",
+    "library:dev": "concurrently -n \"LIB_SRV,LIB_UI\" -c \"magenta,cyan\" \"node --watch library-system/server/index.js\" \"vite library-system --port 5174\"",
+    "library:build": "vite build library-system",
+    "library:app": "google-chrome --app=http://localhost:5002 || chromium --app=http://localhost:5002 || firefox http://localhost:5002"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.6",

@@ -1,0 +1,27 @@
+{
+  "name": "athenaeum-library-system",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"magenta,cyan\" \"node --watch server/index.js\" \"vite --port 5174\"",
+    "server": "node server/index.js",
+    "build": "vite build",
+    "preview": "vite preview --port 5174",
+    "start": "node server/index.js",
+    "app": "google-chrome --app=http://localhost:5002 || chromium --app=http://localhost:5002 || firefox http://localhost:5002"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.6",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "lucide-react": "^1.33.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.4",
+    "concurrently": "^9.1.2",
+    "vite": "^8.2.0"
+  }
+}

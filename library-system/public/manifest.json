@@ -1,0 +1,35 @@
+{
+  "name": "Athenaeum Library System",
+  "short_name": "Library App",
+  "description": "Desktop-grade School Library Management System & Barcode Circulation Desk",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#4f46e5",
+  "orientation": "landscape-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Circulation Desk",
+      "url": "/?tab=circulation",
+      "description": "Fast Barcode Checkout & Return Desk"
+    },
+    {
+      "name": "Book Catalog",
+      "url": "/?tab=books",
+      "description": "Search & Manage Books"
+    },
+    {
+      "name": "Active Loans",
+      "url": "/?tab=loans",
+      "description": "View & Manage Active Loans"
+    }
+  ]
+}
