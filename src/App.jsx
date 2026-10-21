@@ -8,7 +8,6 @@ import { InventoryManager } from './components/InventoryManager';
 import { UserManagement } from './components/UserManagement';
 import { TicketModal } from './components/TicketModal';
 import { UserProfileModal } from './components/UserProfileModal';
-import { DeviceToastAlert } from './components/DeviceToastAlert';
 import { DeviceNotificationBanner } from './components/DeviceNotificationBanner';
 import ServerStatusModal from './components/ServerStatusModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -134,7 +133,6 @@ function MainApp() {
         onOpenRegister={handleOpenRegister}
         onOpenServerModal={() => setIsServerModalOpen(true)}
       />
-      <DeviceToastAlert onSelectTicket={handleSelectTicketFromNotification} />
       <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '0 16px' }}>
         <DeviceNotificationBanner />
       </div>
