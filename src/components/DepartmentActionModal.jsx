@@ -16,11 +16,13 @@ import {
   ImagePlus,
   Globe,
   RotateCcw,
-  XCircle
+  XCircle,
+  ZoomIn
 } from 'lucide-react';
 import { DEPARTMENTS, resolveDepartment, translateSubcategory } from '../departments';
 import { translateText, detectLanguage } from '../services/translator';
 import { DeclineTicketModal } from './DeclineTicketModal';
+import { ImageViewerModal } from './ImageViewerModal';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const { 
@@ -39,6 +41,13 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
   const [transferSuccess, setTransferSuccess] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [viewerState, setViewerState] = useState({
+    isOpen: false,
+    photos: [],
+    initialIndex: 0,
+    title: '',
+    subtitle: ''
+  });
 
   // Storage states
   const [storageActionType, setStorageActionType] = useState('stock'); // 'stock' | 'purchase'
@@ -552,11 +561,32 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
           {/* Show existing ticket photos (submitted by requester) */}
           {ticket.photos && ticket.photos.length > 0 && (
-            <div style={{ marginTop: '10px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: '600' }}>📸 Submitted Photos:</div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div style={{ marginTop: '14px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>📸 Submitted Photos ({ticket.photos.length}):</span>
+                <span style={{ fontSize: '10px', color: '#38bdf8', textTransform: 'none', fontWeight: '500' }}>
+                  • {lang === 'ru' ? 'нажмите для увеличения' : lang === 'kk' ? 'үлкейту үшін басыңыз' : 'click to enlarge'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {ticket.photos.map((src, i) => (
-                  <img key={i} src={src} alt={`ticket-photo-${i}`} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid var(--border-color)', cursor: 'pointer' }} onClick={() => window.open(src, '_blank')} />
+                  <div
+                    key={i}
+                    className="ticket-photo-thumb"
+                    onClick={() => setViewerState({
+                      isOpen: true,
+                      photos: ticket.photos,
+                      initialIndex: i,
+                      title: ticket.itemTitle,
+                      subtitle: `Ticket #${ticket.id} • ${ticket.teacherName || 'Requester'} (Photo ${i + 1}/${ticket.photos.length})`
+                    })}
+                    title={lang === 'ru' ? 'Нажмите для полноразмерного просмотра' : 'Click to view full size'}
+                  >
+                    <img key={i} src={src} alt={`ticket-photo-${i + 1}`} />
+                    <div className="ticket-photo-thumb-overlay">
+                      <ZoomIn size={20} color="#fff" />
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -564,11 +594,32 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
           {/* Show existing completion photos if already uploaded */}
           {ticket.completionPhotos && ticket.completionPhotos.length > 0 && (
-            <div style={{ marginTop: '10px' }}>
-              <div style={{ fontSize: '11px', color: '#34d399', marginBottom: '6px', fontWeight: '600' }}>✅ Completion Photos:</div>
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div style={{ marginTop: '14px' }}>
+              <div style={{ fontSize: '11px', color: '#107c41', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>✅ Completion Photos ({ticket.completionPhotos.length}):</span>
+                <span style={{ fontSize: '10px', color: '#34d399', textTransform: 'none', fontWeight: '500' }}>
+                  • {lang === 'ru' ? 'фото готовой работы' : lang === 'kk' ? 'дайын жұмыс фотосы' : 'after-work proof'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {ticket.completionPhotos.map((src, i) => (
-                  <img key={i} src={src} alt={`completion-photo-${i}`} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #34d399', cursor: 'pointer' }} onClick={() => window.open(src, '_blank')} />
+                  <div
+                    key={i}
+                    className="ticket-photo-thumb ticket-photo-thumb-completion"
+                    onClick={() => setViewerState({
+                      isOpen: true,
+                      photos: ticket.completionPhotos,
+                      initialIndex: i,
+                      title: ticket.itemTitle,
+                      subtitle: `Ticket #${ticket.id} • ${ticket.assignedWorker || 'Specialist'} (Completion Proof ${i + 1}/${ticket.completionPhotos.length})`
+                    })}
+                    title={lang === 'ru' ? 'Нажмите для полноразмерного просмотра' : 'Click to view full size'}
+                  >
+                    <img key={i} src={src} alt={`completion-photo-${i + 1}`} />
+                    <div className="ticket-photo-thumb-overlay">
+                      <ZoomIn size={20} color="#34d399" />
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -583,12 +634,32 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             </div>
 
             {completionPhotos.length > 0 && (
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
                 {completionPhotos.map((src, idx) => (
-                  <div key={idx} style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', border: '2px solid #34d399' }}>
-                    <img src={src} alt={`cp-${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button type="button" onClick={() => removeCompletionPhoto(idx)} style={{ position: 'absolute', top: '2px', right: '2px', background: 'rgba(15,23,42,0.85)', border: 'none', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}>
-                      <X size={10} color="#f87171" />
+                  <div 
+                    key={idx} 
+                    className="ticket-photo-thumb ticket-photo-thumb-completion"
+                    style={{ position: 'relative' }}
+                    onClick={() => setViewerState({
+                      isOpen: true,
+                      photos: completionPhotos,
+                      initialIndex: idx,
+                      title: ticket.itemTitle,
+                      subtitle: `New Completion Photo ${idx + 1}/${completionPhotos.length}`
+                    })}
+                    title={lang === 'ru' ? 'Нажмите для просмотра' : 'Click to preview'}
+                  >
+                    <img src={src} alt={`cp-${idx}`} />
+                    <div className="ticket-photo-thumb-overlay">
+                      <ZoomIn size={18} color="#34d399" />
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); removeCompletionPhoto(idx); }} 
+                      style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(15,23,42,0.85)', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, zIndex: 3 }}
+                      title="Remove"
+                    >
+                      <X size={12} color="#f87171" />
                     </button>
                   </div>
                 ))}
@@ -1268,6 +1339,12 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             setShowDeclineModal(false);
             onClose();
           }}
+        />
+
+        {/* Full-Screen Lightbox Image Viewer */}
+        <ImageViewerModal
+          {...viewerState}
+          onClose={() => setViewerState(prev => ({ ...prev, isOpen: false }))}
         />
 
       </div>

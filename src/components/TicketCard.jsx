@@ -11,12 +11,14 @@ import {
   Sparkles,
   Clock,
   Check,
-  XCircle
+  XCircle,
+  ZoomIn
 } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { translateText, detectLanguage, TRANSLATOR_LANGUAGES } from '../services/translator';
 import { translateSubcategory } from '../departments';
 import { DeclineTicketModal } from './DeclineTicketModal';
+import { ImageViewerModal } from './ImageViewerModal';
 
 export const TicketCard = ({
   ticket,
@@ -46,6 +48,13 @@ export const TicketCard = ({
   const isCompleted = ticket.status === 'completed' || ticket.status === 'delivered';
   const isDeclined = ticket.status === 'rejected' || ticket.status === 'declined';
   const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [viewerState, setViewerState] = useState({
+    isOpen: false,
+    photos: [],
+    initialIndex: 0,
+    title: '',
+    subtitle: ''
+  });
   const isStorageManager = role === 'storage_manager' || role === 'workerA' || role === 'director' || role === 'admin';
   const isMyTicket = Boolean(
     (currentUser?.name && ticket.teacherName && ticket.teacherName.toLowerCase().includes(currentUser.name.toLowerCase())) ||
@@ -341,26 +350,36 @@ export const TicketCard = ({
 
       {/* Photos Preview (if any) */}
       {ticket.photos && ticket.photos.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-          <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-            Attachments ({ticket.photos.length})
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>📸 Attachments ({ticket.photos.length})</span>
+            <span style={{ fontSize: '10px', color: '#818cf8', textTransform: 'none', fontWeight: '500' }}>
+              • {lang === 'ru' ? 'нажмите для увеличения' : lang === 'kk' ? 'үлкейту үшін басыңыз' : 'click to enlarge'}
+            </span>
           </div>
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 0' }}>
             {ticket.photos.map((photo, i) => (
-              <img
+              <div
                 key={i}
-                src={photo}
-                alt="attachment"
-                onClick={() => window.open(photo, '_blank')}
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '3px',
-                  objectFit: 'cover',
-                  border: '1px solid var(--border-color)',
-                  cursor: 'pointer'
-                }}
-              />
+                className="ticket-photo-thumb"
+                onClick={() => setViewerState({
+                  isOpen: true,
+                  photos: ticket.photos,
+                  initialIndex: i,
+                  title: ticket.itemTitle,
+                  subtitle: `Ticket #${ticket.id} • ${ticket.roomNumber || 'Campus'} • ${ticket.teacherName || 'Requester'}`
+                })}
+                title={lang === 'ru' ? 'Нажмите для полноразмерного просмотра' : 'Click to view full size'}
+              >
+                <img
+                  src={photo}
+                  alt={`attachment-${i + 1}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div className="ticket-photo-thumb-overlay">
+                  <ZoomIn size={18} color="#fff" />
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -368,26 +387,36 @@ export const TicketCard = ({
 
       {/* Completion Photos Proof (Fluent style) */}
       {ticket.completionPhotos && ticket.completionPhotos.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-          <div style={{ fontSize: '10px', color: '#107c41', fontWeight: '600', textTransform: 'uppercase' }}>
-            Completion Proof ({ticket.completionPhotos.length})
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+          <div style={{ fontSize: '11px', color: '#107c41', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>✅ Completion Proof ({ticket.completionPhotos.length})</span>
+            <span style={{ fontSize: '10px', color: '#34d399', textTransform: 'none', fontWeight: '500' }}>
+              • {lang === 'ru' ? 'фото готовой работы' : lang === 'kk' ? 'дайын жұмыс фотосы' : 'after-work photo'}
+            </span>
           </div>
-          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '4px 0' }}>
             {ticket.completionPhotos.map((photo, i) => (
-              <img
+              <div
                 key={i}
-                src={photo}
-                alt="proof"
-                onClick={() => window.open(photo, '_blank')}
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '3px',
-                  objectFit: 'cover',
-                  border: '1px solid #107c41',
-                  cursor: 'pointer'
-                }}
-              />
+                className="ticket-photo-thumb ticket-photo-thumb-completion"
+                onClick={() => setViewerState({
+                  isOpen: true,
+                  photos: ticket.completionPhotos,
+                  initialIndex: i,
+                  title: ticket.itemTitle,
+                  subtitle: `Ticket #${ticket.id} • ${ticket.assignedWorker || 'Specialist'} (Completion Proof)`
+                })}
+                title={lang === 'ru' ? 'Нажмите для полноразмерного просмотра' : 'Click to view full size'}
+              >
+                <img
+                  src={photo}
+                  alt={`proof-${i + 1}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div className="ticket-photo-thumb-overlay">
+                  <ZoomIn size={18} color="#34d399" />
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -578,6 +607,16 @@ export const TicketCard = ({
         ticket={ticket}
         isOpen={showDeclineModal}
         onClose={() => setShowDeclineModal(false)}
+      />
+
+      {/* Full-Screen Image Lightbox Viewer Modal */}
+      <ImageViewerModal
+        isOpen={viewerState.isOpen}
+        photos={viewerState.photos}
+        initialIndex={viewerState.initialIndex}
+        title={viewerState.title}
+        subtitle={viewerState.subtitle}
+        onClose={() => setViewerState(prev => ({ ...prev, isOpen: false }))}
       />
 
       {/* Handler Notes Banner (if any) */}

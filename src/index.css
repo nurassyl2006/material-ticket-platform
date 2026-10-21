@@ -1246,3 +1246,78 @@ body[data-theme="light"] {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.28);
 }
+
+/* ==========================================================================
+   Ticket Photo Thumbnails & Lightbox Previews
+   ========================================================================== */
+.ticket-photo-thumb {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  min-width: 88px;
+  min-height: 88px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 42, 0.6);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.2s ease, 
+              box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.ticket-photo-thumb:hover {
+  transform: translateY(-2px) scale(1.04);
+  border-color: #38bdf8;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), 0 0 12px rgba(56, 189, 248, 0.25);
+  z-index: 2;
+}
+
+.ticket-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.ticket-photo-thumb:hover img {
+  transform: scale(1.08);
+}
+
+.ticket-photo-thumb-completion {
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.ticket-photo-thumb-completion:hover {
+  border-color: #34d399;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35), 0 0 12px rgba(52, 211, 153, 0.3);
+}
+
+.ticket-photo-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+
+.ticket-photo-thumb:hover .ticket-photo-thumb-overlay {
+  opacity: 1;
+}
+
+[data-theme="light"] .ticket-photo-thumb {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: #f1f5f9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .ticket-photo-thumb:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15), 0 0 10px rgba(2, 132, 199, 0.2);
+}

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { STORAGE_CATEGORIES, getCategoryMeta, getCategoryLabel } from '../storageCategories';
 import { compressImageFile, compressMultipleImageFiles } from '../utils/imageCompressor';
+import { openImageInNewTab } from '../utils/imageUtils';
 import { CategoryEditorModal } from './CategoryEditorModal';
 
 export const InventoryManager = ({ onOpenNewTicket }) => {
@@ -2136,7 +2137,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
             <div style={{ padding: '12px 20px', background: 'rgba(30, 41, 59, 0.5)', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
               <span>📸 {lang === 'ru' ? 'Сохранено в базе данных SQLite' : 'Stored in SQLite Database'}</span>
               <button
-                onClick={() => window.open(previewPhoto.url, '_blank')}
+                onClick={() => openImageInNewTab(previewPhoto.url, previewPhoto.name)}
                 style={{
                   background: 'transparent',
                   border: 'none',
