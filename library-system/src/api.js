@@ -147,8 +147,9 @@ export const api = {
     method: 'POST'
   }),
 
-  // Barcode / Scanner Universal Lookup
+  // Barcode / Scanner Universal Lookup & Search
   lookupCode: (code) => request(`/lookup/${encodeURIComponent(code)}`),
+  getSuggestions: (query, type = 'all') => request(`/search/suggestions?q=${encodeURIComponent(query)}&type=${encodeURIComponent(type)}`),
 
   // Settings
   getSettings: () => request('/settings'),

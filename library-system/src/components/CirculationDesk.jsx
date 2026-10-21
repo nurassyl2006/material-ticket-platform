@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Zap, ScanLine, User, BookOpen, Calendar, Check, AlertCircle, 
-  RotateCcw, Printer, ArrowRight, Clock, Plus, Tag, Layers, CheckCircle2
+  RotateCcw, Printer, ArrowRight, Clock, Plus, Tag, Layers, CheckCircle2,
+  GraduationCap, Users, BookMarked, Search, X
 } from 'lucide-react';
 import { api } from '../api';
 import { 
@@ -25,6 +26,12 @@ export default function CirculationDesk({
   // Selected Entities
   const [selectedBorrower, setSelectedBorrower] = useState(preselectedBorrower || null);
   const [selectedBook, setSelectedBook] = useState(preselectedBook || null);
+
+  // Suggestions & Autocomplete
+  const [borrowerSuggestions, setBorrowerSuggestions] = useState([]);
+  const [showBorrowerDropdown, setShowBorrowerDropdown] = useState(false);
+  const [bookSuggestions, setBookSuggestions] = useState([]);
+  const [showBookDropdown, setShowBookDropdown] = useState(false);
 
   useEffect(() => {
     if (preselectedBook) setSelectedBook(preselectedBook);
@@ -87,9 +94,101 @@ export default function CirculationDesk({
     }
   }, [selectedBook]);
 
+  // Debounced search for Borrower suggestions
+  useEffect(() => {
+    const q = borrowerCode.trim();
+    if (!q || q.length < 1) {
+      setBorrowerSuggestions([]);
+      setShowBorrowerDropdown(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.getSuggestions(q, 'borrower');
+        if (res.data && res.data.length > 0) {
+          setBorrowerSuggestions(res.data);
+          setShowBorrowerDropdown(true);
+        } else {
+          setBorrowerSuggestions([]);
+          setShowBorrowerDropdown(false);
+        }
+      } catch (err) {
+        setBorrowerSuggestions([]);
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [borrowerCode]);
+
+  // Debounced search for Book suggestions
+  useEffect(() => {
+    const q = bookCode.trim();
+    if (!q || q.length < 1) {
+      setBookSuggestions([]);
+      setShowBookDropdown(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.getSuggestions(q, 'book');
+        if (res.data && res.data.length > 0) {
+          setBookSuggestions(res.data);
+          setShowBookDropdown(true);
+        } else {
+          setBookSuggestions([]);
+          setShowBookDropdown(false);
+        }
+      } catch (err) {
+        setBookSuggestions([]);
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [bookCode]);
+
+  // Select Borrower from Autocomplete
+  const handleSelectBorrowerSuggestion = async (borrower) => {
+    setShowBorrowerDropdown(false);
+    setBorrowerCode('');
+    setLoading(true);
+    setStatusMessage(null);
+    try {
+      const res = await api.lookupCode(borrower.id);
+      if (res.type === 'borrower') {
+        setSelectedBorrower(res.data);
+        playScanBeep();
+        setTimeout(() => bookInputRef.current?.focus(), 80);
+      }
+    } catch (err) {
+      playAlertTone();
+      setStatusMessage({ type: 'error', text: err.message || 'Failed to load borrower' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Select Book from Autocomplete
+  const handleSelectBookSuggestion = async (book) => {
+    setShowBookDropdown(false);
+    setBookCode('');
+    setLoading(true);
+    setStatusMessage(null);
+    try {
+      const res = await api.lookupCode(book.barcode);
+      if (res.type === 'book') {
+        setSelectedBook(res.data);
+        playScanBeep();
+      }
+    } catch (err) {
+      playAlertTone();
+      setStatusMessage({ type: 'error', text: err.message || 'Failed to load book' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle Borrower Barcode Scan or Enter
   const handleBorrowerScan = async (e) => {
     if (e) e.preventDefault();
+    setShowBorrowerDropdown(false);
     const code = borrowerCode.trim();
     if (!code) return;
 
@@ -118,6 +217,7 @@ export default function CirculationDesk({
   // Handle Book Barcode Scan or Enter
   const handleBookScan = async (e) => {
     if (e) e.preventDefault();
+    setShowBookDropdown(false);
     const code = bookCode.trim();
     if (!code) return;
 
@@ -181,8 +281,10 @@ export default function CirculationDesk({
       if (onRefreshStats) onRefreshStats();
 
       // Refresh borrower active loans
-      const updatedBorrower = await api.getBorrower(selectedBorrower.id);
-      setSelectedBorrower(updatedBorrower.data);
+      const updatedBorrower = await api.lookupCode(selectedBorrower.id);
+      if (updatedBorrower.type === 'borrower') {
+        setSelectedBorrower(updatedBorrower.data);
+      }
 
       // Offer receipt modal
       if (onOpenReceiptModal && res.data) {
@@ -201,7 +303,7 @@ export default function CirculationDesk({
     }
   };
 
-  // Quick Return Handler (by code or active loan item)
+  // Quick Return Handler (by loan item in borrower card)
   const handleReturnLoan = async (loanId, bookTitle) => {
     setLoading(true);
     try {
@@ -210,14 +312,85 @@ export default function CirculationDesk({
       setStatusMessage({ type: 'success', text: `Book "${bookTitle || 'Book'}" has been successfully returned!` });
 
       if (selectedBorrower) {
-        const updatedBorrower = await api.getBorrower(selectedBorrower.id);
-        setSelectedBorrower(updatedBorrower.data);
+        const updatedBorrower = await api.lookupCode(selectedBorrower.id);
+        if (updatedBorrower.type === 'borrower') {
+          setSelectedBorrower(updatedBorrower.data);
+        }
+      }
+
+      if (selectedBook) {
+        const updatedBook = await api.lookupCode(selectedBook.barcode);
+        if (updatedBook.type === 'book') {
+          setSelectedBook(updatedBook.data);
+        }
       }
 
       if (onRefreshStats) onRefreshStats();
     } catch (err) {
       playAlertTone();
       setStatusMessage({ type: 'error', text: err.message || 'Failed to return book' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Return a copy from Book's Checked Out Copies list
+  const handleReturnBookCopy = async (loanId, bookTitle) => {
+    setLoading(true);
+    try {
+      await api.returnLoan(loanId);
+      playReturnChime();
+      setStatusMessage({ type: 'success', text: `Checked in! Copy of "${bookTitle || 'Book'}" returned to shelf.` });
+
+      if (selectedBook) {
+        const updatedBook = await api.lookupCode(selectedBook.barcode);
+        if (updatedBook.type === 'book') {
+          setSelectedBook(updatedBook.data);
+        }
+      }
+
+      if (selectedBorrower) {
+        const updatedBorrower = await api.lookupCode(selectedBorrower.id);
+        if (updatedBorrower.type === 'borrower') {
+          setSelectedBorrower(updatedBorrower.data);
+        }
+      }
+
+      if (onRefreshStats) onRefreshStats();
+    } catch (err) {
+      playAlertTone();
+      setStatusMessage({ type: 'error', text: err.message || 'Failed to return copy' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Renew a loan
+  const handleRenewLoan = async (loanId) => {
+    setLoading(true);
+    try {
+      const res = await api.renewLoan(loanId);
+      playCheckoutChime();
+      setStatusMessage({ type: 'success', text: res.message || 'Loan renewed successfully!' });
+
+      if (selectedBorrower) {
+        const updatedBorrower = await api.lookupCode(selectedBorrower.id);
+        if (updatedBorrower.type === 'borrower') {
+          setSelectedBorrower(updatedBorrower.data);
+        }
+      }
+
+      if (selectedBook) {
+        const updatedBook = await api.lookupCode(selectedBook.barcode);
+        if (updatedBook.type === 'book') {
+          setSelectedBook(updatedBook.data);
+        }
+      }
+
+      if (onRefreshStats) onRefreshStats();
+    } catch (err) {
+      playAlertTone();
+      setStatusMessage({ type: 'error', text: err.message || 'Failed to renew loan' });
     } finally {
       setLoading(false);
     }
@@ -348,23 +521,65 @@ export default function CirculationDesk({
             )}
           </div>
 
-          {/* Scanner Input */}
-          <form onSubmit={handleBorrowerScan}>
-            <div className="barcode-input-wrapper">
-              <ScanLine size={18} className="scan-icon" />
-              <input 
-                ref={borrowerInputRef}
-                type="text" 
-                className="barcode-input"
-                placeholder="Scan Borrower Card / Enter ID (e.g. STU-1001)..."
-                value={borrowerCode}
-                onChange={(e) => setBorrowerCode(e.target.value)}
-              />
-              <button type="submit" className="barcode-submit-btn">
-                Scan ID
-              </button>
-            </div>
-          </form>
+          {/* Scanner / Search Input */}
+          <div style={{ position: 'relative' }}>
+            <form onSubmit={handleBorrowerScan}>
+              <div className="barcode-input-wrapper">
+                <ScanLine size={18} className="scan-icon" />
+                <input 
+                  ref={borrowerInputRef}
+                  type="text" 
+                  className="barcode-input"
+                  placeholder="Scan ID or search name (e.g. Tagir, STU-1001)..."
+                  value={borrowerCode}
+                  onChange={(e) => setBorrowerCode(e.target.value)}
+                  onFocus={() => { if (borrowerSuggestions.length > 0) setShowBorrowerDropdown(true); }}
+                />
+                <button type="submit" className="barcode-submit-btn">
+                  Scan / Find
+                </button>
+              </div>
+            </form>
+
+            {/* Live Autocomplete Dropdown */}
+            {showBorrowerDropdown && borrowerSuggestions.length > 0 && (
+              <div className="suggestions-dropdown">
+                <div style={{ padding: '4px 8px', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Matching Patrons ({borrowerSuggestions.length})</span>
+                  <span style={{ cursor: 'pointer' }} onClick={() => setShowBorrowerDropdown(false)}>✕</span>
+                </div>
+                {borrowerSuggestions.map((b) => (
+                  <div 
+                    key={b.id} 
+                    className="suggestion-item"
+                    onMouseDown={() => handleSelectBorrowerSuggestion(b)}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>{b.name}</span>
+                        {b.class && (
+                          <span className="borrower-class-tag" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
+                            <GraduationCap size={11} />
+                            {b.class}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
+                        <span className="code-pill" style={{ fontSize: '0.68rem' }}>{b.id}</span>
+                        <span>•</span>
+                        <span style={{ textTransform: 'capitalize' }}>{b.role}</span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span className={`badge ${b.activeLoansCount > 0 ? (b.overdueLoansCount > 0 ? 'badge-overdue' : 'badge-active') : ''}`} style={{ fontSize: '0.68rem' }}>
+                        {b.activeLoansCount} borrowed {b.overdueLoansCount > 0 ? `(${b.overdueLoansCount} overdue)` : ''}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Selected Borrower Details */}
           {selectedBorrower ? (
@@ -372,11 +587,16 @@ export default function CirculationDesk({
               <div className="entity-header">
                 <div>
                   <div className="entity-title">{selectedBorrower.name}</div>
-                  <div className="entity-subtitle">
+                  <div className="entity-subtitle" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
                     <span className="code-pill">{selectedBorrower.id}</span>
-                    <span style={{ margin: '0 6px', color: 'var(--text-muted)' }}>•</span>
+                    <span style={{ color: 'var(--text-muted)' }}>•</span>
                     <span style={{ textTransform: 'capitalize', fontWeight: 600 }}>{selectedBorrower.role}</span>
-                    {selectedBorrower.class && <span> ({selectedBorrower.class})</span>}
+                    {selectedBorrower.class && (
+                      <span className="borrower-class-tag">
+                        <GraduationCap size={13} style={{ color: '#818cf8' }} />
+                        <span>Class: {selectedBorrower.class}</span>
+                      </span>
+                    )}
                   </div>
                 </div>
                 <span className={`badge ${selectedBorrower.status === 'active' ? 'badge-active' : 'badge-overdue'}`}>
@@ -445,7 +665,7 @@ export default function CirculationDesk({
                     {/* Filter Tabs Header */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '4px' }}>
                       <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                        Patron Loan Records:
+                        Borrowed Books & Records:
                       </div>
 
                       <div style={{ display: 'flex', gap: '3px' }}>
@@ -540,15 +760,27 @@ export default function CirculationDesk({
                               {/* Action buttons on loan item */}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 {!loan.return_date && (
-                                  <button 
-                                    className="table-btn primary"
-                                    onClick={() => handleReturnLoan(loan.id, loan.bookTitle)}
-                                    title="Check In / Return Book"
-                                    style={{ padding: '3px 7px' }}
-                                  >
-                                    <RotateCcw size={11} />
-                                    <span>Return</span>
-                                  </button>
+                                  <>
+                                    <button 
+                                      type="button"
+                                      className="table-btn"
+                                      onClick={() => handleRenewLoan(loan.id)}
+                                      title="Renew loan (+duration)"
+                                      style={{ padding: '3px 7px', fontSize: '0.7rem' }}
+                                    >
+                                      Renew
+                                    </button>
+                                    <button 
+                                      type="button"
+                                      className="table-btn primary"
+                                      onClick={() => handleReturnLoan(loan.id, loan.bookTitle)}
+                                      title="Check In / Return Book"
+                                      style={{ padding: '3px 7px', fontSize: '0.7rem' }}
+                                    >
+                                      <RotateCcw size={11} />
+                                      <span>Return</span>
+                                    </button>
+                                  </>
                                 )}
                               </div>
                             </div>
@@ -596,23 +828,66 @@ export default function CirculationDesk({
             )}
           </div>
 
-          {/* Scanner Input */}
-          <form onSubmit={handleBookScan}>
-            <div className="barcode-input-wrapper">
-              <ScanLine size={18} className="scan-icon" />
-              <input 
-                ref={bookInputRef}
-                type="text" 
-                className="barcode-input"
-                placeholder="Scan Book Barcode (e.g. BK-1001)..."
-                value={bookCode}
-                onChange={(e) => setBookCode(e.target.value)}
-              />
-              <button type="submit" className="barcode-submit-btn">
-                Scan Book
-              </button>
-            </div>
-          </form>
+          {/* Scanner / Search Input */}
+          <div style={{ position: 'relative' }}>
+            <form onSubmit={handleBookScan}>
+              <div className="barcode-input-wrapper">
+                <ScanLine size={18} className="scan-icon" />
+                <input 
+                  ref={bookInputRef}
+                  type="text" 
+                  className="barcode-input"
+                  placeholder="Scan barcode, ISBN, or search title (e.g. Granny, BK-4024)..."
+                  value={bookCode}
+                  onChange={(e) => setBookCode(e.target.value)}
+                  onFocus={() => { if (bookSuggestions.length > 0) setShowBookDropdown(true); }}
+                />
+                <button type="submit" className="barcode-submit-btn">
+                  Scan / Find
+                </button>
+              </div>
+            </form>
+
+            {/* Live Autocomplete Dropdown */}
+            {showBookDropdown && bookSuggestions.length > 0 && (
+              <div className="suggestions-dropdown">
+                <div style={{ padding: '4px 8px', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Matching Books ({bookSuggestions.length})</span>
+                  <span style={{ cursor: 'pointer' }} onClick={() => setShowBookDropdown(false)}>✕</span>
+                </div>
+                {bookSuggestions.map((bk) => (
+                  <div 
+                    key={bk.barcode} 
+                    className="suggestion-item"
+                    onMouseDown={() => handleSelectBookSuggestion(bk)}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {bk.title}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
+                        <span>by {bk.author}</span>
+                        <span>•</span>
+                        <span className="code-pill" style={{ fontSize: '0.68rem' }}>{bk.barcode}</span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                      <span className={`type-pill type-${bk.book_type?.toLowerCase()}`} style={{ fontSize: '0.62rem', padding: '1px 5px' }}>
+                        {bk.book_type}
+                      </span>
+                      <span style={{ 
+                        fontSize: '0.7rem', 
+                        fontWeight: 700,
+                        color: bk.available_copies > 0 ? 'var(--emerald-500)' : 'var(--rose-500)'
+                      }}>
+                        {bk.available_copies} / {bk.total_copies} avail
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Selected Book Details & Auto-Calculated Due Date */}
           {selectedBook ? (
@@ -652,6 +927,64 @@ export default function CirculationDesk({
                   <span className="metadata-label">ISBN</span>
                   <span className="metadata-value" style={{ fontSize: '0.72rem' }}>{selectedBook.isbn || 'N/A'}</span>
                 </div>
+              </div>
+
+              {/* Checked Out Copies & Current Borrowers List */}
+              <div style={{ marginTop: '0.4rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <Users size={14} style={{ color: 'var(--primary-500)' }} />
+                    <span>Checked Out Copies ({selectedBook.activeLoans?.length || 0} of {selectedBook.total_copies}):</span>
+                  </div>
+                </div>
+
+                {(!selectedBook.activeLoans || selectedBook.activeLoans.length === 0) ? (
+                  <div style={{ padding: '8px 12px', textAlign: 'center', color: 'var(--emerald-500)', fontSize: '0.78rem', background: 'rgba(16, 185, 129, 0.08)', borderRadius: '6px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                    ✓ All {selectedBook.total_copies} copies currently on the shelf and available for checkout.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto' }}>
+                    {selectedBook.activeLoans.map((loan) => {
+                      const isOverdue = loan.status === 'overdue';
+                      const timeStatus = getLoanTimeStatus(loan.due_date);
+                      return (
+                        <div key={loan.id} className={`active-copy-card ${isOverdue ? 'overdue' : ''}`}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                              <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{loan.borrowerName}</span>
+                              {loan.borrowerClass && (
+                                <span className="borrower-class-tag" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
+                                  <GraduationCap size={11} />
+                                  {loan.borrowerClass}
+                                </span>
+                              )}
+                              <span className="code-pill" style={{ fontSize: '0.68rem' }}>{loan.borrower_id || loan.borrowerId}</span>
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              <span>Issued: {loan.loan_date}</span>
+                              <span>•</span>
+                              <span>Due: <strong style={{ color: isOverdue ? 'var(--rose-500)' : 'var(--text-secondary)' }}>{loan.due_date}</strong></span>
+                              <span>•</span>
+                              <span className={`badge ${timeStatus.badgeClass}`} style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                                {timeStatus.label}
+                              </span>
+                            </div>
+                          </div>
+                          <button 
+                            type="button"
+                            className="table-btn primary"
+                            onClick={() => handleReturnBookCopy(loan.id, selectedBook.title)}
+                            title="Check in this copy"
+                            style={{ padding: '3px 8px', fontSize: '0.72rem' }}
+                          >
+                            <RotateCcw size={11} />
+                            <span>Return Copy</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Due Date Calculation Section */}

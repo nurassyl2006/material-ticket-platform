@@ -400,18 +400,35 @@ app.get('/api/books', (req, res) => {
 
 app.get('/api/books/:barcode', (req, res) => {
   try {
-    const book = db.prepare(`SELECT * FROM books WHERE barcode = ?`).get(req.params.barcode);
+    const book = db.prepare(`
+      SELECT b.*,
+        (b.total_copies - (SELECT COUNT(*) FROM loans l WHERE l.book_barcode = b.barcode AND l.status IN ('active', 'overdue'))) as available_copies,
+        (SELECT COUNT(*) FROM loans l WHERE l.book_barcode = b.barcode AND l.status IN ('active', 'overdue')) as activeLoansCount
+      FROM books b
+      WHERE b.barcode = ?
+    `).get(req.params.barcode);
     if (!book) return res.status(404).json({ success: false, error: 'Book not found' });
 
     const activeLoans = db.prepare(`
-      SELECT l.*, br.name as borrowerName, br.role as borrowerRole, br.class as borrowerClass
+      SELECT l.*, br.name as borrowerName, br.id as borrowerId, br.role as borrowerRole, br.class as borrowerClass, br.email as borrowerEmail
       FROM loans l
       JOIN borrowers br ON l.borrower_id = br.id
       WHERE l.book_barcode = ? AND l.status IN ('active', 'overdue')
-      ORDER BY l.due_date ASC
+      ORDER BY 
+        CASE WHEN l.status = 'overdue' THEN 1 ELSE 2 END,
+        l.due_date ASC
     `).all(req.params.barcode);
 
-    res.json({ success: true, data: { ...book, activeLoans } });
+    const history = db.prepare(`
+      SELECT l.*, br.name as borrowerName, br.id as borrowerId, br.role as borrowerRole, br.class as borrowerClass
+      FROM loans l
+      JOIN borrowers br ON l.borrower_id = br.id
+      WHERE l.book_barcode = ? AND l.status = 'returned'
+      ORDER BY l.return_date DESC
+      LIMIT 10
+    `).all(req.params.barcode);
+
+    res.json({ success: true, data: { ...book, activeLoans, history } });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -997,43 +1014,62 @@ app.post('/api/loans/:id/renew', (req, res) => {
 });
 
 // ==========================================
-// 5. UNIFIED BARCODE / SCANNER LOOKUP
+// 5. UNIFIED BARCODE / SCANNER LOOKUP & SEARCH
 // ==========================================
+app.get('/api/search/suggestions', (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    const type = req.query.type || 'all';
+    if (!q) {
+      return res.json({ success: true, data: { borrowers: [], books: [] } });
+    }
+
+    const term = `%${q}%`;
+    const results = { borrowers: [], books: [] };
+
+    if (type === 'borrower' || type === 'all') {
+      results.borrowers = db.prepare(`
+        SELECT br.id, br.name, br.role, br.class, br.status, br.email,
+          (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
+          (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
+        FROM borrowers br
+        WHERE br.id LIKE ? OR br.name LIKE ? OR br.class LIKE ? OR br.email LIKE ?
+        ORDER BY 
+          CASE WHEN LOWER(br.name) = LOWER(?) THEN 1 WHEN br.name LIKE ? THEN 2 ELSE 3 END,
+          br.name ASC
+        LIMIT 10
+      `).all(term, term, term, term, q, `${q}%`);
+    }
+
+    if (type === 'book' || type === 'all') {
+      results.books = db.prepare(`
+        SELECT b.barcode, b.isbn, b.title, b.author, b.genre, b.book_type, b.total_copies, b.available_copies, b.shelf_location,
+          (SELECT COUNT(*) FROM loans l WHERE l.book_barcode = b.barcode AND l.status IN ('active', 'overdue')) as activeLoansCount
+        FROM books b
+        WHERE b.barcode LIKE ? OR b.isbn LIKE ? OR b.title LIKE ? OR b.author LIKE ?
+        ORDER BY 
+          CASE WHEN LOWER(b.title) = LOWER(?) THEN 1 WHEN b.title LIKE ? THEN 2 ELSE 3 END,
+          b.title ASC
+        LIMIT 10
+      `).all(term, term, term, term, q, `${q}%`);
+    }
+
+    res.json({ success: true, data: type === 'all' ? results : (type === 'borrower' ? results.borrowers : results.books) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.get('/api/lookup/:code', (req, res) => {
   try {
     syncOverdueLoans();
-    const raw = req.params.code.trim().toUpperCase();
+    const raw = req.params.code.trim();
+    const rawUpper = raw.toUpperCase();
 
-    // Check if book barcode or ISBN
-    const book = db.prepare(`
-      SELECT b.*,
-        (SELECT COUNT(*) FROM loans l WHERE l.book_barcode = b.barcode AND l.status IN ('active', 'overdue')) as activeLoansCount
-      FROM books b
-      WHERE b.barcode = ? OR b.isbn = ?
-    `).get(raw, raw);
-
-    if (book) {
-      // Also get default loan calculation for instant desk action
-      const dueCalc = calculateDefaultDueDate(book.book_type);
-      return res.json({
-        success: true,
-        type: 'book',
-        data: { ...book, defaultDueDate: dueCalc.dueDate, defaultLoanDays: dueCalc.days }
-      });
-    }
-
-    // Check if borrower ID
-    const borrower = db.prepare(`
-      SELECT br.*,
-        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
-        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
-      FROM borrowers br
-      WHERE br.id = ?
-    `).get(raw);
-
-    if (borrower) {
+    // Helper to format borrower with all their loan records
+    const formatBorrowerResponse = (borrower) => {
       const allLoans = db.prepare(`
-        SELECT l.*, b.title as bookTitle, b.book_type as bookType, b.barcode as bookBarcode, b.author as bookAuthor
+        SELECT l.*, b.title as bookTitle, b.book_type as bookType, b.barcode as bookBarcode, b.author as bookAuthor, b.genre as bookGenre, b.shelf_location as bookShelf
         FROM loans l
         JOIN books b ON l.book_barcode = b.barcode
         WHERE l.borrower_id = ?
@@ -1043,7 +1079,7 @@ app.get('/api/lookup/:code', (req, res) => {
           l.created_at DESC
       `).all(borrower.id);
 
-      const activeLoans = allLoans.filter(l => l.status === 'active');
+      const activeLoans = allLoans.filter(l => l.status === 'active' || l.status === 'overdue');
       const overdueLoans = allLoans.filter(l => l.status === 'overdue');
       const returnedLoans = allLoans.filter(l => l.status === 'returned');
 
@@ -1056,15 +1092,120 @@ app.get('/api/lookup/:code', (req, res) => {
           activeLoans,
           overdueLoans,
           returnedLoans,
-          activeLoansCount: activeLoans.length + overdueLoans.length,
+          activeLoansCount: activeLoans.length,
           overdueLoansCount: overdueLoans.length,
           returnedLoansCount: returnedLoans.length,
           totalLoansCount: allLoans.length
         }
       });
-    }
+    };
 
-    res.status(404).json({ success: false, error: `No book or borrower found matching "${raw}"` });
+    // Helper to format book with all currently borrowed copies & borrower info
+    const formatBookResponse = (book) => {
+      const bookLoans = db.prepare(`
+        SELECT l.*, br.id as borrowerId, br.name as borrowerName, br.role as borrowerRole, br.class as borrowerClass, br.email as borrowerEmail, br.phone as borrowerPhone
+        FROM loans l
+        JOIN borrowers br ON l.borrower_id = br.id
+        WHERE l.book_barcode = ?
+        ORDER BY 
+          CASE WHEN l.status = 'overdue' THEN 1 WHEN l.status = 'active' THEN 2 ELSE 3 END,
+          l.due_date ASC,
+          l.created_at DESC
+      `).all(book.barcode);
+
+      const activeLoans = bookLoans.filter(l => l.status === 'active' || l.status === 'overdue');
+      const overdueLoans = bookLoans.filter(l => l.status === 'overdue');
+      const returnedLoans = bookLoans.filter(l => l.status === 'returned');
+      const dueCalc = calculateDefaultDueDate(book.book_type);
+
+      return res.json({
+        success: true,
+        type: 'book',
+        data: { 
+          ...book, 
+          loans: bookLoans,
+          activeLoans,
+          overdueLoans,
+          returnedLoans,
+          activeLoansCount: activeLoans.length,
+          defaultDueDate: dueCalc.dueDate, 
+          defaultLoanDays: dueCalc.days 
+        }
+      });
+    };
+
+    // 1. Check if exact Borrower ID match (e.g. STU-1001, TEA-2001)
+    let borrower = db.prepare(`
+      SELECT br.*,
+        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
+        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
+      FROM borrowers br
+      WHERE br.id = ? OR UPPER(br.id) = ?
+    `).get(raw, rawUpper);
+
+    if (borrower) return formatBorrowerResponse(borrower);
+
+    // 2. Check if exact Book Barcode or ISBN match (e.g. BK-1001, 9780439708180)
+    let book = db.prepare(`
+      SELECT b.*,
+        (SELECT COUNT(*) FROM loans l WHERE l.book_barcode = b.barcode AND l.status IN ('active', 'overdue')) as activeLoansCount
+      FROM books b
+      WHERE b.barcode = ? OR UPPER(b.barcode) = ? OR b.isbn = ? OR UPPER(b.isbn) = ?
+    `).get(raw, rawUpper, raw, rawUpper);
+
+    if (book) return formatBookResponse(book);
+
+    // 3. Search Borrower by exact or partial Name
+    borrower = db.prepare(`
+      SELECT br.*,
+        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
+        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
+      FROM borrowers br
+      WHERE LOWER(br.name) = LOWER(?)
+    `).get(raw);
+
+    if (borrower) return formatBorrowerResponse(borrower);
+
+    // 4. Search Book by exact Title
+    book = db.prepare(`
+      SELECT b.*,
+        (SELECT COUNT(*) FROM loans l WHERE l.book_barcode = b.barcode AND l.status IN ('active', 'overdue')) as activeLoansCount
+      FROM books b
+      WHERE LOWER(b.title) = LOWER(?)
+    `).get(raw);
+
+    if (book) return formatBookResponse(book);
+
+    // 5. Search Borrower by partial Name (e.g. "Tagir", "Aknur", "Sharon")
+    borrower = db.prepare(`
+      SELECT br.*,
+        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status IN ('active', 'overdue')) as activeLoansCount,
+        (SELECT COUNT(*) FROM loans l WHERE l.borrower_id = br.id AND l.status = 'overdue') as overdueLoansCount
+      FROM borrowers br
+      WHERE LOWER(br.name) LIKE ?
+      ORDER BY 
+        CASE WHEN LOWER(br.name) LIKE ? THEN 1 ELSE 2 END,
+        br.name ASC
+      LIMIT 1
+    `).get(`%${raw.toLowerCase()}%`, `${raw.toLowerCase()}%`);
+
+    if (borrower) return formatBorrowerResponse(borrower);
+
+    // 6. Search Book by partial Title (e.g. "Granny", "Tempest", "Matilda")
+    book = db.prepare(`
+      SELECT b.*,
+        (SELECT COUNT(*) FROM loans l WHERE l.book_barcode = b.barcode AND l.status IN ('active', 'overdue')) as activeLoansCount
+      FROM books b
+      WHERE LOWER(b.title) LIKE ?
+      ORDER BY 
+        CASE WHEN LOWER(b.title) LIKE ? THEN 1 ELSE 2 END,
+        b.title ASC
+      LIMIT 1
+    `).get(`%${raw.toLowerCase()}%`, `${raw.toLowerCase()}%`);
+
+    if (book) return formatBookResponse(book);
+
+    res.status(404).json({ success: false, error: `No student, borrower or book found matching "${raw}"` });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
