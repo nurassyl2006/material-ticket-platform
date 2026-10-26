@@ -58,12 +58,23 @@ function getRoleIconComponent(iconName) {
   return ROLE_ICON_MAP[iconName] || Users;
 }
 
+const LIGHT_ROLE_COLORS = {
+  director: { color: '#4338ca', bg: '#eef2ff', border: '#c7d2fe' },
+  facilities_manager: { color: '#6d28d9', bg: '#f5f3ff', border: '#ddd6fe' },
+  storage_manager: { color: '#b45309', bg: '#fef3c7', border: '#fde68a' },
+  engineer: { color: '#c2410c', bg: '#fff7ed', border: '#fed7aa' },
+  it_support: { color: '#0369a1', bg: '#f0f9ff', border: '#bae6fd' },
+  cleaning: { color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' },
+  teacher: { color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' }
+};
+
 export const UserManagement = () => {
   const { 
     currentUser, 
     role, 
     t, 
     lang, 
+    theme,
     usersList, 
     syncWithDb, 
     createUser, 
@@ -79,6 +90,8 @@ export const UserManagement = () => {
     updateStorageCategory,
     inventory
   } = useApp();
+
+  const isLight = theme === 'light';
 
   // Admin Active Sub-Tab: 'users' | 'roles' | 'categories'
   const [adminTab, setAdminTab] = useState('users');
@@ -144,6 +157,10 @@ export const UserManagement = () => {
     if (lang === 'ru') label = config.labelRu || config.label;
     if (lang === 'kk') label = config.labelKk || config.label;
 
+    const themeColor = isLight ? (LIGHT_ROLE_COLORS[roleKey]?.color || '#4338ca') : config.color;
+    const themeBg = isLight ? (LIGHT_ROLE_COLORS[roleKey]?.bg || 'rgba(99, 102, 241, 0.1)') : config.bg;
+    const themeBorder = isLight ? (LIGHT_ROLE_COLORS[roleKey]?.border || '#c7d2fe') : config.border;
+
     return (
       <span style={{
         display: 'inline-flex',
@@ -153,9 +170,9 @@ export const UserManagement = () => {
         borderRadius: '8px',
         fontSize: '12px',
         fontWeight: '700',
-        color: config.color,
-        background: config.bg,
-        border: `1px solid ${config.border}`
+        color: themeColor,
+        background: themeBg,
+        border: `1px solid ${themeBorder}`
       }}>
         <IconComp size={13} />
         {label}
@@ -392,13 +409,13 @@ export const UserManagement = () => {
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h1 style={{ fontSize: '19px', fontWeight: '800', margin: 0, color: '#f3f2f1' }}>
+              <h1 style={{ fontSize: '19px', fontWeight: '800', margin: 0, color: 'var(--text-main, #f3f2f1)' }}>
                 {lang === 'ru' ? 'Центр управления директора: Роли, Задачи и Доступ к Складу' : lang === 'kk' ? 'Директор басқару орталығы: Рөлдер, Міндеттер және Қойма' : 'Director Center: Roles, Tasks & Storage Access'}
               </h1>
               <span style={{
-                background: 'rgba(129, 140, 248, 0.2)',
-                color: '#818cf8',
-                border: '1px solid rgba(129, 140, 248, 0.4)',
+                background: isLight ? '#eef2ff' : 'rgba(129, 140, 248, 0.2)',
+                color: isLight ? '#4338ca' : '#818cf8',
+                border: isLight ? '1px solid #c7d2fe' : '1px solid rgba(129, 140, 248, 0.4)',
                 padding: '2px 8px',
                 borderRadius: '6px',
                 fontSize: '11px',
@@ -407,7 +424,7 @@ export const UserManagement = () => {
                 Director Only
               </span>
             </div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#94a3b8' }}>
+            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted, #94a3b8)' }}>
               {lang === 'ru' 
                 ? 'Настраивайте функциональные обязанности ролей, видимость каталога склада и разрешенные категории, или создавайте новые роли и категории.' 
                 : lang === 'kk' 
@@ -553,9 +570,9 @@ export const UserManagement = () => {
             borderRadius: '8px',
             fontSize: '13px',
             fontWeight: adminTab === 'users' ? '700' : '500',
-            background: adminTab === 'users' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-            color: adminTab === 'users' ? '#818cf8' : 'var(--text-muted)',
-            border: adminTab === 'users' ? '1px solid rgba(99, 102, 241, 0.35)' : '1px solid transparent',
+            background: adminTab === 'users' ? (isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(99, 102, 241, 0.16)') : 'transparent',
+            color: adminTab === 'users' ? (isLight ? '#4338ca' : '#818cf8') : 'var(--text-muted)',
+            border: adminTab === 'users' ? (isLight ? '1px solid rgba(79, 70, 229, 0.3)' : '1px solid rgba(99, 102, 241, 0.35)') : '1px solid transparent',
             cursor: 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
@@ -575,9 +592,9 @@ export const UserManagement = () => {
             borderRadius: '8px',
             fontSize: '13px',
             fontWeight: adminTab === 'roles' ? '700' : '500',
-            background: adminTab === 'roles' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-            color: adminTab === 'roles' ? '#818cf8' : 'var(--text-muted)',
-            border: adminTab === 'roles' ? '1px solid rgba(99, 102, 241, 0.35)' : '1px solid transparent',
+            background: adminTab === 'roles' ? (isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(99, 102, 241, 0.16)') : 'transparent',
+            color: adminTab === 'roles' ? (isLight ? '#4338ca' : '#818cf8') : 'var(--text-muted)',
+            border: adminTab === 'roles' ? (isLight ? '1px solid rgba(79, 70, 229, 0.3)' : '1px solid rgba(99, 102, 241, 0.35)') : '1px solid transparent',
             cursor: 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
@@ -597,9 +614,9 @@ export const UserManagement = () => {
             borderRadius: '8px',
             fontSize: '13px',
             fontWeight: adminTab === 'categories' ? '700' : '500',
-            background: adminTab === 'categories' ? 'rgba(99, 102, 241, 0.16)' : 'transparent',
-            color: adminTab === 'categories' ? '#818cf8' : 'var(--text-muted)',
-            border: adminTab === 'categories' ? '1px solid rgba(99, 102, 241, 0.35)' : '1px solid transparent',
+            background: adminTab === 'categories' ? (isLight ? 'rgba(79, 70, 229, 0.1)' : 'rgba(99, 102, 241, 0.16)') : 'transparent',
+            color: adminTab === 'categories' ? (isLight ? '#4338ca' : '#818cf8') : 'var(--text-muted)',
+            border: adminTab === 'categories' ? (isLight ? '1px solid rgba(79, 70, 229, 0.3)' : '1px solid rgba(99, 102, 241, 0.35)') : '1px solid transparent',
             cursor: 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
@@ -631,7 +648,7 @@ export const UserManagement = () => {
               <div style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-main, #fff)' }}>
                 {totalUsers}
               </div>
-              <div style={{ fontSize: '11px', color: '#818cf8', marginTop: '4px' }}>
+              <div style={{ fontSize: '11px', color: isLight ? '#4338ca' : '#818cf8', fontWeight: isLight ? '600' : 'normal', marginTop: '4px' }}>
                 Synced in SQLite DB
               </div>
             </div>
@@ -640,7 +657,7 @@ export const UserManagement = () => {
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px' }}>
                 {lang === 'ru' ? 'Директорат' : lang === 'kk' ? 'Директорат' : 'Directorate'}
               </div>
-              <div style={{ fontSize: '26px', fontWeight: '800', color: '#818cf8' }}>
+              <div style={{ fontSize: '26px', fontWeight: '800', color: isLight ? '#4338ca' : '#818cf8' }}>
                 {usersList?.filter(u => (u.role || u.roleKey) === 'director').length || 0}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -652,7 +669,7 @@ export const UserManagement = () => {
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px' }}>
                 {lang === 'ru' ? 'Менеджеры Склада & АХЧ' : lang === 'kk' ? 'Қойма және АХЧ' : 'Operations Managers'}
               </div>
-              <div style={{ fontSize: '26px', fontWeight: '800', color: '#fbbf24' }}>
+              <div style={{ fontSize: '26px', fontWeight: '800', color: isLight ? '#b45309' : '#fbbf24' }}>
                 {usersList?.filter(u => ['facilities_manager', 'storage_manager', 'workerA'].includes(u.role || u.roleKey)).length || 0}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -664,7 +681,7 @@ export const UserManagement = () => {
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '6px' }}>
                 {lang === 'ru' ? 'Преподаватели' : lang === 'kk' ? 'Мұғалімдер' : 'Teachers & Requesters'}
               </div>
-              <div style={{ fontSize: '26px', fontWeight: '800', color: '#3b82f6' }}>
+              <div style={{ fontSize: '26px', fontWeight: '800', color: isLight ? '#1d4ed8' : '#3b82f6' }}>
                 {usersList?.filter(u => (u.role || u.roleKey || 'teacher') === 'teacher').length || 0}
               </div>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
@@ -694,11 +711,12 @@ export const UserManagement = () => {
                   width: '100%',
                   padding: '9px 14px 9px 36px',
                   borderRadius: '6px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid var(--border-color)',
-                  color: '#fff',
+                  background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.6)',
+                  border: isLight ? '1px solid rgba(0, 0, 0, 0.16)' : '1px solid var(--border-color)',
+                  color: isLight ? '#0f172a' : '#fff',
                   fontSize: '13px',
-                  outline: 'none'
+                  outline: 'none',
+                  boxShadow: isLight ? '0 1px 2px rgba(0, 0, 0, 0.04)' : 'none'
                 }}
               />
             </div>
@@ -711,12 +729,13 @@ export const UserManagement = () => {
                 style={{
                   padding: '9px 14px',
                   borderRadius: '6px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid var(--border-color)',
-                  color: '#fff',
+                  background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.6)',
+                  border: isLight ? '1px solid rgba(0, 0, 0, 0.16)' : '1px solid var(--border-color)',
+                  color: isLight ? '#0f172a' : '#fff',
                   fontSize: '13px',
                   outline: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  boxShadow: isLight ? '0 1px 2px rgba(0, 0, 0, 0.04)' : 'none'
                 }}
               >
                 <option value="all">{lang === 'ru' ? 'Все роли' : lang === 'kk' ? 'Барлық рөлдер' : 'All Roles'}</option>
@@ -734,7 +753,7 @@ export const UserManagement = () => {
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(15, 23, 42, 0.6)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+                  <tr style={{ background: isLight ? '#f8fafc' : 'rgba(15, 23, 42, 0.6)', borderBottom: isLight ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid var(--border-color)', color: isLight ? '#475569' : 'var(--text-muted)' }}>
                     <th style={{ padding: '14px 20px', fontWeight: '700' }}>
                       {lang === 'ru' ? 'Сотрудник' : lang === 'kk' ? 'Қызметкер' : 'Staff Member'}
                     </th>
@@ -765,13 +784,16 @@ export const UserManagement = () => {
                       const isSelf = user.id === currentUser?.id;
                       const isLoadingThis = loadingAction === `role-${user.id}`;
                       const roleDef = getRoleDefinition(currentRoleKey, rolesConfig);
+                      const avatarColor = isLight ? (LIGHT_ROLE_COLORS[currentRoleKey]?.color || '#4338ca') : (roleDef.color || '#818cf8');
+                      const avatarBg = isLight ? (LIGHT_ROLE_COLORS[currentRoleKey]?.bg || 'rgba(99, 102, 241, 0.1)') : (roleDef.bg || 'rgba(99, 102, 241, 0.15)');
+                      const avatarBorder = isLight ? (LIGHT_ROLE_COLORS[currentRoleKey]?.border || '#c7d2fe') : (roleDef.border || 'rgba(99, 102, 241, 0.3)');
 
                       return (
                         <tr 
                           key={user.id || user.roleKey} 
                           style={{ 
-                            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                            background: isSelf ? 'rgba(99, 102, 241, 0.04)' : 'transparent',
+                            borderBottom: isLight ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.05)',
+                            background: isSelf ? (isLight ? 'rgba(79, 70, 229, 0.06)' : 'rgba(99, 102, 241, 0.04)') : 'transparent',
                             transition: 'background 0.2s ease'
                           }}
                         >
@@ -781,9 +803,9 @@ export const UserManagement = () => {
                                 width: '36px',
                                 height: '36px',
                                 borderRadius: '10px',
-                                background: roleDef.bg || 'rgba(99, 102, 241, 0.15)',
-                                border: `1px solid ${roleDef.border || 'rgba(99, 102, 241, 0.3)'}`,
-                                color: roleDef.color || '#818cf8',
+                                background: avatarBg,
+                                border: `1px solid ${avatarBorder}`,
+                                color: avatarColor,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -800,8 +822,8 @@ export const UserManagement = () => {
                                       fontSize: '10px',
                                       padding: '1px 6px',
                                       borderRadius: '6px',
-                                      background: 'rgba(99, 102, 241, 0.3)',
-                                      color: '#818cf8',
+                                      background: isLight ? 'rgba(79, 70, 229, 0.12)' : 'rgba(99, 102, 241, 0.3)',
+                                      color: isLight ? '#4338ca' : '#818cf8',
                                       fontWeight: '700'
                                     }}>
                                       You
@@ -818,7 +840,7 @@ export const UserManagement = () => {
                           <td style={{ padding: '14px 20px', color: 'var(--text-main)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <Building size={13} color="var(--text-muted)" />
-                              <span>{user.department || 'General Staff'}</span>
+                              <span style={{ color: 'var(--text-main)' }}>{user.department || 'General Staff'}</span>
                             </div>
                           </td>
 
@@ -835,13 +857,14 @@ export const UserManagement = () => {
                                 style={{
                                   padding: '6px 12px',
                                   borderRadius: '8px',
-                                  background: 'rgba(15, 23, 42, 0.8)',
-                                  border: '1px solid var(--border-color)',
-                                  color: '#fff',
+                                  background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.8)',
+                                  border: isLight ? '1px solid rgba(0, 0, 0, 0.16)' : '1px solid var(--border-color)',
+                                  color: isLight ? '#0f172a' : '#fff',
                                   fontSize: '12px',
                                   fontWeight: '600',
                                   outline: 'none',
-                                  cursor: isLoadingThis ? 'wait' : 'pointer'
+                                  cursor: isLoadingThis ? 'wait' : 'pointer',
+                                  boxShadow: isLight ? '0 1px 2px rgba(0, 0, 0, 0.04)' : 'none'
                                 }}
                               >
                                 {rolesList.map(rc => (
@@ -867,15 +890,16 @@ export const UserManagement = () => {
                                 style={{
                                   padding: '6px 10px',
                                   borderRadius: '6px',
-                                  background: 'rgba(99, 102, 241, 0.1)',
-                                  border: '1px solid rgba(99, 102, 241, 0.3)',
-                                  color: '#818cf8',
+                                  background: isLight ? 'rgba(79, 70, 229, 0.08)' : 'rgba(99, 102, 241, 0.1)',
+                                  border: isLight ? '1px solid rgba(79, 70, 229, 0.28)' : '1px solid rgba(99, 102, 241, 0.3)',
+                                  color: isLight ? '#4338ca' : '#818cf8',
                                   fontSize: '11px',
                                   fontWeight: '600',
                                   cursor: 'pointer',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '4px'
+                                  gap: '4px',
+                                  transition: 'all 0.15s ease'
                                 }}
                               >
                                 <KeyRound size={13} />
@@ -889,13 +913,14 @@ export const UserManagement = () => {
                                 style={{
                                   padding: '6px 8px',
                                   borderRadius: '6px',
-                                  background: isSelf ? 'transparent' : 'rgba(239, 68, 68, 0.1)',
-                                  border: isSelf ? '1px solid transparent' : '1px solid rgba(239, 68, 68, 0.3)',
-                                  color: isSelf ? 'var(--text-muted)' : '#f87171',
+                                  background: isSelf ? 'transparent' : (isLight ? 'rgba(220, 38, 38, 0.08)' : 'rgba(239, 68, 68, 0.1)'),
+                                  border: isSelf ? '1px solid transparent' : (isLight ? '1px solid rgba(220, 38, 38, 0.28)' : '1px solid rgba(239, 68, 68, 0.3)'),
+                                  color: isSelf ? 'var(--text-muted)' : (isLight ? '#dc2626' : '#f87171'),
                                   fontSize: '11px',
                                   cursor: isSelf ? 'not-allowed' : 'pointer',
                                   display: 'flex',
-                                  alignItems: 'center'
+                                  alignItems: 'center',
+                                  transition: 'all 0.15s ease'
                                 }}
                               >
                                 <Trash2 size={13} />
@@ -920,12 +945,12 @@ export const UserManagement = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           <div style={{
-            background: 'rgba(99, 102, 241, 0.08)',
-            border: '1px solid rgba(99, 102, 241, 0.25)',
+            background: isLight ? '#eef2ff' : 'rgba(99, 102, 241, 0.08)',
+            border: isLight ? '1px solid #c7d2fe' : '1px solid rgba(99, 102, 241, 0.25)',
             borderRadius: '10px',
             padding: '14px 18px',
             fontSize: '13px',
-            color: '#c7d2fe',
+            color: isLight ? '#312e81' : '#c7d2fe',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -961,6 +986,9 @@ export const UserManagement = () => {
               const isAllowedAll = !r.allowedCategories || r.allowedCategories.includes('all');
               const roleTitle = lang === 'ru' ? r.labelRu || r.label : lang === 'kk' ? r.labelKk || r.label : r.label;
               const roleScope = lang === 'ru' ? r.scopeRu || r.scope : lang === 'kk' ? r.scopeKk || r.scope : r.scope;
+              const roleCardColor = isLight ? (LIGHT_ROLE_COLORS[r.key]?.color || '#4338ca') : (r.color || '#818cf8');
+              const roleCardBg = isLight ? (LIGHT_ROLE_COLORS[r.key]?.bg || 'rgba(99, 102, 241, 0.1)') : (r.bg || 'rgba(99, 102, 241, 0.15)');
+              const roleCardBorder = isLight ? (LIGHT_ROLE_COLORS[r.key]?.border || '#c7d2fe') : (r.border || 'rgba(99, 102, 241, 0.3)');
 
               return (
                 <div
@@ -973,7 +1001,7 @@ export const UserManagement = () => {
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     gap: '16px',
-                    border: `1.5px solid ${r.border || 'var(--border-color, rgba(255, 255, 255, 0.08))'}`,
+                    border: `1.5px solid ${isLight ? 'rgba(0, 0, 0, 0.08)' : (r.border || 'var(--border-color, rgba(255, 255, 255, 0.08))')}`,
                     background: 'var(--bg-card, rgba(24, 24, 27, 0.75))'
                   }}
                 >
@@ -985,9 +1013,9 @@ export const UserManagement = () => {
                           width: '38px',
                           height: '38px',
                           borderRadius: '10px',
-                          background: r.bg || 'rgba(99, 102, 241, 0.15)',
-                          border: `1px solid ${r.border || 'rgba(99, 102, 241, 0.3)'}`,
-                          color: r.color || '#818cf8',
+                          background: roleCardBg,
+                          border: `1px solid ${roleCardBorder}`,
+                          color: roleCardColor,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
@@ -995,7 +1023,7 @@ export const UserManagement = () => {
                           <IconComp size={20} />
                         </div>
                         <div>
-                          <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <div style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main, #fff)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <span>{roleTitle}</span>
                             {!DEFAULT_ROLES[r.key] && (
                               <span style={{
@@ -1003,9 +1031,9 @@ export const UserManagement = () => {
                                 fontWeight: '700',
                                 padding: '1px 6px',
                                 borderRadius: '4px',
-                                background: 'rgba(99, 102, 241, 0.25)',
-                                color: '#a5b4fc',
-                                border: '1px solid rgba(99, 102, 241, 0.4)'
+                                background: isLight ? 'rgba(79, 70, 229, 0.12)' : 'rgba(99, 102, 241, 0.25)',
+                                color: isLight ? '#4338ca' : '#a5b4fc',
+                                border: isLight ? '1px solid #c7d2fe' : '1px solid rgba(99, 102, 241, 0.4)'
                               }}>
                                 Custom Role
                               </span>
@@ -1026,9 +1054,9 @@ export const UserManagement = () => {
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '4px',
-                        background: r.canViewStorage ? 'rgba(34, 197, 94, 0.15)' : 'rgba(148, 163, 184, 0.12)',
-                        color: r.canViewStorage ? '#4ade80' : '#94a3b8',
-                        border: r.canViewStorage ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(148, 163, 184, 0.25)'
+                        background: r.canViewStorage ? (isLight ? '#f0fdf4' : 'rgba(34, 197, 94, 0.15)') : (isLight ? '#f1f5f9' : 'rgba(148, 163, 184, 0.12)'),
+                        color: r.canViewStorage ? (isLight ? '#15803d' : '#4ade80') : 'var(--text-muted)',
+                        border: r.canViewStorage ? (isLight ? '1px solid #bbf7d0' : '1px solid rgba(34, 197, 94, 0.3)') : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(148, 163, 184, 0.25)')
                       }}>
                         {r.canViewStorage ? (
                           <>
@@ -1046,16 +1074,16 @@ export const UserManagement = () => {
 
                     {/* Operational Task / Scope Description */}
                     <div style={{
-                      background: 'rgba(15, 23, 42, 0.5)',
+                      background: isLight ? '#f8fafc' : 'rgba(15, 23, 42, 0.5)',
                       padding: '10px 12px',
                       borderRadius: '8px',
                       marginBottom: '12px',
-                      border: '1px solid rgba(255, 255, 255, 0.05)'
+                      border: isLight ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.05)'
                     }}>
-                      <div style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
                         {lang === 'ru' ? 'Задачи и ответственность роли:' : 'Operational Scope & Tasks:'}
                       </div>
-                      <div style={{ fontSize: '12.5px', color: '#e2e8f0', lineHeight: 1.4 }}>
+                      <div style={{ fontSize: '12.5px', color: 'var(--text-main)', lineHeight: 1.4 }}>
                         {roleScope || 'Standard operational assignments.'}
                       </div>
                     </div>
@@ -1075,13 +1103,13 @@ export const UserManagement = () => {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '4px',
-                          background: 'rgba(99, 102, 241, 0.15)',
-                          color: '#a5b4fc',
+                          background: isLight ? '#eef2ff' : 'rgba(99, 102, 241, 0.15)',
+                          color: isLight ? '#4338ca' : '#a5b4fc',
                           padding: '3px 8px',
                           borderRadius: '6px',
                           fontSize: '11px',
                           fontWeight: '700',
-                          border: '1px solid rgba(99, 102, 241, 0.3)'
+                          border: isLight ? '1px solid #c7d2fe' : '1px solid rgba(99, 102, 241, 0.3)'
                         }}>
                           <Check size={11} /> {lang === 'ru' ? 'Все категории без ограничений' : 'All Categories (Full Access)'}
                         </span>
@@ -1091,9 +1119,9 @@ export const UserManagement = () => {
                             <span
                               key={catId}
                               style={{
-                                background: 'rgba(255, 255, 255, 0.06)',
-                                border: '1px solid rgba(255, 255, 255, 0.12)',
-                                color: '#e2e8f0',
+                                background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.06)',
+                                border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.12)',
+                                color: isLight ? '#334155' : '#e2e8f0',
                                 padding: '2px 8px',
                                 borderRadius: '6px',
                                 fontSize: '11px',
@@ -1114,11 +1142,11 @@ export const UserManagement = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     paddingTop: '12px',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.06)'
+                    borderTop: isLight ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.06)'
                   }}>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                       {r.canManageStock ? (
-                        <span style={{ color: '#fbbf24', fontWeight: '700' }}>● {lang === 'ru' ? 'Право списания' : 'Can Deduct Stock'}</span>
+                        <span style={{ color: isLight ? '#b45309' : '#fbbf24', fontWeight: '700' }}>● {lang === 'ru' ? 'Право списания' : 'Can Deduct Stock'}</span>
                       ) : (
                         <span>{lang === 'ru' ? 'Только заказ' : 'Ordering Only'}</span>
                       )}
@@ -1180,12 +1208,12 @@ export const UserManagement = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
           <div style={{
-            background: 'rgba(245, 158, 11, 0.08)',
-            border: '1px solid rgba(245, 158, 11, 0.25)',
+            background: isLight ? '#fffbeb' : 'rgba(245, 158, 11, 0.08)',
+            border: isLight ? '1px solid #fde68a' : '1px solid rgba(245, 158, 11, 0.25)',
             borderRadius: '10px',
             padding: '14px 18px',
             fontSize: '13px',
-            color: '#fde68a',
+            color: isLight ? '#92400e' : '#fde68a',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -1241,7 +1269,7 @@ export const UserManagement = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ fontSize: '28px' }}>{cat.icon || '📦'}</span>
                         <div>
-                          <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff' }}>
+                          <div style={{ fontSize: '16px', fontWeight: '800', color: isLight ? '#0f172a' : '#fff' }}>
                             {catTitle}
                           </div>
                           <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
@@ -1255,9 +1283,9 @@ export const UserManagement = () => {
                         fontWeight: '700',
                         padding: '3px 8px',
                         borderRadius: '6px',
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        color: '#fff',
-                        border: '1px solid rgba(255, 255, 255, 0.15)'
+                        background: isLight ? '#f1f5f9' : 'rgba(255, 255, 255, 0.08)',
+                        color: isLight ? '#334155' : '#fff',
+                        border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.15)'
                       }}>
                         {itemCount} {lang === 'ru' ? 'товаров' : 'items'}
                       </span>
@@ -1272,9 +1300,9 @@ export const UserManagement = () => {
                           gap: '6px',
                           padding: '4px 10px',
                           borderRadius: '8px',
-                          background: 'rgba(249, 115, 22, 0.15)',
-                          border: '1px solid rgba(249, 115, 22, 0.35)',
-                          color: '#fb923c',
+                          background: isLight ? '#fff7ed' : 'rgba(249, 115, 22, 0.15)',
+                          border: isLight ? '1px solid #fed7aa' : '1px solid rgba(249, 115, 22, 0.35)',
+                          color: isLight ? '#c2410c' : '#fb923c',
                           fontSize: '12px',
                           fontWeight: '700'
                         }}>
@@ -1288,9 +1316,9 @@ export const UserManagement = () => {
                           gap: '6px',
                           padding: '4px 10px',
                           borderRadius: '8px',
-                          background: 'rgba(59, 130, 246, 0.12)',
-                          border: '1px solid rgba(59, 130, 246, 0.3)',
-                          color: '#60a5fa',
+                          background: isLight ? '#eff6ff' : 'rgba(59, 130, 246, 0.12)',
+                          border: isLight ? '1px solid #bfdbfe' : '1px solid rgba(59, 130, 246, 0.3)',
+                          color: isLight ? '#1d4ed8' : '#60a5fa',
                           fontSize: '12px',
                           fontWeight: '700'
                         }}>
@@ -1302,7 +1330,7 @@ export const UserManagement = () => {
 
                     {/* Shelf / Warehouse Location */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                      <MapPin size={13} color="#fbbf24" />
+                      <MapPin size={13} color={isLight ? '#b45309' : '#fbbf24'} />
                       <span>{cat.defaultLocation || 'Main Warehouse'}</span>
                     </div>
                   </div>
@@ -1313,7 +1341,7 @@ export const UserManagement = () => {
                     alignItems: 'center',
                     justifyContent: 'flex-end',
                     paddingTop: '12px',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.06)'
+                    borderTop: isLight ? '1px solid rgba(0, 0, 0, 0.08)' : '1px solid rgba(255, 255, 255, 0.06)'
                   }}>
                     <button
                       onClick={() => {

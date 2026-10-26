@@ -482,26 +482,49 @@ body[data-theme="light"] {
   color: var(--text-main) !important;
 }
 
+[data-theme="light"] thead tr,
 [data-theme="light"] tr[style*="background: rgba(15, 23, 42"],
-[data-theme="light"] tr[style*="background: rgb(15, 23, 42"],
-[data-theme="light"] thead tr {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-muted) !important;
+[data-theme="light"] tr[style*="background: rgb(15, 23, 42"] {
+  background: #f8fafc !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] thead th {
+  color: #334155 !important;
+  font-weight: 700 !important;
 }
 
 [data-theme="light"] tr[style*="border-bottom: 1px solid rgba(255, 255, 255"],
-[data-theme="light"] tr[style*="border-bottom: 1px solid rgba(255,255,255"] {
-  border-bottom-color: var(--border-color) !important;
+[data-theme="light"] tr[style*="border-bottom: 1px solid rgba(255,255,255"],
+[data-theme="light"] tbody tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
+[data-theme="light"] input,
 [data-theme="light"] input[style*="background: rgba(15, 23, 42"],
 [data-theme="light"] input[style*="background: rgb(15, 23, 42"],
 [data-theme="light"] input[style*="background: rgba(30, 41, 59"],
-[data-theme="light"] input[style*="background: rgb(30, 41, 59"] {
-  background: #ffffff !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-main) !important;
+[data-theme="light"] input[style*="background: rgb(30, 41, 59"],
+[data-theme="light"] select,
+[data-theme="light"] select[style*="background: rgba(15, 23, 42"],
+[data-theme="light"] select[style*="background: rgb(15, 23, 42"],
+[data-theme="light"] select[style*="background: rgba(30, 41, 59"],
+[data-theme="light"] select[style*="background: rgb(30, 41, 59"],
+[data-theme="light"] textarea,
+[data-theme="light"] textarea[style*="background: rgba(15, 23, 42"],
+[data-theme="light"] textarea[style*="background: rgb(15, 23, 42"],
+[data-theme="light"] textarea[style*="background: rgba(30, 41, 59"],
+[data-theme="light"] textarea[style*="background: rgb(30, 41, 59"] {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.16) !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
 }
 
 [data-theme="light"] div[style*="background: rgba(255, 255, 255, 0.06)"],
@@ -523,6 +546,50 @@ body[data-theme="light"] {
 [data-theme="light"] button[style*="background: rgb(15, 23, 42"]:hover {
   background: #ffffff !important;
   box-shadow: var(--shadow-depth-4) !important;
+}
+
+/* Light Mode Role Action Buttons */
+[data-theme="light"] button[style*="rgba(99, 102, 241, 0.1)"] {
+  background: rgba(79, 70, 229, 0.08) !important;
+  border-color: rgba(79, 70, 229, 0.28) !important;
+  color: #4338ca !important;
+}
+[data-theme="light"] button[style*="rgba(99, 102, 241, 0.1)"]:hover {
+  background: rgba(79, 70, 229, 0.16) !important;
+  color: #3730a3 !important;
+}
+
+[data-theme="light"] button[style*="rgba(239, 68, 68, 0.1)"] {
+  background: rgba(220, 38, 38, 0.08) !important;
+  border-color: rgba(220, 38, 38, 0.28) !important;
+  color: #dc2626 !important;
+}
+[data-theme="light"] button[style*="rgba(239, 68, 68, 0.1)"]:hover {
+  background: rgba(220, 38, 38, 0.16) !important;
+}
+
+/* Light Mode Director Sub-Tabs & Callouts */
+[data-theme="light"] button[style*="rgba(99, 102, 241, 0.16)"] {
+  background: rgba(79, 70, 229, 0.1) !important;
+  border-color: rgba(79, 70, 229, 0.3) !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] div[style*="background: rgba(99, 102, 241, 0.08)"] {
+  background: #eef2ff !important;
+  border-color: #c7d2fe !important;
+  color: #312e81 !important;
+}
+
+[data-theme="light"] div[style*="background: rgba(245, 158, 11, 0.08)"] {
+  background: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+[data-theme="light"] div[style*="background: rgba(15, 23, 42, 0.5)"] {
+  background: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Force dark text for any element with hardcoded light text colors */

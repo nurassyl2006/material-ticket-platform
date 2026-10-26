@@ -6,6 +6,7 @@ import { Dashboard } from './components/Dashboard';
 import { TicketList } from './components/TicketList';
 import { InventoryManager } from './components/InventoryManager';
 import { UserManagement } from './components/UserManagement';
+import { DirectorDailyDigest } from './components/DirectorDailyDigest';
 import { TicketModal } from './components/TicketModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { DeviceNotificationBanner } from './components/DeviceNotificationBanner';
@@ -288,6 +289,32 @@ function MainApp() {
                   : lang === 'kk'
                   ? 'Пайдаланушылар мен рөлдерді тағайындау тек мектеп дирекциясына қолжетімді.'
                   : 'Staff and user role administration is reserved for the School Directorate.'}
+              </p>
+              <button
+                onClick={handleOpenLogin}
+                className="fluent-btn-primary"
+                style={{ height: '32px', padding: '0 18px' }}
+              >
+                {t.auth?.signIn || 'Sign In as Director'}
+              </button>
+            </div>
+          )
+        )}
+        {(activeTab === 'daily-digest' || activeTab === 'dailyDigest') && (
+          (role === 'director' || role === 'admin') ? (
+            <DirectorDailyDigest onOpenNewTicket={handleOpenNewTicket} />
+          ) : (
+            <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'rgba(18, 25, 44, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <ShieldCheck size={40} color="#8b5cf6" style={{ margin: '0 auto 12px' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#f8fafc', marginBottom: '8px' }}>
+                {lang === 'ru' ? 'Требуются права директора школы' : lang === 'kk' ? 'Мектеп директорының құқығы қажет' : 'Director Authority Required'}
+              </h3>
+              <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
+                {lang === 'ru'
+                  ? 'Ежедневная сводка по созданию, выполнению и времени заявок доступна только руководству школы.'
+                  : lang === 'kk'
+                  ? 'Күнделікті өтінімдер бойынша жедел есеп тек мектеп басшылығына қолжетімді.'
+                  : 'Everyday ticket operations, timestamps, and staff performance digest is reserved for the School Directorate.'}
               </p>
               <button
                 onClick={handleOpenLogin}

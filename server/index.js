@@ -55,7 +55,8 @@ function formatTicket(row) {
     createdByRole: row.createdByRole || null,
     declineReason: row.declineReason || '',
     declinedBy: row.declinedBy || null,
-    declinedAt: row.declinedAt || null
+    declinedAt: row.declinedAt || null,
+    completedAt: row.completedAt || (['completed', 'delivered', 'issued'].includes(row.status) ? row.updatedAt : null)
   };
 }
 
@@ -452,7 +453,8 @@ app.post('/api/tickets', (req, res) => {
       supplier: body.supplier || '',
       notes: body.notes || '',
       createdAt: body.createdAt || now,
-      updatedAt: now
+      updatedAt: body.updatedAt || now,
+      completedAt: body.completedAt || (['completed', 'delivered', 'issued'].includes(body.status) ? (body.updatedAt || now) : null)
     };
 
     const stmt = db.prepare(`
@@ -463,7 +465,7 @@ app.post('/api/tickets', (req, res) => {
         teacherName, teacherPhone,
         createdById, createdByRole,
         status, assignedWorker, assignedRole, handledAction, purchaseCost, supplier, notes,
-        createdAt, updatedAt
+        createdAt, updatedAt, completedAt
       ) VALUES (
         @id, @department, @itemTitle, @subcategory, @category, @quantity, @unit, @urgency, @roomNumber,
         @moveDetails, @description, @photos, @completionPhotos,
@@ -471,7 +473,7 @@ app.post('/api/tickets', (req, res) => {
         @teacherName, @teacherPhone,
         @createdById, @createdByRole,
         @status, @assignedWorker, @assignedRole, @handledAction, @purchaseCost, @supplier, @notes,
-        @createdAt, @updatedAt
+        @createdAt, @updatedAt, @completedAt
       )
     `);
 
@@ -535,8 +537,12 @@ app.patch('/api/tickets/:id', (req, res) => {
       'isReturnable', 'returnStatus', 'borrowedAt', 'returnedAt', 'returnConfirmedAt', 'returnConfirmedBy',
       'teacherName', 'teacherPhone', 'createdById', 'createdByRole', 'status',
       'assignedWorker', 'assignedRole', 'handledAction', 'declineReason', 'declinedBy', 'declinedAt',
-      'purchaseCost', 'supplier', 'notes'
+      'purchaseCost', 'supplier', 'notes', 'completedAt'
     ];
+
+    if (['completed', 'delivered', 'issued'].includes(updates.status) && !updates.completedAt && !existing.completedAt) {
+      updates.completedAt = now;
+    }
 
     const fieldsToSet = [];
     const values = {};

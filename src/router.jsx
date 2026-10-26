@@ -47,6 +47,26 @@ export const ROUTES = {
       kk: 'Қызметкерлер мен рөлдер — EduOps'
     }
   },
+  'daily-digest': {
+    tab: 'daily-digest',
+    path: '/daily-digest',
+    aliases: ['/daily-report', '/executive-digest', '/daily'],
+    titles: {
+      en: 'Executive Daily Ticket Digest — EduOps',
+      ru: 'Ежедневный отчет по заявкам — EduOps',
+      kk: 'Күнделікті өтінімдер есебі — EduOps'
+    }
+  },
+  dailyDigest: {
+    tab: 'daily-digest',
+    path: '/daily-digest',
+    aliases: ['/daily-report', '/executive-digest', '/daily'],
+    titles: {
+      en: 'Executive Daily Ticket Digest — EduOps',
+      ru: 'Ежедневный отчет по заявкам — EduOps',
+      kk: 'Күнделікті өтінімдер есебі — EduOps'
+    }
+  },
   profile: {
     tab: 'profile',
     path: '/profile',
@@ -113,7 +133,7 @@ export function parseCurrentRoute() {
   let matchedTab = 'dashboard';
   for (const [key, config] of Object.entries(ROUTES)) {
     if (config.path === normalizedPath || config.aliases.includes(normalizedPath)) {
-      matchedTab = key;
+      matchedTab = config.tab || key;
       break;
     }
   }
@@ -154,7 +174,8 @@ export function buildUrl(targetTabOrPath, params = {}) {
     } else if (ROUTES[targetTabOrPath]) {
       targetPath = ROUTES[targetTabOrPath].path;
     } else {
-      targetPath = `/${targetTabOrPath}`;
+      const found = Object.values(ROUTES).find(r => r.tab === targetTabOrPath);
+      targetPath = found ? found.path : `/${targetTabOrPath}`;
     }
   } else {
     targetPath = '/dashboard';
@@ -201,7 +222,7 @@ export function navigate(target, options = {}) {
  */
 export function updatePageTitle(tab, lang = 'ru') {
   if (typeof document === 'undefined') return;
-  const config = ROUTES[tab] || ROUTES.dashboard;
+  const config = ROUTES[tab] || Object.values(ROUTES).find(r => r.tab === tab) || ROUTES.dashboard;
   const titles = config.titles || ROUTES.dashboard.titles;
   const title = titles[lang] || titles.ru || titles.en;
   document.title = title;

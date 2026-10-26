@@ -18,7 +18,8 @@ import {
   LogIn,
   ShieldAlert,
   Sun,
-  Moon
+  Moon,
+  CalendarCheck2
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 import { Link } from '../router';
@@ -263,6 +264,46 @@ export const Navbar = ({
               >
                 <Package size={14} color={activeTab === 'inventory' ? '#818cf8' : 'currentColor'} />
                 <span>{role === 'teacher' ? (t.nav?.catalog || 'Catalog') : t.nav.inventory}</span>
+              </Link>
+            )}
+
+            {(role === 'director' || role === 'admin') && (
+              <Link
+                to="daily-digest"
+                style={{
+                  height: '30px',
+                  padding: '0 12px',
+                  fontSize: '12.5px',
+                  fontWeight: activeTab === 'daily-digest' ? '600' : '500',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: activeTab === 'daily-digest' ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
+                  background: activeTab === 'daily-digest' ? 'rgba(139, 92, 246, 0.28)' : 'transparent',
+                  border: activeTab === 'daily-digest' ? '1px solid rgba(139, 92, 246, 0.45)' : '1px solid transparent',
+                  borderRadius: '7px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  boxShadow: activeTab === 'daily-digest' ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== 'daily-digest') {
+                    e.currentTarget.style.color = 'var(--text-main, #ffffff)';
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== 'daily-digest') {
+                    e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
+              >
+                <CalendarCheck2 size={14} color={activeTab === 'daily-digest' ? '#c4b5fd' : 'currentColor'} />
+                <span>{t.nav?.dailyDigest || 'Daily Digest'}</span>
               </Link>
             )}
 
@@ -803,13 +844,22 @@ export const Navbar = ({
 
         {isAuthenticated && (
           (role === 'director' || role === 'admin') ? (
-            <Link
-              to="users"
-              className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
-            >
-              <Users size={20} />
-              <span>{t.nav?.users || 'Staff'}</span>
-            </Link>
+            <>
+              <Link
+                to="daily-digest"
+                className={`mobile-nav-item ${activeTab === 'daily-digest' ? 'active' : ''}`}
+              >
+                <CalendarCheck2 size={20} />
+                <span>{lang === 'ru' ? 'Отчет' : lang === 'kk' ? 'Есеп' : 'Digest'}</span>
+              </Link>
+              <Link
+                to="users"
+                className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
+              >
+                <Users size={20} />
+                <span>{t.nav?.users || 'Staff'}</span>
+              </Link>
+            </>
           ) : (isAuthenticated && hasStorageAccess) ? (
             <Link
               to="inventory"

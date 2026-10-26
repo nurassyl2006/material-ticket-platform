@@ -216,8 +216,12 @@ try {
   if (!ticketColumns.includes('declinedAt')) {
     db.prepare("ALTER TABLE tickets ADD COLUMN declinedAt TEXT DEFAULT NULL").run();
   }
+  if (!ticketColumns.includes('completedAt')) {
+    db.prepare("ALTER TABLE tickets ADD COLUMN completedAt TEXT DEFAULT NULL").run();
+  }
+  db.prepare("CREATE INDEX IF NOT EXISTS idx_tickets_completedAt ON tickets(completedAt)").run();
 } catch (err) {
-  // Decline columns check
+  // Decline and completed columns check
 }
 
 // Migration: Ensure isReturnable and photos columns exist on inventory table

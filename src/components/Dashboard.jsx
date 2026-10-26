@@ -18,7 +18,10 @@ import {
   Users,
   Layers,
   ChevronRight,
-  Wrench
+  Wrench,
+  CalendarCheck2,
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 import { resolveDepartment, DEPARTMENTS } from '../departments';
 
@@ -36,6 +39,15 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   
   // Total Spent (₸) from storage purchasing and facility parts
   const totalSpent = scopedTickets.reduce((sum, tk) => sum + (Number(tk.purchaseCost) || 0), 0);
+
+  // Today's metrics for everyday tracking
+  const todayDateStr = new Date().toISOString().slice(0, 10);
+  const todayCreatedTickets = scopedTickets.filter(t => (t.createdAt || '').slice(0, 10) === todayDateStr);
+  const todayCreatedCount = todayCreatedTickets.length;
+  const todayFinishedCount = scopedTickets.filter(t => 
+    (t.status === 'completed' || t.status === 'delivered' || t.status === 'issued') &&
+    ((t.completedAt || t.updatedAt || '').slice(0, 10) === todayDateStr || (t.createdAt || '').slice(0, 10) === todayDateStr)
+  ).length;
 
   // Department specific stats based on scoped tickets
   const itTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'it_helpdesk');
@@ -122,14 +134,31 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             {(role === 'director' || role === 'admin') && (
-              <button
-                onClick={() => setActiveTab('users')}
-                className="fluent-btn-secondary"
-                style={{ height: '32px' }}
-              >
-                <Users size={14} />
-                <span>{t.nav?.users || 'Staff & Roles'}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setActiveTab('daily-digest')}
+                  className="fluent-btn-secondary"
+                  style={{
+                    height: '32px',
+                    borderColor: 'rgba(139, 92, 246, 0.45)',
+                    color: '#c4b5fd',
+                    background: 'rgba(139, 92, 246, 0.15)',
+                    fontWeight: '600'
+                  }}
+                >
+                  <CalendarCheck2 size={14} color="#a78bfa" />
+                  <span>{t.nav?.dailyDigest || 'Daily Digest'}</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className="fluent-btn-secondary"
+                  style={{ height: '32px' }}
+                >
+                  <Users size={14} />
+                  <span>{t.nav?.users || 'Staff & Roles'}</span>
+                </button>
+              </>
             )}
 
             <button
@@ -151,6 +180,62 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {(role === 'director' || role === 'admin') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
+          {/* Executive Everyday Ticket Operations Callout */}
+          <div
+            onClick={() => setActiveTab('daily-digest')}
+            style={{
+              background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(18, 25, 44, 0.85))',
+              border: '1px solid rgba(139, 92, 246, 0.35)',
+              borderLeft: '4px solid #8b5cf6',
+              borderRadius: '12px',
+              padding: '14px 18px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '12px',
+              boxShadow: 'var(--shadow-depth-3)',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#8b5cf6';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.35)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: 'rgba(139, 92, 246, 0.2)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                <CalendarCheck2 size={22} color="#c4b5fd" />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                    {lang === 'ru' ? 'Ежедневный операционный контроль директора' : lang === 'kk' ? 'Директордың күнделікті операциялық бақылауы' : 'Director Daily Ticket Intelligence & Operations'}
+                  </span>
+                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '1px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
+                    ● Live Today
+                  </span>
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#cbd5e1', marginTop: '3px' }}>
+                  {lang === 'ru'
+                    ? `Сегодня создано: ${todayCreatedCount} • Завершено: ${todayFinishedCount} • В процессе: ${inProgressCount}. Откройте почасовую шкалу, время создания и исполнителей.`
+                    : lang === 'kk'
+                    ? `Бүгін берілді: ${todayCreatedCount} • Орындалды: ${todayFinishedCount} • Жұмыста: ${inProgressCount}. Сағаттық шкаланы және орындаушыларды ашу.`
+                    : `Created today: ${todayCreatedCount} • Finished: ${todayFinishedCount} • In process: ${inProgressCount}. View hourly timeline, submission times, and staff.`}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a78bfa', fontSize: '12px', fontWeight: '700' }}>
+              <span>{lang === 'ru' ? 'Открыть подробный отчет' : lang === 'kk' ? 'Толық есепті ашу' : 'Open Daily Digest'}</span>
+              <ChevronRight size={16} />
+            </div>
+          </div>
+
           <div className="dashboard-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
             
             {/* Total School Requests */}

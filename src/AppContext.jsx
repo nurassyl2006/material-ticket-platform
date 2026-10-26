@@ -910,18 +910,19 @@ export const AppProvider = ({ children }) => {
       returnedAt: null,
       returnConfirmedAt: null,
       returnConfirmedBy: null,
-      teacherName: authorName,
-      teacherPhone: authorPhone,
-      teacherEmail: activeUser?.email || currentUser?.email || '',
-      createdById: activeUser?.id || null,
-      createdByRole: role,
-      status: 'pending',
-      assignedWorker: null,
-      assignedRole: null,
-      handledAction: null,
-      notes: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      teacherName: ticketData.teacherName || authorName,
+      teacherPhone: ticketData.teacherPhone || authorPhone,
+      teacherEmail: ticketData.teacherEmail || activeUser?.email || currentUser?.email || '',
+      createdById: ticketData.createdById !== undefined ? ticketData.createdById : (activeUser?.id || null),
+      createdByRole: ticketData.createdByRole || role,
+      status: ticketData.status || 'pending',
+      assignedWorker: ticketData.assignedWorker !== undefined ? ticketData.assignedWorker : null,
+      assignedRole: ticketData.assignedRole !== undefined ? ticketData.assignedRole : null,
+      handledAction: ticketData.handledAction !== undefined ? ticketData.handledAction : null,
+      notes: ticketData.notes || '',
+      createdAt: ticketData.createdAt || new Date().toISOString(),
+      updatedAt: ticketData.updatedAt || new Date().toISOString(),
+      completedAt: ticketData.completedAt || (['completed', 'delivered', 'issued'].includes(ticketData.status) ? (ticketData.updatedAt || new Date().toISOString()) : null)
     };
 
     setTickets(prev => [newTicket, ...prev]);
@@ -953,12 +954,15 @@ export const AppProvider = ({ children }) => {
   const updateTicket = (ticketId, updates) => {
     const updatedAt = new Date().toISOString();
     let updatedTicket = null;
+    const isFinished = updates?.status && ['completed', 'delivered', 'issued'].includes(updates.status);
+    const completionExtra = isFinished ? { completedAt: updates.completedAt || updatedAt } : {};
 
     setTickets(prev => prev.map(ticket => {
       if (ticket.id === ticketId) {
         updatedTicket = {
           ...ticket,
           ...updates,
+          ...completionExtra,
           updatedAt
         };
         return updatedTicket;
@@ -978,7 +982,7 @@ export const AppProvider = ({ children }) => {
     }
 
     // Persist in DB
-    updateTicketInDb(ticketId, { ...updates, updatedAt }).catch(() => {});
+    updateTicketInDb(ticketId, { ...updates, ...completionExtra, updatedAt }).catch(() => {});
   };
 
   // Start working on ticket (used by IT, Cleaning, Facilities, Engineer)
@@ -1034,6 +1038,7 @@ export const AppProvider = ({ children }) => {
       isReturnable: isReturnable ? 1 : 0,
       returnStatus: isReturnable ? 'borrowed' : 'none',
       borrowedAt: isReturnable ? updatedAt : null,
+      completedAt: updatedAt,
       notes: notes || (isReturnable ? 'Issued for temporary lesson use (must be returned).' : 'Issued directly from warehouse inventory stock.'),
       updatedAt
     };
@@ -1282,6 +1287,7 @@ export const AppProvider = ({ children }) => {
           handledAction: 'completed',
           assignedWorker: ticket.assignedWorker || currentUser.name,
           assignedRole: ticket.assignedRole || role,
+          completedAt: ticket.completedAt || updatedAt,
           notes: notes || ticket.notes || 'Job confirmed as completed and resolved.',
           updatedAt
         };
