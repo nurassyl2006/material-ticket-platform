@@ -382,6 +382,24 @@ export const mockUsers = {
     phone: "",
     avatar: ""
   },
+  finance: {
+    id: "usr-fin1",
+    name: "Head of Finance",
+    role: "finance",
+    department: "Financial Planning & Accounting",
+    email: "finance@school.edu",
+    phone: "",
+    avatar: ""
+  },
+  accountant: {
+    id: "usr-fin1",
+    name: "Head of Finance",
+    role: "finance",
+    department: "Financial Planning & Accounting",
+    email: "finance@school.edu",
+    phone: "",
+    avatar: ""
+  },
   // Legacy aliases
   workerA: {
     id: "usr-w1",

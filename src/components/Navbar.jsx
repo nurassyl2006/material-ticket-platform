@@ -49,11 +49,13 @@ export const Navbar = ({
     isAuthenticated,
     theme,
     toggleTheme,
-    canAccessStorage
+    canAccessStorage,
+    canAccessDailyDigest
   } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
+  const hasDailyDigestAccess = canAccessDailyDigest ? canAccessDailyDigest(role) : (role === 'director' || role === 'admin' || role === 'engineer' || role === 'storage_manager' || role === 'finance');
 
   // Helper for User Initials (e.g., Balkan Kassimov -> BK)
   const getUserInitials = (name) => {
@@ -267,7 +269,7 @@ export const Navbar = ({
               </Link>
             )}
 
-            {(role === 'director' || role === 'admin') && (
+            {hasDailyDigestAccess && (
               <Link
                 to="daily-digest"
                 style={{
@@ -860,7 +862,26 @@ export const Navbar = ({
                 <span>{t.nav?.users || 'Staff'}</span>
               </Link>
             </>
-          ) : (isAuthenticated && hasStorageAccess) ? (
+          ) : hasDailyDigestAccess ? (
+            <>
+              <Link
+                to="daily-digest"
+                className={`mobile-nav-item ${activeTab === 'daily-digest' ? 'active' : ''}`}
+              >
+                <CalendarCheck2 size={20} />
+                <span>{lang === 'ru' ? 'Отчет' : lang === 'kk' ? 'Есеп' : 'Digest'}</span>
+              </Link>
+              {hasStorageAccess && (
+                <Link
+                  to="inventory"
+                  className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
+                >
+                  <Package size={20} />
+                  <span>{role === 'teacher' ? (t.nav?.catalog || (lang === 'ru' ? 'Каталог' : 'Catalog')) : t.nav.inventory}</span>
+                </Link>
+              )}
+            </>
+          ) : (hasStorageAccess) ? (
             <Link
               to="inventory"
               className={`mobile-nav-item ${activeTab === 'inventory' ? 'active' : ''}`}

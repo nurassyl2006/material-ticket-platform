@@ -19,6 +19,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Барлық бөлімдер, аналитика, рөлдерді тағайындау және бақылау',
     canViewStorage: true,
     canManageStock: true,
+    canViewDailyDigest: true,
     allowedCategories: ['all']
   },
   facilities_manager: {
@@ -35,6 +36,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Жиһазды жылжыту, кабинеттерді дайындау және жалпы жөндеу',
     canViewStorage: true,
     canManageStock: true,
+    canViewDailyDigest: true,
     allowedCategories: ['all']
   },
   storage_manager: {
@@ -51,6 +53,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Қоймадағы тауарлар есебі, сатып алу және заттарды беру',
     canViewStorage: true,
     canManageStock: true,
+    canViewDailyDigest: true,
     allowedCategories: ['all']
   },
   engineer: {
@@ -67,7 +70,25 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Жарықтандыру, кондиционерлер, розеткалар, жылыту, желдету, ағаш ұсталық жұмыстары мен жиһаз жөндеу',
     canViewStorage: true,
     canManageStock: true,
+    canViewDailyDigest: true,
     allowedCategories: ['electrical', 'hvac', 'furniture', 'other']
+  },
+  finance: {
+    key: 'finance',
+    label: 'Head of Finance / Accountant',
+    labelRu: 'Главный финансист / Бухгалтерия',
+    labelKk: 'Бас қаржыгер / Бухгалтер',
+    color: '#10b981',
+    bg: 'rgba(16, 185, 129, 0.15)',
+    border: 'rgba(16, 185, 129, 0.35)',
+    icon: 'DollarSign',
+    scope: 'Asset auditing, material expenditure approvals, supplier invoices & everyday financial operations',
+    scopeRu: 'Аудит материальных ценностей, согласование закупок, счетов и ежедневный финансовый контроль',
+    scopeKk: 'Материалдық құндылықтар аудиті, сатып алуды мақұлдау, шот-фактуралар және күнделікті қаржылық бақылау',
+    canViewStorage: true,
+    canManageStock: true,
+    canViewDailyDigest: true,
+    allowedCategories: ['all']
   },
   it_support: {
     key: 'it_support',
@@ -83,6 +104,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Wi-Fi, ноутбуктер, проекторлар, принтерлер және желі',
     canViewStorage: true,
     canManageStock: false,
+    canViewDailyDigest: false,
     allowedCategories: ['electronics', 'stationary', 'other']
   },
   cleaning: {
@@ -99,6 +121,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Кабинеттер тазалығы, қоқыс шығару және санитариялық өңдеу',
     canViewStorage: true,
     canManageStock: false,
+    canViewDailyDigest: false,
     allowedCategories: ['cleaning', 'other']
   },
   teacher: {
@@ -115,6 +138,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Барлық бөлімдерге өтініш беру, сабаққа кеңсе тауарларын тапсырыс ету',
     canViewStorage: true,
     canManageStock: false,
+    canViewDailyDigest: false,
     allowedCategories: ['stationary', 'stationary_loan'] // Teachers restricted to stationery & lesson loans
   },
   parent: {
@@ -131,6 +155,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Кері байланыс, қауіпсіздік және абаттандыру сұрақтары',
     canViewStorage: false,
     canManageStock: false,
+    canViewDailyDigest: false,
     allowedCategories: []
   },
   guest: {
@@ -147,6 +172,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Кампус қонақтары мен келушілер сұраныстары',
     canViewStorage: false,
     canManageStock: false,
+    canViewDailyDigest: false,
     allowedCategories: []
   }
 };
@@ -156,7 +182,7 @@ export const DEFAULT_ROLES = {
  */
 export function getRoleDefinition(roleKey, customRoles = {}) {
   const merged = { ...DEFAULT_ROLES, ...customRoles };
-  const normalizedKey = roleKey === 'admin' ? 'director' : (roleKey === 'workerA' ? 'storage_manager' : roleKey);
+  const normalizedKey = roleKey === 'admin' ? 'director' : (roleKey === 'workerA' ? 'storage_manager' : (roleKey === 'accountant' ? 'finance' : roleKey));
   return merged[normalizedKey] || merged[roleKey] || {
     key: roleKey,
     label: roleKey,
@@ -171,15 +197,28 @@ export function getRoleDefinition(roleKey, customRoles = {}) {
     scopeKk: 'Қызметкерлердің арнайы рөлі',
     canViewStorage: true,
     canManageStock: false,
+    canViewDailyDigest: Boolean(customRoles[roleKey]?.canViewDailyDigest),
     allowedCategories: ['all']
   };
+}
+
+/**
+ * Check if a role can view everyday report / executive daily ticket digest
+ * Main engineer, head of storage, head of finance, director, facilities manager, and roles with explicit permission
+ */
+export function canRoleAccessDailyDigest(roleKey, customRoles = {}) {
+  if (['director', 'admin', 'engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant'].includes(roleKey)) {
+    return true;
+  }
+  const def = getRoleDefinition(roleKey, customRoles);
+  return Boolean(def?.canViewDailyDigest);
 }
 
 /**
  * Check if a role can view warehouse storage / goods catalog
  */
 export function canRoleAccessStorage(roleKey, customRoles = {}) {
-  if (roleKey === 'director' || roleKey === 'admin') return true;
+  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'finance' || roleKey === 'accountant') return true;
   const def = getRoleDefinition(roleKey, customRoles);
   return Boolean(def.canViewStorage);
 }
@@ -197,7 +236,7 @@ export function canRoleManageStock(roleKey, customRoles = {}) {
  * Get the list of allowed storage category IDs for a role
  */
 export function getRoleAllowedCategories(roleKey, customRoles = {}, allCategories = []) {
-  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'storage_manager' || roleKey === 'workerA') {
+  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'storage_manager' || roleKey === 'workerA' || roleKey === 'finance' || roleKey === 'accountant') {
     return allCategories.map(c => c.id || c.key);
   }
   const def = getRoleDefinition(roleKey, customRoles);
@@ -214,7 +253,7 @@ export function getRoleAllowedCategories(roleKey, customRoles = {}, allCategorie
  * Check if a specific category is permitted for a role
  */
 export function isCategoryAllowedForRole(categoryId, roleKey, customRoles = {}, allCategories = []) {
-  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'storage_manager' || roleKey === 'workerA') {
+  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'storage_manager' || roleKey === 'workerA' || roleKey === 'finance' || roleKey === 'accountant') {
     return true;
   }
   const allowed = getRoleAllowedCategories(roleKey, customRoles, allCategories);

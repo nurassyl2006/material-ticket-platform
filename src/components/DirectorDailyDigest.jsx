@@ -75,7 +75,7 @@ const isTicketInProgress = (t) => {
 };
 
 export const DirectorDailyDigest = ({ onOpenNewTicket }) => {
-  const { t, lang, tickets, addTicket } = useApp();
+  const { t, lang, tickets, addTicket, role } = useApp();
 
   // Selected date (defaults to today's local date)
   const todayStr = useMemo(() => formatLocalDate(new Date()), []);
@@ -540,6 +540,38 @@ export const DirectorDailyDigest = ({ onOpenNewTicket }) => {
   };
 
   const dDict = t.dailyDigest || {};
+
+  const roleBadgeTitle = useMemo(() => {
+    if (role === 'engineer') {
+      return dDict.mainEngineerBadge || (lang === 'ru' ? 'Контроль главного инженера' : lang === 'kk' ? 'Бас инженердің бақылауы' : 'Main Engineer Oversight');
+    }
+    if (role === 'storage_manager' || role === 'workerA') {
+      return dDict.storageBadge || (lang === 'ru' ? 'Контроль заведующего складом' : lang === 'kk' ? 'Қойма меңгерушісінің бақылауы' : 'Head of Storage Oversight');
+    }
+    if (role === 'finance' || role === 'accountant') {
+      return dDict.financeBadge || (lang === 'ru' ? 'Контроль финансового отдела' : lang === 'kk' ? 'Қаржы бөлімінің бақылауы' : 'Head of Finance Oversight');
+    }
+    if (role === 'facilities_manager') {
+      return dDict.facilitiesBadge || (lang === 'ru' ? 'Контроль менеджера АХО' : lang === 'kk' ? 'АХО менеджерінің бақылауы' : 'Facilities Management Oversight');
+    }
+    return dDict.directorBadge || (lang === 'ru' ? 'Оперативный контроль руководства' : lang === 'kk' ? 'Басшылықтың жедел бақылауы' : 'Director Executive Intelligence');
+  }, [role, lang, dDict]);
+
+  const adaptedBriefingTitle = useMemo(() => {
+    if (role === 'engineer') {
+      return lang === 'ru' ? 'Оперативный брифинг главного инженера' : lang === 'kk' ? 'Бас инженердің күнделікті брифингі' : 'Main Engineer Daily Operational Briefing';
+    }
+    if (role === 'storage_manager' || role === 'workerA') {
+      return lang === 'ru' ? 'Оперативный брифинг заведующего складом' : lang === 'kk' ? 'Қойма меңгерушісінің күнделікті брифингі' : 'Storage Daily Operational Briefing';
+    }
+    if (role === 'finance' || role === 'accountant') {
+      return lang === 'ru' ? 'Оперативный брифинг финансового отдела' : lang === 'kk' ? 'Қаржы бөлімінің күнделікті брифингі' : 'Finance Daily Operational Briefing';
+    }
+    if (role === 'facilities_manager') {
+      return lang === 'ru' ? 'Оперативный брифинг менеджера АХО' : lang === 'kk' ? 'АХО менеджерінің күнделікті брифингі' : 'Facilities Daily Operational Briefing';
+    }
+    return dDict.executiveSummaryTitle || 'Director Daily Operational Briefing';
+  }, [role, lang, dDict.executiveSummaryTitle]);
   const kpiDict = dDict.kpi || {};
   const hourlyDict = dDict.hourly || {};
   const personnelDict = dDict.personnel || {};
@@ -584,7 +616,7 @@ export const DirectorDailyDigest = ({ onOpenNewTicket }) => {
                 }}
               >
                 <ShieldAlert size={12} color="#a78bfa" />
-                <span>{dDict.directorBadge || 'Director Executive Intelligence'}</span>
+                <span>{roleBadgeTitle}</span>
               </span>
 
               {selectedDate === todayStr && (
@@ -798,7 +830,7 @@ export const DirectorDailyDigest = ({ onOpenNewTicket }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
             <Sparkles size={16} color="#818cf8" />
             <strong style={{ fontSize: '13px', fontWeight: '700', color: '#c7d2fe' }}>
-              {dDict.executiveSummaryTitle || 'Director Daily Operational Briefing'}
+              {adaptedBriefingTitle}
             </strong>
           </div>
           <button

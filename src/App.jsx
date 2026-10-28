@@ -17,7 +17,7 @@ import { parseCurrentRoute, navigate, buildUrl, updatePageTitle } from './router
 import './index.css';
 
 function MainApp() {
-  const { isAuthenticated, role, setRole, lang, t } = useApp();
+  const { isAuthenticated, role, setRole, lang, t, canAccessDailyDigest } = useApp();
   const [route, setRoute] = useState(() => parseCurrentRoute());
   const activeTab = route.tab;
   const canAccessCatalog = Boolean(isAuthenticated);
@@ -301,27 +301,27 @@ function MainApp() {
           )
         )}
         {(activeTab === 'daily-digest' || activeTab === 'dailyDigest') && (
-          (role === 'director' || role === 'admin') ? (
+          (canAccessDailyDigest ? canAccessDailyDigest() : (role === 'director' || role === 'admin' || role === 'engineer' || role === 'storage_manager' || role === 'finance')) ? (
             <DirectorDailyDigest onOpenNewTicket={handleOpenNewTicket} />
           ) : (
             <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'rgba(18, 25, 44, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
               <ShieldCheck size={40} color="#8b5cf6" style={{ margin: '0 auto 12px' }} />
               <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#f8fafc', marginBottom: '8px' }}>
-                {lang === 'ru' ? 'Требуются права директора школы' : lang === 'kk' ? 'Мектеп директорының құқығы қажет' : 'Director Authority Required'}
+                {lang === 'ru' ? 'Требуется оперативный доступ' : lang === 'kk' ? 'Операциялық қолжетімділік қажет' : 'Operational Access Required'}
               </h3>
               <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
                 {lang === 'ru'
-                  ? 'Ежедневная сводка по созданию, выполнению и времени заявок доступна только руководству школы.'
+                  ? 'Ежедневная сводка по заявкам, времени и сотрудникам доступна руководству школы, главному инженеру, завскладу и финансовому отделу.'
                   : lang === 'kk'
-                  ? 'Күнделікті өтінімдер бойынша жедел есеп тек мектеп басшылығына қолжетімді.'
-                  : 'Everyday ticket operations, timestamps, and staff performance digest is reserved for the School Directorate.'}
+                  ? 'Өтінімдер бойынша күнделікті жедел есеп мектеп басшылығына, бас инженерге, қойма меңгерушісіне және қаржы бөліміне қолжетімді.'
+                  : 'Everyday ticket operations, timestamps, and staff performance digest is accessible to School Directorate, Main Engineer, Storage Manager, and Finance Department.'}
               </p>
               <button
                 onClick={handleOpenLogin}
                 className="fluent-btn-primary"
                 style={{ height: '32px', padding: '0 18px' }}
               >
-                {t.auth?.signIn || 'Sign In as Director'}
+                {t.auth?.signIn || 'Sign In'}
               </button>
             </div>
           )

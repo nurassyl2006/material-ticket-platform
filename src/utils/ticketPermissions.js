@@ -109,6 +109,17 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
   )) {
     return true;
   }
+  if (role === 'finance' || role === 'accountant') {
+    if (
+      Number(ticket.purchaseCost) > 0 ||
+      ticket.status === 'purchasing' ||
+      ticket.handledAction === 'purchased' ||
+      resolvedDept === 'storage' ||
+      resolvedDept === 'admin'
+    ) {
+      return true;
+    }
+  }
 
   // 5. Teachers, Parents, and Guests:
   // Strictly restricted to tickets they authored or are assigned to (checked above).

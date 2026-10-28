@@ -78,6 +78,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     if (role === 'facilities_manager') {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'carpentry' || d.id === 'event_prep' || d.id === 'grounds');
     }
+    if (role === 'finance' || role === 'accountant') {
+      return allDepartments.filter(d => d.id === 'all' || d.id === 'storage' || d.id === 'admin' || d.id === 'other');
+    }
     if (role === 'teacher') {
       return allDepartments;
     }
@@ -93,6 +96,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     if (role === 'engineer') return 'plumbing';
     if (role === 'facilities_manager') return 'carpentry';
     if (role === 'storage_manager' || role === 'workerA') return 'storage';
+    if (role === 'finance' || role === 'accountant') return 'storage';
     return 'all';
   });
   const [selectedTicket, setSelectedTicket] = useState(null);
@@ -112,6 +116,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     else if (role === 'engineer') setDeptFilter('plumbing');
     else if (role === 'facilities_manager') setDeptFilter('carpentry');
     else if (role === 'storage_manager' || role === 'workerA') setDeptFilter('storage');
+    else if (role === 'finance' || role === 'accountant') setDeptFilter('storage');
     else setDeptFilter('all');
   }, [role]);
 
@@ -314,7 +319,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               color: 'var(--text-secondary)',
               fontWeight: '600'
             }}>
-              🔒 {t.auth.scopeLabel} {role === 'teacher' ? t.auth.onlyMyTickets : (role === 'it_support' ? t.auth.onlyIT : (role === 'cleaning' ? t.auth.onlyCleaning : (role === 'engineer' ? t.auth.onlyEngineering : (role === 'storage_manager' ? t.auth.onlyStorage : (role === 'facilities_manager' ? t.auth.onlyFacilities : t.auth.allOperations)))))}
+              🔒 {t.auth.scopeLabel} {role === 'teacher' ? t.auth.onlyMyTickets : (role === 'it_support' ? t.auth.onlyIT : (role === 'cleaning' ? t.auth.onlyCleaning : (role === 'engineer' ? t.auth.onlyEngineering : ((role === 'finance' || role === 'accountant') ? (t.auth.onlyFinance || 'Finance & Procurement') : (role === 'storage_manager' ? t.auth.onlyStorage : (role === 'facilities_manager' ? t.auth.onlyFacilities : t.auth.allOperations))))))}
             </span>
           </div>
         </div>

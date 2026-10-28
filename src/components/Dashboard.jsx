@@ -26,7 +26,9 @@ import {
 import { resolveDepartment, DEPARTMENTS } from '../departments';
 
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
-  const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang } = useApp();
+  const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang, canAccessDailyDigest: canAccessDailyDigestFn } = useApp();
+
+  const hasDailyDigestAccess = canAccessDailyDigestFn ? canAccessDailyDigestFn(role) : (role === 'director' || role === 'admin' || role === 'engineer' || role === 'storage_manager' || role === 'finance');
 
   // Scoped tickets that this user is authorized/related to see
   const scopedTickets = appScopedTickets || [];
@@ -55,6 +57,23 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const storageTickets = scopedTickets.filter(t => resolveDepartment(t.department).id === 'storage');
   const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id));
   const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing', 'carpentry'].includes(resolveDepartment(t.department).id));
+  const financeTickets = scopedTickets.filter(t => Number(t.purchaseCost) > 0 || t.status === 'purchasing' || t.handledAction === 'purchased' || resolveDepartment(t.department).id === 'storage');
+
+  const calloutHeadline = React.useMemo(() => {
+    if (role === 'engineer') {
+      return lang === 'ru' ? 'Главный инженер • Ежедневный операционный контроль' : lang === 'kk' ? 'Бас инженер • Күнделікті операциялық бақылау' : 'Main Engineer Daily Ticket & Maintenance Intelligence';
+    }
+    if (role === 'storage_manager' || role === 'workerA') {
+      return lang === 'ru' ? 'Заведующий складом • Ежедневный контроль заявок' : lang === 'kk' ? 'Қойма меңгерушісі • Күнделікті өтінімдерді бақылау' : 'Storage & Warehouse Daily Operations Intelligence';
+    }
+    if (role === 'finance' || role === 'accountant') {
+      return lang === 'ru' ? 'Финансовый отдел • Ежедневный контроль расходов и закупок' : lang === 'kk' ? 'Қаржы бөлімі • Шығындар мен сатып алулардың күнделікті бақылауы' : 'Finance & Procurement Daily Operations Intelligence';
+    }
+    if (role === 'facilities_manager') {
+      return lang === 'ru' ? 'Менеджер АХО • Ежедневный операционный контроль' : lang === 'kk' ? 'АХО менеджері • Күнделікті операциялық бақылау' : 'Facilities Management Daily Operations Intelligence';
+    }
+    return lang === 'ru' ? 'Ежедневный операционный контроль директора' : lang === 'kk' ? 'Директордың күнделікті операциялық бақылауы' : 'Director Daily Ticket Intelligence & Operations';
+  }, [role, lang]);
 
 
   const lowStockItems = inventory.filter(item => item.quantity <= item.minLevel);
@@ -126,6 +145,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               {role === 'cleaning' && t.dashboard.cleaningSummary}
               {role === 'storage_manager' && t.dashboard.storageSummary}
               {role === 'engineer' && t.dashboard.engineerSummary}
+              {(role === 'finance' || role === 'accountant') && (t.dashboard.financeSummary || 'Review daily budget spending, procurement requests, asset depreciation, and materials approval.')}
               {role === 'teacher' && t.dashboard.teacherSummary}
               {role === 'guest' && (t.dashboard.guestSummary || 'Welcome to our school campus portal! You can submit visitor requests, report facility issues, and follow up with school administration.')}
               {role === 'parent' && (t.dashboard.parentSummary || 'Welcome to the Parent Portal! Submit classroom, facilities, and maintenance inquiries for your children’s school.')}
@@ -133,32 +153,32 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           </div>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {(role === 'director' || role === 'admin') && (
-              <>
-                <button
-                  onClick={() => setActiveTab('daily-digest')}
-                  className="fluent-btn-secondary"
-                  style={{
-                    height: '32px',
-                    borderColor: 'rgba(139, 92, 246, 0.45)',
-                    color: '#c4b5fd',
-                    background: 'rgba(139, 92, 246, 0.15)',
-                    fontWeight: '600'
-                  }}
-                >
-                  <CalendarCheck2 size={14} color="#a78bfa" />
-                  <span>{t.nav?.dailyDigest || 'Daily Digest'}</span>
-                </button>
+            {hasDailyDigestAccess && (
+              <button
+                onClick={() => setActiveTab('daily-digest')}
+                className="fluent-btn-secondary"
+                style={{
+                  height: '32px',
+                  borderColor: 'rgba(139, 92, 246, 0.45)',
+                  color: '#c4b5fd',
+                  background: 'rgba(139, 92, 246, 0.15)',
+                  fontWeight: '600'
+                }}
+              >
+                <CalendarCheck2 size={14} color="#a78bfa" />
+                <span>{t.nav?.dailyDigest || 'Daily Digest'}</span>
+              </button>
+            )}
 
-                <button
-                  onClick={() => setActiveTab('users')}
-                  className="fluent-btn-secondary"
-                  style={{ height: '32px' }}
-                >
-                  <Users size={14} />
-                  <span>{t.nav?.users || 'Staff & Roles'}</span>
-                </button>
-              </>
+            {(role === 'director' || role === 'admin') && (
+              <button
+                onClick={() => setActiveTab('users')}
+                className="fluent-btn-secondary"
+                style={{ height: '32px' }}
+              >
+                <Users size={14} />
+                <span>{t.nav?.users || 'Staff & Roles'}</span>
+              </button>
             )}
 
             <button
@@ -214,7 +234,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
-                    {lang === 'ru' ? 'Ежедневный операционный контроль директора' : lang === 'kk' ? 'Директордың күнделікті операциялық бақылауы' : 'Director Daily Ticket Intelligence & Operations'}
+                    {calloutHeadline}
                   </span>
                   <span style={{ fontSize: '10px', fontWeight: '700', padding: '1px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
                     ● Live Today
@@ -447,6 +467,115 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* Everyday Ticket Operations Callout for Non-Directors with Everyday Report Access */}
+      {hasDailyDigestAccess && role !== 'director' && role !== 'admin' && (
+        <div
+          onClick={() => setActiveTab('daily-digest')}
+          style={{
+            background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(18, 25, 44, 0.85))',
+            border: '1px solid rgba(139, 92, 246, 0.35)',
+            borderLeft: '4px solid #8b5cf6',
+            borderRadius: '12px',
+            padding: '14px 18px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: 'var(--shadow-depth-3)',
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#8b5cf6';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.35)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: 'rgba(139, 92, 246, 0.2)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+              <CalendarCheck2 size={22} color="#c4b5fd" />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                  {calloutHeadline}
+                </span>
+                <span style={{ fontSize: '10px', fontWeight: '700', padding: '1px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
+                  ● Live Today
+                </span>
+              </div>
+              <div style={{ fontSize: '11.5px', color: '#cbd5e1', marginTop: '3px' }}>
+                {lang === 'ru'
+                  ? `Сегодня создано: ${todayCreatedCount} • Завершено: ${todayFinishedCount} • В процессе: ${inProgressCount}. Откройте почасовую шкалу, время создания и исполнителей.`
+                  : lang === 'kk'
+                  ? `Бүгін берілді: ${todayCreatedCount} • Орындалды: ${todayFinishedCount} • Жұмыста: ${inProgressCount}. Сағаттық шкаланы және орындаушыларды ашу.`
+                  : `Created today: ${todayCreatedCount} • Finished: ${todayFinishedCount} • In process: ${inProgressCount}. View hourly timeline, submission times, and staff.`}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a78bfa', fontSize: '12px', fontWeight: '700' }}>
+            <span>{lang === 'ru' ? 'Открыть подробный отчет' : lang === 'kk' ? 'Толық есепті ашу' : 'Open Daily Digest'}</span>
+            <ChevronRight size={16} />
+          </div>
+        </div>
+      )}
+
+      {/* Finance Department Specific Cards */}
+      {(role === 'finance' || role === 'accountant') && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #10b981', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <DollarSign size={20} color="#10b981" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Finance / Purchasing Jobs</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{financeTickets.length}</div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #f59e0b', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <Clock size={20} color="#f59e0b" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Pending Procurement</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f59e0b' }}>
+                {financeTickets.filter(t => t.status === 'purchasing').length}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #6366f1', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <TrendingUp size={20} color="#818cf8" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Procurement Spent</div>
+              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>
+                ₸{totalSpent.toLocaleString()}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#292929', border: '1px solid #383838', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('inventory')}>
+            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
+              <Package size={20} color="#10b981" />
+            </div>
+            <div>
+              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Warehouse Inventory</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                Audit Stock <ChevronRight size={14} />
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

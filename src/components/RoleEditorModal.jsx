@@ -18,7 +18,9 @@ import {
   Zap,
   BookOpen,
   Eye,
-  EyeOff
+  EyeOff,
+  DollarSign,
+  CalendarCheck2
 } from 'lucide-react';
 import { getCategoryLabel } from '../storageCategories';
 
@@ -34,6 +36,7 @@ const COLOR_PRESETS = [
 
 const AVAILABLE_ICONS = [
   { name: 'Crown', label: 'Leadership', Icon: Crown },
+  { name: 'DollarSign', label: 'Finance', Icon: DollarSign },
   { name: 'GraduationCap', label: 'Academic', Icon: GraduationCap },
   { name: 'Users', label: 'Staff Crew', Icon: Users },
   { name: 'ShieldCheck', label: 'Security', Icon: ShieldCheck },
@@ -124,6 +127,7 @@ const ROLE_PRESET_TEMPLATES = [
     scopeKk: 'Материалдық құндылықтар аудиті, сатып алуды мақұлдау, шот-фактураларды салыстыру және мүлікті есептен шығару.',
     canViewStorage: true,
     canManageStock: true,
+    canViewDailyDigest: true,
     allowedCategories: ['all']
   },
   {
@@ -168,6 +172,7 @@ export const RoleEditorModal = ({
     scopeKk: '',
     canViewStorage: true,
     canManageStock: false,
+    canViewDailyDigest: false,
     allowedCategories: ['all']
   });
 
@@ -193,6 +198,7 @@ export const RoleEditorModal = ({
         scopeKk: editingRole.scopeKk || editingRole.scope || '',
         canViewStorage: editingRole.canViewStorage !== false,
         canManageStock: Boolean(editingRole.canManageStock),
+        canViewDailyDigest: Boolean(editingRole.canViewDailyDigest),
         allowedCategories: isAll ? allCategories.map(c => c.id || c.key) : allowed
       });
       setSelectAllCategories(isAll);
@@ -211,6 +217,7 @@ export const RoleEditorModal = ({
         scopeKk: '',
         canViewStorage: true,
         canManageStock: false,
+        canViewDailyDigest: false,
         allowedCategories: allCategories.map(c => c.id || c.key)
       });
       setSelectAllCategories(true);
@@ -236,6 +243,7 @@ export const RoleEditorModal = ({
       scopeKk: tmpl.scopeKk,
       canViewStorage: tmpl.canViewStorage,
       canManageStock: tmpl.canManageStock,
+      canViewDailyDigest: Boolean(tmpl.canViewDailyDigest),
       allowedCategories: isAll ? allCategories.map(c => c.id || c.key) : tmpl.allowedCategories
     });
     setSelectAllCategories(isAll);
@@ -695,6 +703,36 @@ export const RoleEditorModal = ({
                     {lang === 'ru'
                       ? 'Списание, изменение остатков и подтверждение возвратов товаров'
                       : 'Permission to deduct, edit quantities, and confirm loan returns'}
+                  </div>
+                </div>
+              </label>
+
+              <label style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                cursor: 'pointer',
+                background: formData.canViewDailyDigest ? 'rgba(139, 92, 246, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: `1px solid ${formData.canViewDailyDigest ? 'rgba(139, 92, 246, 0.35)' : '#333'}`
+              }}>
+                <input
+                  type="checkbox"
+                  checked={formData.canViewDailyDigest}
+                  onChange={(e) => setFormData(prev => ({ ...prev, canViewDailyDigest: e.target.checked }))}
+                  style={{ marginTop: '2px' }}
+                />
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#fff' }}>
+                    {lang === 'ru' ? 'Доступ к ежедневному отчету' : lang === 'kk' ? 'Күнделікті есепке қолжетімділік' : 'Can View Everyday Report'}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#8a8a8a', marginTop: '2px' }}>
+                    {lang === 'ru'
+                      ? 'Отображает «Ежедневный отчет» со сводкой по времени заявок и исполнителям'
+                      : lang === 'kk'
+                      ? 'Өтінімдер уақыты мен қызметкерлер бойынша «Күнделікті есеп» қойындысын көрсетеді'
+                      : 'Shows Everyday Operations Report tab with hourly timeline & staff assignments'}
                   </div>
                 </div>
               </label>

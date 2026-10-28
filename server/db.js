@@ -611,7 +611,9 @@ export const DEFAULT_PASSWORDS = {
   storage_manager: "storage123",
   facilities_manager: "facilities123",
   director: "admin123",
-  engineer: "engineer123"
+  engineer: "engineer123",
+  finance: "finance123",
+  accountant: "finance123"
 };
 
 // Default initial users
@@ -685,6 +687,16 @@ const defaultUsers = [
     email: "engineer@school.edu",
     phone: "",
     avatar: ""
+  },
+  {
+    roleKey: "finance",
+    id: "usr-fin1",
+    name: "Head of Finance",
+    role: "finance",
+    department: "Financial Planning & Accounting",
+    email: "finance@school.edu",
+    phone: "",
+    avatar: ""
   }
 ];
 
@@ -731,6 +743,27 @@ try {
   }
 } catch (e) {
   // Ignore migration update error
+}
+
+// Auto-migration: Ensure finance user exists
+try {
+  const financeExists = db.prepare("SELECT COUNT(*) as count FROM users WHERE roleKey = 'finance' OR role = 'finance'").get().count;
+  if (financeExists === 0) {
+    const rawPassword = DEFAULT_PASSWORDS.finance || 'finance123';
+    const { salt, hash } = hashPassword(rawPassword);
+    const now = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, passwordHash, salt, createdAt, updatedAt)
+      VALUES ('finance', 'usr-fin1', 'Head of Finance', 'finance', 'Financial Planning & Accounting', 'finance@school.edu', '', '', @passwordHash, @salt, @createdAt, @updatedAt)
+    `).run({
+      passwordHash: hash,
+      salt,
+      createdAt: now,
+      updatedAt: now
+    });
+  }
+} catch (e) {
+  // Ignore migration error
 }
 
 // Helper to reset database to default state

@@ -33,9 +33,11 @@ import {
   Boxes,
   Plus,
   Check,
-  ShieldAlert
+  ShieldAlert,
+  DollarSign,
+  CalendarCheck2
 } from 'lucide-react';
-import { DEFAULT_ROLES, getRoleDefinition } from '../roleConfig';
+import { DEFAULT_ROLES, getRoleDefinition, canRoleAccessDailyDigest } from '../roleConfig';
 import { getCategoryLabel } from '../storageCategories';
 import { RoleEditorModal } from './RoleEditorModal';
 import { CategoryEditorModal } from './CategoryEditorModal';
@@ -50,7 +52,8 @@ const ROLE_ICON_MAP = {
   GraduationCap,
   Users,
   Compass,
-  ShieldCheck
+  ShieldCheck,
+  DollarSign
 };
 
 function getRoleIconComponent(iconName) {
@@ -65,7 +68,9 @@ const LIGHT_ROLE_COLORS = {
   engineer: { color: '#c2410c', bg: '#fff7ed', border: '#fed7aa' },
   it_support: { color: '#0369a1', bg: '#f0f9ff', border: '#bae6fd' },
   cleaning: { color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' },
-  teacher: { color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' }
+  teacher: { color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
+  finance: { color: '#047857', bg: '#ecfdf5', border: '#a7f3d0' },
+  accountant: { color: '#b45309', bg: '#fef3c7', border: '#fde68a' }
 };
 
 export const UserManagement = () => {
@@ -1045,31 +1050,50 @@ export const UserManagement = () => {
                         </div>
                       </div>
 
-                      {/* Storage Access Badge */}
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: '700',
-                        padding: '3px 8px',
-                        borderRadius: '6px',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        background: r.canViewStorage ? (isLight ? '#f0fdf4' : 'rgba(34, 197, 94, 0.15)') : (isLight ? '#f1f5f9' : 'rgba(148, 163, 184, 0.12)'),
-                        color: r.canViewStorage ? (isLight ? '#15803d' : '#4ade80') : 'var(--text-muted)',
-                        border: r.canViewStorage ? (isLight ? '1px solid #bbf7d0' : '1px solid rgba(34, 197, 94, 0.3)') : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(148, 163, 184, 0.25)')
-                      }}>
-                        {r.canViewStorage ? (
-                          <>
-                            <Eye size={12} />
-                            <span>{lang === 'ru' ? 'Склад открыт' : 'Storage Visible'}</span>
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff size={12} />
-                            <span>{lang === 'ru' ? 'Склад закрыт' : 'Storage Hidden'}</span>
-                          </>
-                        )}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        {/* Everyday Report Access Badge */}
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: canRoleAccessDailyDigest(r.key, rolesConfig) ? (isLight ? '#faf5ff' : 'rgba(168, 85, 247, 0.15)') : (isLight ? '#f1f5f9' : 'rgba(148, 163, 184, 0.12)'),
+                          color: canRoleAccessDailyDigest(r.key, rolesConfig) ? (isLight ? '#7e22ce' : '#c084fc') : 'var(--text-muted)',
+                          border: canRoleAccessDailyDigest(r.key, rolesConfig) ? (isLight ? '1px solid #e9d5ff' : '1px solid rgba(168, 85, 247, 0.3)') : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(148, 163, 184, 0.25)')
+                        }}>
+                          <CalendarCheck2 size={12} />
+                          <span>{canRoleAccessDailyDigest(r.key, rolesConfig) ? (lang === 'ru' ? 'Ежедневный отчет' : lang === 'kk' ? 'Күнделікті есеп' : 'Daily Report') : (lang === 'ru' ? 'Отчет скрыт' : lang === 'kk' ? 'Есеп жабық' : 'Report Hidden')}</span>
+                        </span>
+
+                        {/* Storage Access Badge */}
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: r.canViewStorage ? (isLight ? '#f0fdf4' : 'rgba(34, 197, 94, 0.15)') : (isLight ? '#f1f5f9' : 'rgba(148, 163, 184, 0.12)'),
+                          color: r.canViewStorage ? (isLight ? '#15803d' : '#4ade80') : 'var(--text-muted)',
+                          border: r.canViewStorage ? (isLight ? '1px solid #bbf7d0' : '1px solid rgba(34, 197, 94, 0.3)') : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(148, 163, 184, 0.25)')
+                        }}>
+                          {r.canViewStorage ? (
+                            <>
+                              <Eye size={12} />
+                              <span>{lang === 'ru' ? 'Склад открыт' : 'Storage Visible'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff size={12} />
+                              <span>{lang === 'ru' ? 'Склад закрыт' : 'Storage Hidden'}</span>
+                            </>
+                          )}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Operational Task / Scope Description */}

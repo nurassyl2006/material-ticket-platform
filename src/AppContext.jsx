@@ -54,6 +54,7 @@ import {
   getRoleDefinition,
   canRoleAccessStorage,
   canRoleManageStock,
+  canRoleAccessDailyDigest,
   getRoleAllowedCategories,
   isCategoryAllowedForRole
 } from './roleConfig';
@@ -745,7 +746,9 @@ export const AppProvider = ({ children }) => {
         storage_manager: "storage123",
         facilities_manager: "facilities123",
         director: "admin123",
-        engineer: "engineer123"
+        engineer: "engineer123",
+        finance: "finance123",
+        accountant: "finance123"
       };
       const expectedPwd = defaultPwds[searchRole] || 'school123';
 
@@ -1441,6 +1444,7 @@ export const AppProvider = ({ children }) => {
           scopeKk: newRoleData.scopeKk || newRoleData.scope || 'Арнайы міндеттер',
           canViewStorage: Boolean(newRoleData.canViewStorage),
           canManageStock: Boolean(newRoleData.canManageStock),
+          canViewDailyDigest: Boolean(newRoleData.canViewDailyDigest),
           allowedCategories: Array.isArray(newRoleData.allowedCategories) ? newRoleData.allowedCategories : ['all']
         }
       };
@@ -1453,7 +1457,7 @@ export const AppProvider = ({ children }) => {
 
   const deleteRole = useCallback(async (roleKey) => {
     if (!roleKey) return false;
-    if (['director', 'teacher', 'admin', 'engineer', 'it_support', 'cleaning', 'storage_manager', 'facilities_manager'].includes(roleKey)) {
+    if (['director', 'teacher', 'admin', 'engineer', 'it_support', 'cleaning', 'storage_manager', 'facilities_manager', 'finance', 'accountant'].includes(roleKey)) {
       throw new Error('Default system roles cannot be deleted.');
     }
     setRolesConfig(prev => {
@@ -1679,6 +1683,7 @@ export const AppProvider = ({ children }) => {
       updateStorageCategory,
       canAccessStorage: (r = role) => canRoleAccessStorage(r, rolesConfig),
       canManageStorageStock: (r = role) => canRoleManageStock(r, rolesConfig),
+      canAccessDailyDigest: (r = role) => canRoleAccessDailyDigest(r, rolesConfig),
       getAllowedCategoriesForRole: (r = role) => getRoleAllowedCategories(r, rolesConfig, customCategories),
       isCategoryAllowed: (catId, r = role) => isCategoryAllowedForRole(catId, r, rolesConfig, customCategories),
       resetDemoData,
