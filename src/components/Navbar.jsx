@@ -775,41 +775,6 @@ export const Navbar = ({
                 </button>
               </div>
             )}
-
-            {/* Reset Demo Data Button */}
-            <button
-              className="mobile-hide"
-              onClick={() => {
-                if (window.confirm('Reset demo requests and roles to initial state?')) {
-                  resetDemoData();
-                }
-              }}
-              title="Reset Demo Data"
-              style={{
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: '8px',
-                color: 'var(--text-dim, #64748b)',
-                cursor: 'pointer',
-                flexShrink: 0,
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = 'var(--text-dim, #64748b)';
-              }}
-            >
-              <RotateCcw size={13} />
-            </button>
           </div>
         </div>
       </header>

@@ -522,7 +522,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a78bfa', fontSize: '12px', fontWeight: '700' }}>
-            <span>{lang === 'ru' ? 'Открыть подробный отчет' : lang === 'kk' ? 'Толық есепті ашу' : 'Open Daily Digest'}</span>
+            <span>{lang === 'ru' ? 'Открыть отчеты и аналитику' : lang === 'kk' ? 'Есептер мен аналитиканы ашу' : 'Open Reports & Analytics'}</span>
             <ChevronRight size={16} />
           </div>
         </div>

@@ -861,7 +861,7 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  // Reset to default clean state
+  // Reset demo tickets & temporary inventory state without wiping registered users
   const resetDemoData = async () => {
     try {
       await resetDatabaseInDb();
@@ -870,12 +870,12 @@ export const AppProvider = ({ children }) => {
     }
     setInventory(mockInventory);
     setTickets([]);
-    setUsers(mockUsers);
     setNotifications([]);
     localStorage.removeItem('app_inventory_v3');
     localStorage.removeItem('app_tickets_v3');
-    localStorage.removeItem('app_users_v3');
     localStorage.removeItem('app_notifications_v3');
+    // Ensure all real registered staff members are re-synchronized from database
+    syncWithDb();
   };
 
   // Ticket Management

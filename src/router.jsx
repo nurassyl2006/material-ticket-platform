@@ -50,21 +50,41 @@ export const ROUTES = {
   'daily-digest': {
     tab: 'daily-digest',
     path: '/daily-digest',
-    aliases: ['/daily-report', '/executive-digest', '/daily'],
+    aliases: ['/daily-report', '/executive-digest', '/daily', '/reports'],
     titles: {
-      en: 'Executive Daily Ticket Digest — EduOps',
-      ru: 'Ежедневный отчет по заявкам — EduOps',
-      kk: 'Күнделікті өтінімдер есебі — EduOps'
+      en: 'Executive Operations Digest — EduOps',
+      ru: 'Оперативные отчеты по заявкам — EduOps',
+      kk: 'Операциялық өтінімдер есебі — EduOps'
+    }
+  },
+  'weekly-report': {
+    tab: 'daily-digest',
+    path: '/weekly-report',
+    aliases: ['/weekly-digest', '/weekly'],
+    titles: {
+      en: 'Executive Weekly Ticket Report — EduOps',
+      ru: 'Еженедельный отчет по заявкам — EduOps',
+      kk: 'Апталық өтінімдер есебі — EduOps'
+    }
+  },
+  'monthly-report': {
+    tab: 'daily-digest',
+    path: '/monthly-report',
+    aliases: ['/monthly-digest', '/monthly'],
+    titles: {
+      en: 'Executive Monthly Ticket Report — EduOps',
+      ru: 'Ежемесячный отчет по заявкам — EduOps',
+      kk: 'Айлық өтінімдер есебі — EduOps'
     }
   },
   dailyDigest: {
     tab: 'daily-digest',
     path: '/daily-digest',
-    aliases: ['/daily-report', '/executive-digest', '/daily'],
+    aliases: ['/daily-report', '/executive-digest', '/daily', '/reports'],
     titles: {
-      en: 'Executive Daily Ticket Digest — EduOps',
-      ru: 'Ежедневный отчет по заявкам — EduOps',
-      kk: 'Күнделікті өтінімдер есебі — EduOps'
+      en: 'Executive Operations Digest — EduOps',
+      ru: 'Оперативные отчеты по заявкам — EduOps',
+      kk: 'Операциялық өтінімдер есебі — EduOps'
     }
   },
   profile: {

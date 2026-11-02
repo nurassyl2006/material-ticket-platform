@@ -302,7 +302,7 @@ function MainApp() {
         )}
         {(activeTab === 'daily-digest' || activeTab === 'dailyDigest') && (
           (canAccessDailyDigest ? canAccessDailyDigest() : (role === 'director' || role === 'admin' || role === 'engineer' || role === 'storage_manager' || role === 'finance')) ? (
-            <DirectorDailyDigest onOpenNewTicket={handleOpenNewTicket} />
+            <DirectorDailyDigest onOpenNewTicket={handleOpenNewTicket} currentPath={route.path} />
           ) : (
             <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'rgba(18, 25, 44, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
               <ShieldCheck size={40} color="#8b5cf6" style={{ margin: '0 auto 12px' }} />

@@ -319,6 +319,78 @@ export const mockInventory = [
 export const mockTickets = [];
 
 export const mockUsers = {
+  director: {
+    id: "usr-dir1",
+    name: "Balkan Kassimov",
+    role: "director",
+    department: "School Operations & Directorate",
+    email: "b.kassimov@ardingly.edu.kz",
+    phone: "+7 701 555 0101",
+    avatar: ""
+  },
+  facilities_manager: {
+    id: "usr-fm1",
+    name: "Nurassyl Maratov",
+    role: "facilities_manager",
+    department: "Facilities & Logistics",
+    email: "n.maratov@ardingly.edu.kz",
+    phone: "+7 777 000 0001",
+    avatar: ""
+  },
+  storage_manager: {
+    id: "usr-w1",
+    name: "Storage Manager",
+    role: "storage_manager",
+    department: "Warehouse & Supplies Management",
+    email: "storage@school.edu",
+    phone: "+7 777 000 0002",
+    avatar: ""
+  },
+  engineer: {
+    id: "usr-eng1",
+    name: "Maintenance Engineer",
+    role: "engineer",
+    department: "Engineering, Electrical & HVAC Utilities",
+    email: "engineer@school.edu",
+    phone: "+7 777 000 0003",
+    avatar: ""
+  },
+  it_support: {
+    id: "usr-it1",
+    name: "IT Support",
+    role: "it_support",
+    department: "Information Technology Support",
+    email: "it.support@school.edu",
+    phone: "+7 777 000 0004",
+    avatar: ""
+  },
+  cleaning: {
+    id: "usr-cl1",
+    name: "Cleaning Staff",
+    role: "cleaning",
+    department: "Campus Hygiene & Sanitization",
+    email: "cleaning@school.edu",
+    phone: "+7 777 000 0005",
+    avatar: ""
+  },
+  finance: {
+    id: "usr-fin1",
+    name: "Head of Finance",
+    role: "finance",
+    department: "Financial Planning & Accounting",
+    email: "finance@school.edu",
+    phone: "+7 777 000 0006",
+    avatar: ""
+  },
+  accountant: {
+    id: "usr-fin1",
+    name: "Head of Finance",
+    role: "finance",
+    department: "Financial Planning & Accounting",
+    email: "finance@school.edu",
+    phone: "+7 777 000 0006",
+    avatar: ""
+  },
   teacher: {
     id: "usr-t1",
     name: "Teacher",
@@ -328,76 +400,23 @@ export const mockUsers = {
     phone: "",
     avatar: ""
   },
-  it_support: {
-    id: "usr-it1",
-    name: "IT Support",
-    role: "it_support",
-    department: "Information Technology Support",
-    email: "it.support@school.edu",
-    phone: "",
+  // Key Ardingly Faculty
+  david_paget: {
+    id: "usr-tea-paget",
+    name: "David Paget",
+    role: "teacher",
+    department: "Primary (Year 3)",
+    email: "d.paget@ardingly.edu.kz",
+    phone: "+7 701 555 0103",
     avatar: ""
   },
-  cleaning: {
-    id: "usr-cl1",
-    name: "Cleaning Staff",
-    role: "cleaning",
-    department: "Campus Hygiene & Sanitization",
-    email: "cleaning@school.edu",
-    phone: "",
-    avatar: ""
-  },
-  storage_manager: {
-    id: "usr-w1",
-    name: "Storage Manager",
-    role: "storage_manager",
-    department: "Warehouse & Supplies Management",
-    email: "storage@school.edu",
-    phone: "",
-    avatar: ""
-  },
-  facilities_manager: {
-    id: "usr-fm1",
-    name: "Facilities Manager",
-    role: "facilities_manager",
-    department: "Facilities & Logistics",
-    email: "facilities@school.edu",
-    phone: "",
-    avatar: ""
-  },
-  director: {
-    id: "usr-dir1",
-    name: "Director",
-    role: "director",
-    department: "School Operations & Directorate",
-    email: "director@school.edu",
-    phone: "",
-    avatar: ""
-  },
-  engineer: {
-    id: "usr-eng1",
-    name: "Engineer",
-    role: "engineer",
-    department: "Engineering, Electrical & HVAC Utilities",
-    email: "engineer@school.edu",
-    phone: "",
-    avatar: ""
-  },
-  finance: {
-    id: "usr-fin1",
-    name: "Head of Finance",
-    role: "finance",
-    department: "Financial Planning & Accounting",
-    email: "finance@school.edu",
-    phone: "",
-    avatar: ""
-  },
-  accountant: {
-    id: "usr-fin1",
-    name: "Head of Finance",
-    role: "finance",
-    department: "Financial Planning & Accounting",
-    email: "finance@school.edu",
-    phone: "",
+  sarah_jenkins: {
+    id: "usr-adm-jenkins",
+    name: "Sarah Jenkins",
+    role: "teacher",
+    department: "School Administration & Coordination",
+    email: "s.jenkins@ardingly.edu.kz",
+    phone: "+7 701 555 0102",
     avatar: ""
   },
   // Legacy aliases
@@ -412,10 +431,10 @@ export const mockUsers = {
   },
   admin: {
     id: "usr-dir1",
-    name: "Director",
+    name: "Balkan Kassimov",
     role: "director",
     department: "School Operations & Directorate",
-    email: "director@school.edu",
+    email: "b.kassimov@ardingly.edu.kz",
     phone: "",
     avatar: ""
   }

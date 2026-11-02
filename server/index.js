@@ -242,13 +242,21 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     let normalizedKey = searchId;
-    if (normalizedKey === 'workerA') normalizedKey = 'storage_manager';
-    if (normalizedKey === 'admin') normalizedKey = 'director';
+    if (normalizedKey === 'workerA' || normalizedKey === 'storage@school.edu') normalizedKey = 'storage_manager';
+    if (normalizedKey === 'admin' || normalizedKey === 'director@school.edu') normalizedKey = 'director';
+    if (normalizedKey === 'facilities@school.edu' || normalizedKey === 'facilities') normalizedKey = 'facilities_manager';
 
     const user = db.prepare(`
       SELECT * FROM users 
-      WHERE roleKey = ? OR id = ? OR LOWER(email) = LOWER(?) OR LOWER(name) = LOWER(?)
-    `).get(normalizedKey, searchId, searchId, searchId);
+      WHERE roleKey = ? 
+         OR id = ? 
+         OR LOWER(email) = LOWER(?) 
+         OR LOWER(name) = LOWER(?)
+         OR LOWER(email) = LOWER(?) || '@ardingly.edu.kz'
+         OR LOWER(email) = LOWER(?) || '@school.edu'
+         OR (roleKey = 'director' AND LOWER(?) IN ('director', 'director@school.edu', 'admin', 'b.kassimov', 'balkan'))
+         OR (roleKey = 'facilities_manager' AND LOWER(?) IN ('facilities', 'facilities@school.edu', 'facilities_manager', 'maratov2.2006@gmail.com', 'n.maratov', 'nurassyl'))
+    `).get(normalizedKey, searchId, searchId, searchId, searchId, searchId, searchId, searchId);
 
     if (!user) {
       return res.status(401).json({ error: 'User not found. Check your email or username.' });
