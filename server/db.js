@@ -617,21 +617,9 @@ export const DEFAULT_PASSWORDS = {
 };
 
 // Full Ardingly School Staff & Faculty Roster
+// Restored Original School Accounts & Registered Staff
 export const FULL_STAFF_ROSTER = [
-  // --- School Directorate & Executive Leadership ---
-  {
-    roleKey: "director",
-    id: "usr-dir1",
-    name: "Balkan Kassimov",
-    role: "director",
-    department: "School Operations & Directorate",
-    email: "b.kassimov@ardingly.edu.kz",
-    phone: "+7 701 555 0101",
-    avatar: "",
-    password: "admin123"
-  },
-
-  // --- Facilities & Campus Management ---
+  // --- Facilities & Logistics ---
   {
     roleKey: "facilities_manager",
     id: "usr-fm1",
@@ -644,18 +632,44 @@ export const FULL_STAFF_ROSTER = [
     password: "facilities123"
   },
   {
-    roleKey: "usr-tea-maratov-alias",
-    id: "usr-tea-maratov-alias",
-    name: "Nurassyl Maratov (Personal)",
+    roleKey: "usr-1791719241425-94",
+    id: "usr-1791719241425-94",
+    name: "Nurassyl",
     role: "facilities_manager",
-    department: "Facilities & Campus Operations",
+    department: "Facilities & Logistics",
     email: "maratov2.2006@gmail.com",
     phone: "+7 777 000 0001",
     avatar: "",
-    password: "facilities123"
+    password: "facilities123",
+    salt: "f61d2b3959cdebb95a31f8a9fdd7f8ce",
+    passwordHash: "c1bb590feb0ded08d1f577e63d67504beaba95a2ad9d6b280113399529282a73c3a152014f9ebc8c9b42b55a847490d5fd691982f8063b6ef7abfd8f0ee9c896"
   },
 
-  // --- Specialized Campus Operations & Engineering ---
+  // --- School Directorate ---
+  {
+    roleKey: "director",
+    id: "usr-dir1",
+    name: "Balkan Kassimov",
+    role: "director",
+    department: "School Operations & Directorate",
+    email: "b.kassimov@ardingly.edu.kz",
+    phone: "+77019247106",
+    avatar: "",
+    password: "admin123"
+  },
+
+  // --- Operations & Maintenance Staff ---
+  {
+    roleKey: "engineer",
+    id: "usr-eng1",
+    name: "Василий (Engineer)",
+    role: "engineer",
+    department: "Engineering, Electrical & HVAC Utilities",
+    email: "engineer@school.edu",
+    phone: "+7 777 000 0003",
+    avatar: "",
+    password: "engineer123"
+  },
   {
     roleKey: "storage_manager",
     id: "usr-w1",
@@ -668,15 +682,15 @@ export const FULL_STAFF_ROSTER = [
     password: "storage123"
   },
   {
-    roleKey: "engineer",
-    id: "usr-eng1",
-    name: "Maintenance Engineer",
-    role: "engineer",
-    department: "Engineering, Electrical & HVAC Utilities",
-    email: "engineer@school.edu",
-    phone: "+7 777 000 0003",
+    roleKey: "cleaning",
+    id: "usr-cl1",
+    name: "Акилова Айнур (Cleaning)",
+    role: "cleaning",
+    department: "Campus Hygiene & Sanitization",
+    email: "cleaning@school.edu",
+    phone: "+7 777 000 0005",
     avatar: "",
-    password: "engineer123"
+    password: "clean123"
   },
   {
     roleKey: "it_support",
@@ -690,17 +704,6 @@ export const FULL_STAFF_ROSTER = [
     password: "it123"
   },
   {
-    roleKey: "cleaning",
-    id: "usr-cl1",
-    name: "Cleaning Staff",
-    role: "cleaning",
-    department: "Campus Hygiene & Sanitization",
-    email: "cleaning@school.edu",
-    phone: "+7 777 000 0005",
-    avatar: "",
-    password: "clean123"
-  },
-  {
     roleKey: "finance",
     id: "usr-fin1",
     name: "Head of Finance",
@@ -711,232 +714,6 @@ export const FULL_STAFF_ROSTER = [
     avatar: "",
     password: "finance123"
   },
-
-  // --- School Administration & Coordination ---
-  {
-    roleKey: "usr-adm-jenkins",
-    id: "usr-adm-jenkins",
-    name: "Sarah Jenkins",
-    role: "teacher",
-    department: "School Administration & Coordination",
-    email: "s.jenkins@ardingly.edu.kz",
-    phone: "+7 701 555 0102",
-    avatar: "",
-    password: "school123"
-  },
-
-  // --- Academic Faculty & Teaching Staff ---
-  {
-    roleKey: "usr-tea-paget",
-    id: "usr-tea-paget",
-    name: "David Paget",
-    role: "teacher",
-    department: "Primary (Year 3)",
-    email: "d.paget@ardingly.edu.kz",
-    phone: "+7 701 555 0103",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-campbell",
-    id: "usr-tea-campbell",
-    name: "Mr. Robert Campbell",
-    role: "teacher",
-    department: "Science Faculty",
-    email: "r.campbell@ardingly.edu.kz",
-    phone: "+7 701 555 0104",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-davis",
-    id: "usr-tea-davis",
-    name: "Ms. Laura Davis",
-    role: "teacher",
-    department: "English Literature",
-    email: "l.davis@ardingly.edu.kz",
-    phone: "+7 701 555 0105",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-makibayeva",
-    id: "usr-tea-makibayeva",
-    name: "Aigerim Makibayeva",
-    role: "teacher",
-    department: "Music & Performing Arts",
-    email: "aigerim.makibayeva@ardingly.edu.kz",
-    phone: "+7 701 555 0106",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-makepeace",
-    id: "usr-tea-makepeace",
-    name: "Sharon Makepeace",
-    role: "teacher",
-    department: "Primary Faculty",
-    email: "sharon.makepeace@ardingly.edu.kz",
-    phone: "+7 701 555 0107",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-bakytzhan",
-    id: "usr-tea-bakytzhan",
-    name: "Aknur Bakytzhan",
-    role: "teacher",
-    department: "Kazakh Language & Literature",
-    email: "aknur.bakytzhan@ardingly.edu.kz",
-    phone: "+7 701 555 0108",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-mukanova",
-    id: "usr-tea-mukanova",
-    name: "Arailym Mukanova",
-    role: "teacher",
-    department: "Primary Education",
-    email: "arailym.mukanova@ardingly.edu.kz",
-    phone: "+7 701 555 0109",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-iskakova",
-    id: "usr-tea-iskakova",
-    name: "Aigul Iskakova",
-    role: "teacher",
-    department: "Primary Education",
-    email: "aigul.iskakova@ardingly.edu.kz",
-    phone: "+7 701 555 0110",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-nurlanova",
-    id: "usr-tea-nurlanova",
-    name: "Balzhan Nurlanova",
-    role: "teacher",
-    department: "Language Arts",
-    email: "balzhan.nurlanova@ardingly.edu.kz",
-    phone: "+7 701 555 0111",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-coull",
-    id: "usr-tea-coull",
-    name: "Roderick Coull",
-    role: "teacher",
-    department: "Secondary Faculty",
-    email: "roderick.coull@ardingly.edu.kz",
-    phone: "+7 701 555 0112",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-orynbasarova",
-    id: "usr-tea-orynbasarova",
-    name: "Nurbi Orynbasarova",
-    role: "teacher",
-    department: "Primary & Literacy",
-    email: "nurbi.orynbasarova@ardingly.edu.kz",
-    phone: "+7 701 555 0113",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-kamedenova",
-    id: "usr-tea-kamedenova",
-    name: "Ms. Kamedenova",
-    role: "teacher",
-    department: "Primary Education",
-    email: "ms.kamedenova@ardingly.edu.kz",
-    phone: "+7 701 555 0114",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-mcclymont",
-    id: "usr-tea-mcclymont",
-    name: "Mr. McClymont",
-    role: "teacher",
-    department: "Secondary Education",
-    email: "mr.mcclymont@ardingly.edu.kz",
-    phone: "+7 701 555 0115",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-saberton",
-    id: "usr-tea-saberton",
-    name: "Mr. Saberton",
-    role: "teacher",
-    department: "Secondary Education",
-    email: "mr.saberton@ardingly.edu.kz",
-    phone: "+7 701 555 0116",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-price",
-    id: "usr-tea-price",
-    name: "Samantha Price",
-    role: "teacher",
-    department: "Grade 6B Lead",
-    email: "samantha.price@ardingly.edu.kz",
-    phone: "+7 701 555 0117",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-kurbanova",
-    id: "usr-tea-kurbanova",
-    name: "Madina Kurbanova",
-    role: "teacher",
-    department: "Primary Education",
-    email: "madina.kurbanova@ardingly.edu.kz",
-    phone: "+7 701 555 0118",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-aibergenova",
-    id: "usr-tea-aibergenova",
-    name: "Albina Aibergenova",
-    role: "teacher",
-    department: "Mathematics & STEM",
-    email: "albina.aibergenova@ardingly.edu.kz",
-    phone: "+7 701 555 0119",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-balymova",
-    id: "usr-tea-balymova",
-    name: "Assiya Balymova",
-    role: "teacher",
-    department: "Literature & Reading",
-    email: "assiya.balymova@ardingly.edu.kz",
-    phone: "+7 701 555 0120",
-    avatar: "",
-    password: "teacher123"
-  },
-  {
-    roleKey: "usr-tea-nazym",
-    id: "usr-tea-nazym",
-    name: "Makhanova Nazym",
-    role: "teacher",
-    department: "Primary Kazakh",
-    email: "makhanova.nazym@ardingly.edu.kz",
-    phone: "+7 701 555 0121",
-    avatar: "",
-    password: "teacher123"
-  },
-
-  // --- Generic Fallback Accounts ---
   {
     roleKey: "teacher",
     id: "usr-t1",
@@ -947,12 +724,160 @@ export const FULL_STAFF_ROSTER = [
     phone: "",
     avatar: "",
     password: "teacher123"
+  },
+
+  // --- Real School Teachers & Ticket Requesters ---
+  {
+    roleKey: "usr-1793612255054-857",
+    id: "usr-1793612255054-857",
+    name: "David Paget",
+    role: "teacher",
+    department: "Primary (Year 3)",
+    email: "d.paget@ardingly.edu.kz",
+    phone: "+7 701 555 0103",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1792638241130-87",
+    id: "usr-1792638241130-87",
+    name: "Nurgul Khairullayeva",
+    role: "teacher",
+    department: "Primary Education (Year 1A)",
+    email: "nurgul@school.edu",
+    phone: "",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1793159365009-623",
+    id: "usr-1793159365009-623",
+    name: "Mariyam Kamedenova",
+    role: "teacher",
+    department: "Primary Education",
+    email: "m.kamedenova@ardingly.edu.kz",
+    phone: "",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1793162043013-903",
+    id: "usr-1793162043013-903",
+    name: "Aigul Iskakova",
+    role: "teacher",
+    department: "Primary Education",
+    email: "aigul@school.edu",
+    phone: "+77714404301",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1792640890655-735",
+    id: "usr-1792640890655-735",
+    name: "Sharon Makepeace",
+    role: "teacher",
+    department: "Primary Faculty",
+    email: "sharon.makepeace@ardingly.edu.kz",
+    phone: "",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1792469714288-971",
+    id: "usr-1792469714288-971",
+    name: "Arailym Mukanova",
+    role: "teacher",
+    department: "Primary Education",
+    email: "arailym@school.edu",
+    phone: "",
+    avatar: "",
+    password: "teacher123"
+  },
+
+  // --- Previously Registered Old Accounts ---
+  {
+    roleKey: "usr-1791881054750-615",
+    id: "usr-1791881054750-615",
+    name: "Teacher One",
+    role: "teacher",
+    department: "STEM",
+    email: "teacher1",
+    phone: "",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1791947555566-199",
+    id: "usr-1791947555566-199",
+    name: "Director Test",
+    role: "teacher",
+    department: "Directorate",
+    email: "director@school.edu",
+    phone: "",
+    avatar: "",
+    password: "school123"
+  },
+  {
+    roleKey: "usr-1792031697971-923",
+    id: "usr-1792031697971-923",
+    name: "Teacher Two",
+    role: "teacher",
+    department: "IT",
+    email: "teacher2",
+    phone: "",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1792031905699-24",
+    id: "usr-1792031905699-24",
+    name: "Teacher Three",
+    role: "teacher",
+    department: "STEM",
+    email: "teacher3@school.edu",
+    phone: "",
+    avatar: "",
+    password: "teacher123"
+  },
+  {
+    roleKey: "usr-1792032287377-880",
+    id: "usr-1792032287377-880",
+    name: "Worker A",
+    role: "teacher",
+    department: "Warehouse",
+    email: "workera",
+    phone: "",
+    avatar: "",
+    password: "school123"
+  },
+  {
+    roleKey: "usr-1792151977170-319",
+    id: "usr-1792151977170-319",
+    name: "Director Admin",
+    role: "teacher",
+    department: "Management",
+    email: "director4@school.edu",
+    phone: "",
+    avatar: "",
+    password: "school123"
   }
 ];
 
 // Synchronize complete staff roster into SQLite database without destroying existing custom data
 export function syncFullStaffRoster() {
   const now = new Date().toISOString();
+
+  // Purge unwanted auto-generated accounts
+  try {
+    db.prepare(`
+      DELETE FROM users 
+      WHERE id LIKE 'usr-tea-%' 
+         OR id = 'usr-adm-jenkins'
+         OR (email LIKE '%@ardingly.edu.kz' AND id NOT IN ('usr-dir1', 'usr-fm1', 'usr-1793612255054-857', 'usr-1793159365009-623', 'usr-1792640890655-735'))
+    `).run();
+  } catch (err) {
+    // non-fatal
+  }
   
   const insertUser = db.prepare(`
     INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, passwordHash, salt, createdAt, updatedAt)
@@ -970,13 +895,19 @@ export function syncFullStaffRoster() {
       // Find matching user by email, id, or roleKey
       const existing = db.prepare(`
         SELECT * FROM users 
-        WHERE LOWER(email) = LOWER(?) OR id = ? OR roleKey = ?
-      `).get(staff.email, staff.id, staff.roleKey);
+        WHERE id = ? OR roleKey = ? OR LOWER(email) = LOWER(?)
+      `).get(staff.id, staff.roleKey, staff.email);
 
       const rawPassword = staff.password || DEFAULT_PASSWORDS[staff.role] || 'school123';
 
       if (!existing) {
-        const { salt, hash } = hashPassword(rawPassword);
+        let salt = staff.salt;
+        let hash = staff.passwordHash;
+        if (!salt || !hash) {
+          const res = hashPassword(rawPassword);
+          salt = res.salt;
+          hash = res.hash;
+        }
         insertUser.run({
           roleKey: staff.roleKey,
           id: staff.id,
@@ -992,7 +923,7 @@ export function syncFullStaffRoster() {
           updatedAt: now
         });
       } else {
-        // Upgrade legacy generic placeholders to real Ardingly personnel
+        // Upgrade legacy generic placeholders to real personnel
         if (existing.id === 'usr-dir1' && (existing.name === 'Director' || existing.email === 'director@school.edu')) {
           db.prepare(`
             UPDATE users 
@@ -1007,15 +938,35 @@ export function syncFullStaffRoster() {
             WHERE id = 'usr-fm1'
           `).run(now);
         }
+        if (existing.id === 'usr-eng1' && existing.name === 'Engineer') {
+          db.prepare(`
+            UPDATE users 
+            SET name = 'Василий (Engineer)', updatedAt = ?
+            WHERE id = 'usr-eng1'
+          `).run(now);
+        }
+        if (existing.id === 'usr-cl1' && existing.name === 'Cleaning Staff') {
+          db.prepare(`
+            UPDATE users 
+            SET name = 'Акилова Айнур (Cleaning)', updatedAt = ?
+            WHERE id = 'usr-cl1'
+          `).run(now);
+        }
 
         // If user is missing department and staff has one, update department
         if ((!existing.department || existing.department === 'General Staff') && staff.department) {
           db.prepare(`UPDATE users SET department = ? WHERE id = ?`).run(staff.department, existing.id);
         }
 
-        // If user is missing password or their password doesn't match standard credentials, heal it
-        if (!existing.passwordHash || !existing.salt || (!verifyPassword(rawPassword, existing.salt, existing.passwordHash) && !verifyPassword('school123', existing.salt, existing.passwordHash))) {
-          const { salt, hash } = hashPassword(rawPassword);
+        // ONLY populate passwordHash/salt if existing user does NOT have one (DO NOT overwrite existing user passwords!)
+        if (!existing.passwordHash || !existing.salt) {
+          let salt = staff.salt;
+          let hash = staff.passwordHash;
+          if (!salt || !hash) {
+            const res = hashPassword(rawPassword);
+            salt = res.salt;
+            hash = res.hash;
+          }
           updatePwd.run({
             id: existing.id,
             passwordHash: hash,

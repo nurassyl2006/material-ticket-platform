@@ -400,25 +400,6 @@ export const mockUsers = {
     phone: "",
     avatar: ""
   },
-  // Key Ardingly Faculty
-  david_paget: {
-    id: "usr-tea-paget",
-    name: "David Paget",
-    role: "teacher",
-    department: "Primary (Year 3)",
-    email: "d.paget@ardingly.edu.kz",
-    phone: "+7 701 555 0103",
-    avatar: ""
-  },
-  sarah_jenkins: {
-    id: "usr-adm-jenkins",
-    name: "Sarah Jenkins",
-    role: "teacher",
-    department: "School Administration & Coordination",
-    email: "s.jenkins@ardingly.edu.kz",
-    phone: "+7 701 555 0102",
-    avatar: ""
-  },
   // Legacy aliases
   workerA: {
     id: "usr-w1",
