@@ -242,9 +242,8 @@ app.post('/api/auth/login', (req, res) => {
     }
 
     let normalizedKey = searchId;
-    if (normalizedKey === 'workerA' || normalizedKey === 'storage@school.edu') normalizedKey = 'storage_manager';
+    if (normalizedKey === 'storage@school.edu') normalizedKey = 'storage_manager';
     if (normalizedKey === 'admin' || normalizedKey === 'director@school.edu') normalizedKey = 'director';
-    if (normalizedKey === 'facilities@school.edu' || normalizedKey === 'facilities') normalizedKey = 'facilities_manager';
 
     const user = db.prepare(`
       SELECT * FROM users 
@@ -254,9 +253,15 @@ app.post('/api/auth/login', (req, res) => {
          OR LOWER(name) = LOWER(?)
          OR LOWER(email) = LOWER(?) || '@ardingly.edu.kz'
          OR LOWER(email) = LOWER(?) || '@school.edu'
-         OR (roleKey = 'director' AND LOWER(?) IN ('director', 'director@school.edu', 'admin', 'b.kassimov', 'balkan'))
-         OR (roleKey = 'facilities_manager' AND LOWER(?) IN ('facilities', 'facilities@school.edu', 'facilities_manager', 'maratov2.2006@gmail.com', 'n.maratov', 'nurassyl'))
-    `).get(normalizedKey, searchId, searchId, searchId, searchId, searchId, searchId, searchId);
+         OR (role = 'director' AND LOWER(?) IN ('director', 'director@school.edu', 'admin', 'b.kassimov', 'balkan'))
+         OR (role = 'director' AND LOWER(?) IN ('maratov2.2006@gmail.com', 'n.maratov@ardingly.edu.kz', 'n.maratov', 'nurassyl', 'maratov'))
+         OR (role = 'engineer' AND LOWER(?) IN ('engineer', 'engineer@school.edu', 'василий', 'vasiliy', 'vasily'))
+         OR (email = 'workera' AND LOWER(?) IN ('workera', 'worker a'))
+         OR (email = 'workerb' AND LOWER(?) IN ('workerb', 'worker b'))
+         OR (email = 'cleaning1' AND LOWER(?) IN ('cleaning1', 'cleaner 1', 'cleaner1'))
+         OR (email = 'cleaning2' AND LOWER(?) IN ('cleaning2', 'cleaner 2', 'cleaner2'))
+         OR (roleKey = 'facilities_manager' AND LOWER(?) IN ('facilities', 'facilities@school.edu', 'facilities_manager'))
+    `).get(normalizedKey, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId);
 
     if (!user) {
       return res.status(401).json({ error: 'User not found. Check your email or username.' });
@@ -320,7 +325,7 @@ app.post('/api/auth/login', (req, res) => {
     db.prepare(`
       INSERT INTO sessions (token, roleKey, createdAt, expiresAt)
       VALUES (?, ?, ?, ?)
-    `).run(token, user.roleKey, createdAt, expiresAt);
+    `).run(token, user.id, createdAt, expiresAt);
 
     res.json({
       success: true,
@@ -363,7 +368,7 @@ app.post('/api/auth/change-password', (req, res) => {
       return res.status(400).json({ error: 'New password must be at least 6 characters long' });
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE roleKey = ?').get(targetRoleKey);
+    const user = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(targetRoleKey, targetRoleKey);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

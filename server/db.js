@@ -619,32 +619,6 @@ export const DEFAULT_PASSWORDS = {
 // Full Ardingly School Staff & Faculty Roster
 // Restored Original School Accounts & Registered Staff
 export const FULL_STAFF_ROSTER = [
-  // --- Facilities & Logistics ---
-  {
-    roleKey: "facilities_manager",
-    id: "usr-fm1",
-    name: "Nurassyl Maratov",
-    role: "facilities_manager",
-    department: "Facilities & Logistics",
-    email: "n.maratov@ardingly.edu.kz",
-    phone: "+7 777 000 0001",
-    avatar: "",
-    password: "facilities123"
-  },
-  {
-    roleKey: "usr-1791719241425-94",
-    id: "usr-1791719241425-94",
-    name: "Nurassyl",
-    role: "facilities_manager",
-    department: "Facilities & Logistics",
-    email: "maratov2.2006@gmail.com",
-    phone: "+7 777 000 0001",
-    avatar: "",
-    password: "facilities123",
-    salt: "f61d2b3959cdebb95a31f8a9fdd7f8ce",
-    passwordHash: "c1bb590feb0ded08d1f577e63d67504beaba95a2ad9d6b280113399529282a73c3a152014f9ebc8c9b42b55a847490d5fd691982f8063b6ef7abfd8f0ee9c896"
-  },
-
   // --- School Directorate ---
   {
     roleKey: "director",
@@ -656,6 +630,30 @@ export const FULL_STAFF_ROSTER = [
     phone: "+77019247106",
     avatar: "",
     password: "admin123"
+  },
+  {
+    roleKey: "usr-1791719241425-94",
+    id: "usr-1791719241425-94",
+    name: "Nurassyl",
+    role: "director",
+    department: "School Operations & Directorate",
+    email: "maratov2.2006@gmail.com",
+    phone: "+7 777 000 0001",
+    avatar: "",
+    password: "facilities123",
+    salt: "f61d2b3959cdebb95a31f8a9fdd7f8ce",
+    passwordHash: "c1bb590feb0ded08d1f577e63d67504beaba95a2ad9d6b280113399529282a73c3a152014f9ebc8c9b42b55a847490d5fd691982f8063b6ef7abfd8f0ee9c896"
+  },
+  {
+    roleKey: "usr-fm1",
+    id: "usr-fm1",
+    name: "Nurassyl Maratov",
+    role: "director",
+    department: "School Operations & Directorate",
+    email: "n.maratov@ardingly.edu.kz",
+    phone: "+7 777 000 0001",
+    avatar: "",
+    password: "facilities123"
   },
 
   // --- Operations & Maintenance Staff ---
@@ -681,17 +679,56 @@ export const FULL_STAFF_ROSTER = [
     avatar: "",
     password: "storage123"
   },
+
+  // --- Two Warehouse / Storage Workers ---
+  {
+    roleKey: "usr-1792032287377-880",
+    id: "usr-1792032287377-880",
+    name: "Worker A",
+    role: "storage_manager",
+    department: "Warehouse & Supplies Management",
+    email: "workera",
+    phone: "",
+    avatar: "",
+    password: "school123"
+  },
+  {
+    roleKey: "usr-w2",
+    id: "usr-w2",
+    name: "Worker B",
+    role: "storage_manager",
+    department: "Warehouse & Supplies Management",
+    email: "workerb",
+    phone: "",
+    avatar: "",
+    password: "school123"
+  },
+
+  // --- Two Cleaning Members with their own logins ---
   {
     roleKey: "cleaning",
     id: "usr-cl1",
-    name: "Акилова Айнур (Cleaning)",
+    name: "Cleaner 1",
     role: "cleaning",
     department: "Campus Hygiene & Sanitization",
-    email: "cleaning@school.edu",
+    email: "cleaning1",
     phone: "+7 777 000 0005",
     avatar: "",
     password: "clean123"
   },
+  {
+    roleKey: "usr-cl2",
+    id: "usr-cl2",
+    name: "Cleaner 2",
+    role: "cleaning",
+    department: "Campus Hygiene & Sanitization",
+    email: "cleaning2",
+    phone: "+7 777 000 0007",
+    avatar: "",
+    password: "clean123"
+  },
+
+  // --- Support & Administration ---
   {
     roleKey: "it_support",
     id: "usr-it1",
@@ -840,17 +877,6 @@ export const FULL_STAFF_ROSTER = [
     password: "teacher123"
   },
   {
-    roleKey: "usr-1792032287377-880",
-    id: "usr-1792032287377-880",
-    name: "Worker A",
-    role: "teacher",
-    department: "Warehouse",
-    email: "workera",
-    phone: "",
-    avatar: "",
-    password: "school123"
-  },
-  {
     roleKey: "usr-1792151977170-319",
     id: "usr-1792151977170-319",
     name: "Director Admin",
@@ -931,26 +957,87 @@ export function syncFullStaffRoster() {
             WHERE id = 'usr-dir1'
           `).run(now);
         }
-        if (existing.id === 'usr-fm1' && (existing.name === 'Facilities Manager' || existing.email === 'facilities@school.edu')) {
+        if (existing.id === 'usr-fm1' || existing.id === 'usr-1791719241425-94' || existing.email === 'maratov2.2006@gmail.com' || existing.email === 'n.maratov@ardingly.edu.kz') {
           db.prepare(`
             UPDATE users 
-            SET name = 'Nurassyl Maratov', email = 'n.maratov@ardingly.edu.kz', department = 'Facilities & Logistics', updatedAt = ?
-            WHERE id = 'usr-fm1'
-          `).run(now);
+            SET role = 'director', department = 'School Operations & Directorate', updatedAt = ?
+            WHERE id = ?
+          `).run(now, existing.id);
         }
-        if (existing.id === 'usr-eng1' && existing.name === 'Engineer') {
-          db.prepare(`
-            UPDATE users 
-            SET name = 'Василий (Engineer)', updatedAt = ?
-            WHERE id = 'usr-eng1'
-          `).run(now);
+        if (existing.id === 'usr-eng1') {
+          const isEngValid = verifyPassword('engineer123', existing.salt, existing.passwordHash);
+          if (!isEngValid) {
+            const res = hashPassword('engineer123');
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Василий (Engineer)', role = 'engineer', department = 'Engineering, Electrical & HVAC Utilities', email = 'engineer@school.edu', passwordHash = ?, salt = ?, updatedAt = ?
+              WHERE id = 'usr-eng1'
+            `).run(res.hash, res.salt, now);
+          } else {
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Василий (Engineer)', role = 'engineer', department = 'Engineering, Electrical & HVAC Utilities', email = 'engineer@school.edu', updatedAt = ?
+              WHERE id = 'usr-eng1'
+            `).run(now);
+          }
         }
-        if (existing.id === 'usr-cl1' && existing.name === 'Cleaning Staff') {
-          db.prepare(`
-            UPDATE users 
-            SET name = 'Акилова Айнур (Cleaning)', updatedAt = ?
-            WHERE id = 'usr-cl1'
-          `).run(now);
+        if (existing.id === 'usr-cl1') {
+          const isCl1Valid = verifyPassword('clean123', existing.salt, existing.passwordHash);
+          if (!isCl1Valid) {
+            const res = hashPassword('clean123');
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Cleaner 1', email = 'cleaning1', role = 'cleaning', department = 'Campus Hygiene & Sanitization', passwordHash = ?, salt = ?, updatedAt = ?
+              WHERE id = 'usr-cl1'
+            `).run(res.hash, res.salt, now);
+          } else {
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Cleaner 1', email = 'cleaning1', role = 'cleaning', department = 'Campus Hygiene & Sanitization', updatedAt = ?
+              WHERE id = 'usr-cl1'
+            `).run(now);
+          }
+        }
+        if (existing.id === 'usr-cl2') {
+          const isCl2Valid = verifyPassword('clean123', existing.salt, existing.passwordHash);
+          if (!isCl2Valid) {
+            const res = hashPassword('clean123');
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Cleaner 2', email = 'cleaning2', role = 'cleaning', department = 'Campus Hygiene & Sanitization', passwordHash = ?, salt = ?, updatedAt = ?
+              WHERE id = 'usr-cl2'
+            `).run(res.hash, res.salt, now);
+          }
+        }
+        if (existing.id === 'usr-1792032287377-880') {
+          const isWaValid = verifyPassword('school123', existing.salt, existing.passwordHash) ||
+                            verifyPassword('storage123', existing.salt, existing.passwordHash);
+          if (!isWaValid) {
+            const res = hashPassword('school123');
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Worker A', role = 'storage_manager', department = 'Warehouse & Supplies Management', email = 'workera', passwordHash = ?, salt = ?, updatedAt = ?
+              WHERE id = 'usr-1792032287377-880'
+            `).run(res.hash, res.salt, now);
+          } else {
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Worker A', role = 'storage_manager', department = 'Warehouse & Supplies Management', email = 'workera', updatedAt = ?
+              WHERE id = 'usr-1792032287377-880'
+            `).run(now);
+          }
+        }
+        if (existing.id === 'usr-w2') {
+          const isWbValid = verifyPassword('school123', existing.salt, existing.passwordHash) ||
+                            verifyPassword('storage123', existing.salt, existing.passwordHash);
+          if (!isWbValid) {
+            const res = hashPassword('school123');
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Worker B', role = 'storage_manager', department = 'Warehouse & Supplies Management', email = 'workerb', passwordHash = ?, salt = ?, updatedAt = ?
+              WHERE id = 'usr-w2'
+            `).run(res.hash, res.salt, now);
+          }
         }
 
         // If user is missing department and staff has one, update department

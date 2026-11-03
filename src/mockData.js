@@ -320,6 +320,15 @@ export const mockTickets = [];
 
 export const mockUsers = {
   director: {
+    id: "usr-1791719241425-94",
+    name: "Nurassyl Maratov",
+    role: "director",
+    department: "School Operations & Directorate",
+    email: "maratov2.2006@gmail.com",
+    phone: "+7 777 000 0001",
+    avatar: ""
+  },
+  director_balkan: {
     id: "usr-dir1",
     name: "Balkan Kassimov",
     role: "director",
@@ -331,8 +340,8 @@ export const mockUsers = {
   facilities_manager: {
     id: "usr-fm1",
     name: "Nurassyl Maratov",
-    role: "facilities_manager",
-    department: "Facilities & Logistics",
+    role: "director",
+    department: "School Operations & Directorate",
     email: "n.maratov@ardingly.edu.kz",
     phone: "+7 777 000 0001",
     avatar: ""
@@ -346,9 +355,27 @@ export const mockUsers = {
     phone: "+7 777 000 0002",
     avatar: ""
   },
+  workera: {
+    id: "usr-1792032287377-880",
+    name: "Worker A",
+    role: "storage_manager",
+    department: "Warehouse & Supplies Management",
+    email: "workera",
+    phone: "",
+    avatar: ""
+  },
+  workerb: {
+    id: "usr-w2",
+    name: "Worker B",
+    role: "storage_manager",
+    department: "Warehouse & Supplies Management",
+    email: "workerb",
+    phone: "",
+    avatar: ""
+  },
   engineer: {
     id: "usr-eng1",
-    name: "Maintenance Engineer",
+    name: "Василий (Engineer)",
     role: "engineer",
     department: "Engineering, Electrical & HVAC Utilities",
     email: "engineer@school.edu",
@@ -364,12 +391,30 @@ export const mockUsers = {
     phone: "+7 777 000 0004",
     avatar: ""
   },
-  cleaning: {
+  cleaning1: {
     id: "usr-cl1",
-    name: "Cleaning Staff",
+    name: "Cleaner 1",
     role: "cleaning",
     department: "Campus Hygiene & Sanitization",
-    email: "cleaning@school.edu",
+    email: "cleaning1",
+    phone: "+7 777 000 0005",
+    avatar: ""
+  },
+  cleaning2: {
+    id: "usr-cl2",
+    name: "Cleaner 2",
+    role: "cleaning",
+    department: "Campus Hygiene & Sanitization",
+    email: "cleaning2",
+    phone: "+7 777 000 0007",
+    avatar: ""
+  },
+  cleaning: {
+    id: "usr-cl1",
+    name: "Cleaner 1",
+    role: "cleaning",
+    department: "Campus Hygiene & Sanitization",
+    email: "cleaning1",
     phone: "+7 777 000 0005",
     avatar: ""
   },
@@ -402,11 +447,11 @@ export const mockUsers = {
   },
   // Legacy aliases
   workerA: {
-    id: "usr-w1",
-    name: "Storage Manager",
+    id: "usr-1792032287377-880",
+    name: "Worker A",
     role: "storage_manager",
     department: "Warehouse & Supplies Management",
-    email: "storage@school.edu",
+    email: "workera",
     phone: "",
     avatar: ""
   },
