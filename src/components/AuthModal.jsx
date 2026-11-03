@@ -457,6 +457,52 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
               <ArrowRight size={14} />
             </button>
 
+            {/* Quick Staff Credentials Chips */}
+            <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted, #94a3b8)', marginBottom: '8px', fontWeight: '600', display: 'flex', justifyContent: 'space-between' }}>
+                <span>{lang === 'ru' ? 'Быстрый выбор сотрудника:' : lang === 'kk' ? 'Қызметкерді жылдам таңдау:' : 'Quick staff account select:'}</span>
+                <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.4)' }}>Pass: school123</span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[
+                  { roleName: 'Facilities (Nurassyl)', email: 'n.maratov@ardingly.edu.kz', pwd: 'facilities123', color: '#a78bfa' },
+                  { roleName: 'Director (Balkan)', email: 'b.kassimov@ardingly.edu.kz', pwd: 'admin123', color: '#818cf8' },
+                  { roleName: 'Teacher (David Paget)', email: 'd.paget@ardingly.edu.kz', pwd: 'teacher123', color: '#60a5fa' },
+                  { roleName: 'Engineer', email: 'engineer@school.edu', pwd: 'engineer123', color: '#f97316' },
+                  { roleName: 'Storage', email: 'storage@school.edu', pwd: 'storage123', color: '#fbbf24' },
+                  { roleName: 'Finance', email: 'finance@school.edu', pwd: 'finance123', color: '#10b981' }
+                ].map(demo => (
+                  <button
+                    key={demo.email}
+                    type="button"
+                    onClick={() => {
+                      setLoginIdentifier(demo.email);
+                      setLoginPassword(demo.pwd);
+                      setErrorMessage('');
+                    }}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: `1px solid ${demo.color}50`,
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      color: demo.color,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = `${demo.color}22`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                    }}
+                  >
+                    {demo.roleName}
+                  </button>
+                ))}
+              </div>
+            </div>
 
           </form>
         )}

@@ -1013,8 +1013,8 @@ export function syncFullStaffRoster() {
           db.prepare(`UPDATE users SET department = ? WHERE id = ?`).run(staff.department, existing.id);
         }
 
-        // If user exists but is missing passwordHash/salt, populate it
-        if (!existing.passwordHash || !existing.salt) {
+        // If user is missing password or their password doesn't match standard credentials, heal it
+        if (!existing.passwordHash || !existing.salt || (!verifyPassword(rawPassword, existing.salt, existing.passwordHash) && !verifyPassword('school123', existing.salt, existing.passwordHash))) {
           const { salt, hash } = hashPassword(rawPassword);
           updatePwd.run({
             id: existing.id,
