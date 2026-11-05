@@ -10,6 +10,7 @@
     "server:prod": "node server/index.js",
     "client": "vite",
     "db:view": "node server/view-db.js",
+    "db:backup": "bash scripts/backup-databases.sh",
     "start": "node server/index.js",
     "build": "vite build",
     "lint": "oxlint",

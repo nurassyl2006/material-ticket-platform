@@ -894,17 +894,7 @@ export const FULL_STAFF_ROSTER = [
 export function syncFullStaffRoster() {
   const now = new Date().toISOString();
 
-  // Purge unwanted auto-generated accounts
-  try {
-    db.prepare(`
-      DELETE FROM users 
-      WHERE id LIKE 'usr-tea-%' 
-         OR id = 'usr-adm-jenkins'
-         OR (email LIKE '%@ardingly.edu.kz' AND id NOT IN ('usr-dir1', 'usr-fm1', 'usr-1793612255054-857', 'usr-1793159365009-623', 'usr-1792640890655-735'))
-    `).run();
-  } catch (err) {
-    // non-fatal
-  }
+  // Note: Never delete registered user accounts on startup
   
   const insertUser = db.prepare(`
     INSERT INTO users (roleKey, id, name, role, department, email, phone, avatar, passwordHash, salt, createdAt, updatedAt)

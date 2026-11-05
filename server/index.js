@@ -1638,12 +1638,20 @@ app.post('/api/translate', async (req, res) => {
 });
 
 // -------------------------------------------------------------
-// Database Reset Endpoint (Restores default clean state)
+// Database Reset Endpoint (Protected - Requires Director role & confirmation)
 // -------------------------------------------------------------
 app.post('/api/reset', (req, res) => {
   try {
+    const auth = authenticateSession(req);
+    if (!auth || auth.role !== 'director') {
+      return res.status(403).json({ error: 'Access denied: Only Directors can perform administrative reset' });
+    }
+    const { confirm } = req.body;
+    if (confirm !== 'PERMANENT_RESET') {
+      return res.status(400).json({ error: 'Missing explicit confirmation: confirm: "PERMANENT_RESET"' });
+    }
     resetDatabase();
-    res.json({ success: true, message: 'Database reset to default clean seed' });
+    res.json({ success: true, message: 'Administrative reset completed; all school staff and tickets preserved safely' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

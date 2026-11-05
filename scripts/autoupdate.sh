@@ -42,6 +42,21 @@ if [ -n "$REMOTE_HASH" ] && [ "$LOCAL_HASH" != "$REMOTE_HASH" ]; then
   echo "Current commit: $LOCAL_HASH" >> "$LOG_FILE"
   echo "Target commit:  $REMOTE_HASH" >> "$LOG_FILE"
 
+  # Pre-update Database Safety Backup (Protect live tickets, inventory, books, and loans)
+  BACKUP_DIR="$HOME/db-backups/$(date '+%Y%m%d_%H%M%S')"
+  mkdir -p "$BACKUP_DIR"
+  if [ -f server/data/platform.db ]; then
+    cp server/data/platform.db "$BACKUP_DIR/platform.db"
+    [ -f server/data/platform.db-wal ] && cp server/data/platform.db-wal "$BACKUP_DIR/platform.db-wal" 2>/dev/null || true
+  fi
+  if [ -f library-system/server/data/library.db ]; then
+    cp library-system/server/data/library.db "$BACKUP_DIR/library.db"
+    [ -f library-system/server/data/library.db-wal ] && cp library-system/server/data/library.db-wal "$BACKUP_DIR/library.db-wal" 2>/dev/null || true
+  fi
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] 💾 Pre-update safety backup of databases created in $BACKUP_DIR" >> "$LOG_FILE"
+  # Retain the last 20 backups to manage disk space
+  find "$HOME/db-backups" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +21 | xargs rm -rf 2>/dev/null || true
+
   # Reset cleanly to origin/main (avoids merge conflict prompts; ignores SQLite db)
   git reset --hard origin/main >> "$LOG_FILE" 2>&1
 
