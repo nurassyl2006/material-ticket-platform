@@ -52,13 +52,13 @@ export const ROUTES = {
     path: '/daily-digest',
     aliases: ['/daily-report', '/executive-digest', '/daily', '/reports'],
     titles: {
-      en: 'Executive Operations Digest — EduOps',
-      ru: 'Оперативные отчеты по заявкам — EduOps',
-      kk: 'Операциялық өтінімдер есебі — EduOps'
+      en: 'Executive Daily Operations Report — EduOps',
+      ru: 'Ежедневный оперативный отчет — EduOps',
+      kk: 'Күнделікті операциялық есеп — EduOps'
     }
   },
   'weekly-report': {
-    tab: 'daily-digest',
+    tab: 'weekly-report',
     path: '/weekly-report',
     aliases: ['/weekly-digest', '/weekly'],
     titles: {
@@ -68,7 +68,7 @@ export const ROUTES = {
     }
   },
   'monthly-report': {
-    tab: 'daily-digest',
+    tab: 'monthly-report',
     path: '/monthly-report',
     aliases: ['/monthly-digest', '/monthly'],
     titles: {
@@ -77,14 +77,14 @@ export const ROUTES = {
       kk: 'Айлық өтінімдер есебі — EduOps'
     }
   },
-  dailyDigest: {
+  reports: {
     tab: 'daily-digest',
     path: '/daily-digest',
-    aliases: ['/daily-report', '/executive-digest', '/daily', '/reports'],
+    aliases: ['/reports'],
     titles: {
-      en: 'Executive Operations Digest — EduOps',
-      ru: 'Оперативные отчеты по заявкам — EduOps',
-      kk: 'Операциялық өтінімдер есебі — EduOps'
+      en: 'Executive Operations Reports — EduOps',
+      ru: 'Оперативные отчеты — EduOps',
+      kk: 'Операциялық есептер — EduOps'
     }
   },
   profile: {

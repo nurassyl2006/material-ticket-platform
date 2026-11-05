@@ -20,10 +20,14 @@ import {
   ChevronRight,
   Wrench,
   CalendarCheck2,
+  CalendarRange,
+  CalendarDays,
   Calendar,
-  Sparkles
+  Sparkles,
+  BarChart3
 } from 'lucide-react';
 import { resolveDepartment, DEPARTMENTS } from '../departments';
+import { navigate } from '../router';
 
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang, canAccessDailyDigest: canAccessDailyDigestFn } = useApp();
@@ -58,6 +62,72 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const facilitiesTickets = scopedTickets.filter(t => ['carpentry', 'event_prep', 'grounds'].includes(resolveDepartment(t.department).id));
   const engineeringTickets = scopedTickets.filter(t => ['electrical', 'plumbing', 'carpentry'].includes(resolveDepartment(t.department).id));
   const financeTickets = scopedTickets.filter(t => Number(t.purchaseCost) > 0 || t.status === 'purchasing' || t.handledAction === 'purchased' || resolveDepartment(t.department).id === 'storage');
+
+  // Weekly Metrics (Current week: Monday to Sunday)
+  const weekMetrics = React.useMemo(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const diffToMon = now.getDate() - day + (day === 0 ? -6 : 1);
+    const startMon = new Date(now.getFullYear(), now.getMonth(), diffToMon, 0, 0, 0, 0);
+    const endSun = new Date(startMon);
+    endSun.setDate(endSun.getDate() + 6);
+    endSun.setHours(23, 59, 59, 999);
+
+    const sMs = startMon.getTime();
+    const eMs = endSun.getTime();
+
+    const createdInWeek = scopedTickets.filter(tk => {
+      const cMs = tk.createdAt ? new Date(tk.createdAt).getTime() : 0;
+      return cMs >= sMs && cMs <= eMs;
+    });
+
+    const finishedInWeek = scopedTickets.filter(tk => {
+      const uMs = (tk.completedAt || tk.updatedAt) ? new Date(tk.completedAt || tk.updatedAt).getTime() : 0;
+      return uMs >= sMs && uMs <= eMs && (tk.status === 'completed' || tk.status === 'delivered' || tk.status === 'issued');
+    });
+
+    const inProgInWeek = scopedTickets.filter(tk => {
+      const cMs = tk.createdAt ? new Date(tk.createdAt).getTime() : 0;
+      return cMs >= sMs && cMs <= eMs && (tk.status === 'in_progress' || tk.status === 'purchasing');
+    });
+
+    const slaPercent = createdInWeek.length > 0
+      ? Math.round((finishedInWeek.length / createdInWeek.length) * 100)
+      : 100;
+
+    return {
+      createdCount: createdInWeek.length,
+      finishedCount: finishedInWeek.length,
+      inProgCount: inProgInWeek.length,
+      slaPercent
+    };
+  }, [scopedTickets]);
+
+  // Monthly Metrics (Current Calendar Month)
+  const monthMetrics = React.useMemo(() => {
+    const now = new Date();
+    const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const createdInMonth = scopedTickets.filter(tk => (tk.createdAt || '').startsWith(monthPrefix));
+    const finishedInMonth = scopedTickets.filter(tk => 
+      (tk.status === 'completed' || tk.status === 'delivered' || tk.status === 'issued') &&
+      ((tk.completedAt || tk.updatedAt || '').startsWith(monthPrefix) || (tk.createdAt || '').startsWith(monthPrefix))
+    );
+
+    const spentInMonth = createdInMonth.reduce((sum, tk) => sum + (Number(tk.purchaseCost) || 0), 0);
+
+    const handlers = new Set();
+    createdInMonth.forEach(tk => {
+      if (tk.assignedWorker) handlers.add(tk.assignedWorker);
+    });
+
+    return {
+      createdCount: createdInMonth.length,
+      finishedCount: finishedInMonth.length,
+      spent: spentInMonth,
+      handlersCount: handlers.size
+    };
+  }, [scopedTickets]);
 
   const calloutHeadline = React.useMemo(() => {
     if (role === 'engineer') {
@@ -154,20 +224,75 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             {hasDailyDigestAccess && (
-              <button
-                onClick={() => setActiveTab('daily-digest')}
-                className="fluent-btn-secondary"
-                style={{
-                  height: '32px',
-                  borderColor: 'rgba(139, 92, 246, 0.45)',
-                  color: '#c4b5fd',
-                  background: 'rgba(139, 92, 246, 0.15)',
-                  fontWeight: '600'
-                }}
-              >
-                <CalendarCheck2 size={14} color="#a78bfa" />
-                <span>{t.nav?.dailyDigest || 'Daily Digest'}</span>
-              </button>
+              <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(139, 92, 246, 0.12)', border: '1px solid rgba(139, 92, 246, 0.35)', borderRadius: '8px', padding: '2px', gap: '2px' }}>
+                <button
+                  onClick={() => { setActiveTab('daily-digest'); navigate('/daily-digest'); }}
+                  style={{
+                    height: '28px',
+                    padding: '0 10px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '11.5px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    background: 'rgba(139, 92, 246, 0.28)',
+                    color: '#f8fafc'
+                  }}
+                  title={t.nav?.dailyReport || 'Daily Report'}
+                >
+                  <CalendarCheck2 size={13} color="#c4b5fd" />
+                  <span>{t.nav?.dailyReport || 'Daily'}</span>
+                </button>
+                <button
+                  onClick={() => { setActiveTab('weekly-report'); navigate('/weekly-report'); }}
+                  style={{
+                    height: '28px',
+                    padding: '0 10px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '11.5px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    background: 'transparent',
+                    color: '#c4b5fd'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  title={t.nav?.weeklyReport || 'Weekly Report'}
+                >
+                  <CalendarRange size={13} color="#38bdf8" />
+                  <span>{t.nav?.weeklyReport || 'Weekly'}</span>
+                </button>
+                <button
+                  onClick={() => { setActiveTab('monthly-report'); navigate('/monthly-report'); }}
+                  style={{
+                    height: '28px',
+                    padding: '0 10px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '11.5px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    background: 'transparent',
+                    color: '#c4b5fd'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  title={t.nav?.monthlyReport || 'Monthly Report'}
+                >
+                  <CalendarDays size={13} color="#fbbf24" />
+                  <span>{t.nav?.monthlyReport || 'Monthly'}</span>
+                </button>
+              </div>
             )}
 
             {(role === 'director' || role === 'admin') && (
@@ -197,65 +322,291 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {/* ============================================================== */}
       {/* 1. EXECUTIVE KPI CARDS GRID */}
       {/* ============================================================== */}
-      {(role === 'director' || role === 'admin') && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {hasDailyDigestAccess && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '8px' }}>
           
-          {/* Executive Everyday Ticket Operations Callout */}
-          <div
-            onClick={() => setActiveTab('daily-digest')}
-            style={{
-              background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(18, 25, 44, 0.85))',
-              border: '1px solid rgba(139, 92, 246, 0.35)',
-              borderLeft: '4px solid #8b5cf6',
-              borderRadius: '12px',
-              padding: '14px 18px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '12px',
-              boxShadow: 'var(--shadow-depth-3)',
-              transition: 'all 0.15s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#8b5cf6';
-              e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.35)';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: 'rgba(139, 92, 246, 0.2)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
-                <CalendarCheck2 size={22} color="#c4b5fd" />
-              </div>
+          {/* Executive Operations Reports Hub (Daily, Weekly, Monthly) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BarChart3 size={17} color="#a78bfa" />
+              <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>
+                {lang === 'ru' ? 'Центр оперативных отчетов' : lang === 'kk' ? 'Операциялық есептер орталығы' : 'Operations Reports Suite'}
+              </h3>
+            </div>
+            <span style={{ fontSize: '11.5px', color: '#94a3b8' }}>
+              {lang === 'ru' ? 'Ежедневная, еженедельная и ежемесячная аналитика' : lang === 'kk' ? 'Күнделікті, апталық және айлық аналитика' : 'Real-time operational intelligence across campus'}
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '12px' }}>
+            
+            {/* 1. DAILY REPORT CARD */}
+            <div
+              onClick={() => { setActiveTab('daily-digest'); navigate('/daily-digest'); }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(18, 25, 44, 0.9))',
+                border: '1px solid rgba(139, 92, 246, 0.35)',
+                borderLeft: '4px solid #8b5cf6',
+                borderRadius: '12px',
+                padding: '16px 18px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '12px',
+                boxShadow: 'var(--shadow-depth-3)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#8b5cf6';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.35)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
-                    {calloutHeadline}
-                  </span>
-                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '1px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ background: 'rgba(139, 92, 246, 0.25)', padding: '7px', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.4)' }}>
+                      <CalendarCheck2 size={18} color="#c4b5fd" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                        {lang === 'ru' ? 'Ежедневный отчет' : lang === 'kk' ? 'Күнделікті есеп' : 'Daily Operations Digest'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        {lang === 'ru' ? 'Почасовой контроль и статус дня' : lang === 'kk' ? 'Сағаттық бақылау және күндік статус' : 'Hourly timeline & live status'}
+                      </div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
                     ● Live Today
                   </span>
                 </div>
-                <div style={{ fontSize: '11.5px', color: '#cbd5e1', marginTop: '3px' }}>
-                  {lang === 'ru'
-                    ? `Сегодня создано: ${todayCreatedCount} • Завершено: ${todayFinishedCount} • В процессе: ${inProgressCount}. Откройте почасовую шкалу, время создания и исполнителей.`
-                    : lang === 'kk'
-                    ? `Бүгін берілді: ${todayCreatedCount} • Орындалды: ${todayFinishedCount} • Жұмыста: ${inProgressCount}. Сағаттық шкаланы және орындаушыларды ашу.`
-                    : `Created today: ${todayCreatedCount} • Finished: ${todayFinishedCount} • In process: ${inProgressCount}. View hourly timeline, submission times, and staff.`}
+
+                <div style={{ display: 'flex', gap: '14px', background: 'rgba(255, 255, 255, 0.03)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'Создано' : lang === 'kk' ? 'Берілді' : 'Created'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                      {todayCreatedCount}
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'Завершено' : lang === 'kk' ? 'Орындалды' : 'Resolved'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#34d399' }}>
+                      {todayFinishedCount}
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'В работе' : lang === 'kk' ? 'Жұмыста' : 'In Progress'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#f59e0b' }}>
+                      {inProgressCount}
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                <span style={{ fontSize: '11px', color: '#a78bfa' }}>
+                  {lang === 'ru' ? 'Почасовая шкала и исполнители' : lang === 'kk' ? 'Сағаттық шкала және жауаптылар' : 'Hourly breakdown & team assignments'}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#c4b5fd', fontSize: '11.5px', fontWeight: '700' }}>
+                  <span>{lang === 'ru' ? 'Открыть' : lang === 'kk' ? 'Ашу' : 'Open'}</span>
+                  <ChevronRight size={14} />
+                </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a78bfa', fontSize: '12px', fontWeight: '700' }}>
-              <span>{lang === 'ru' ? 'Открыть подробный отчет' : lang === 'kk' ? 'Толық есепті ашу' : 'Open Daily Digest'}</span>
-              <ChevronRight size={16} />
-            </div>
-          </div>
+            {/* 2. WEEKLY REPORT CARD */}
+            <div
+              onClick={() => { setActiveTab('weekly-report'); navigate('/weekly-report'); }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(14, 52, 94, 0.75), rgba(18, 25, 44, 0.9))',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                borderLeft: '4px solid #38bdf8',
+                borderRadius: '12px',
+                padding: '16px 18px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '12px',
+                boxShadow: 'var(--shadow-depth-3)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#38bdf8';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ background: 'rgba(56, 189, 248, 0.2)', padding: '7px', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.4)' }}>
+                      <CalendarRange size={18} color="#38bdf8" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                        {lang === 'ru' ? 'Еженедельный отчет' : lang === 'kk' ? 'Апталық есеп' : 'Weekly Operations & SLA'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        {lang === 'ru' ? 'Динамика Пн–Вс, пиковые дни и SLA' : lang === 'kk' ? 'Дүйсенбі–Жексенбі динамикасы мен SLA' : 'Monday to Sunday trends & SLA'}
+                      </div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8' }}>
+                    7 Days
+                  </span>
+                </div>
 
+                <div style={{ display: 'flex', gap: '14px', background: 'rgba(255, 255, 255, 0.03)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'За неделю' : lang === 'kk' ? 'Аптада' : 'Week Intake'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                      {weekMetrics.createdCount}
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'SLA решения' : lang === 'kk' ? 'SLA шешу' : 'SLA Rate'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#38bdf8' }}>
+                      {weekMetrics.slaPercent}%
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'Закрыто' : lang === 'kk' ? 'Орындалды' : 'Finished'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#34d399' }}>
+                      {weekMetrics.finishedCount}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                <span style={{ fontSize: '11px', color: '#38bdf8' }}>
+                  {lang === 'ru' ? 'График нагрузки и пиковые дни' : lang === 'kk' ? 'Жұмыс кестесі мен ең ауыр күндер' : 'Weekday comparison & peak workload'}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#38bdf8', fontSize: '11.5px', fontWeight: '700' }}>
+                  <span>{lang === 'ru' ? 'Открыть' : lang === 'kk' ? 'Ашу' : 'Open'}</span>
+                  <ChevronRight size={14} />
+                </span>
+              </div>
+            </div>
+
+            {/* 3. MONTHLY REPORT CARD */}
+            <div
+              onClick={() => { setActiveTab('monthly-report'); navigate('/monthly-report'); }}
+              style={{
+                background: 'linear-gradient(135deg, rgba(80, 50, 10, 0.65), rgba(18, 25, 44, 0.9))',
+                border: '1px solid rgba(251, 191, 36, 0.35)',
+                borderLeft: '4px solid #fbbf24',
+                borderRadius: '12px',
+                padding: '16px 18px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '12px',
+                boxShadow: 'var(--shadow-depth-3)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#fbbf24';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(251, 191, 36, 0.35)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '7px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.4)' }}>
+                      <CalendarDays size={18} color="#fbbf24" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                        {lang === 'ru' ? 'Ежемесячный отчет' : lang === 'kk' ? 'Айлық есеп' : 'Monthly Performance & Spend'}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        {lang === 'ru' ? '30 дней, бюджет закупок и рейтинг' : lang === 'kk' ? '30 күндік талдау, шығындар мен рейтинг' : '30-day curve, procurement & staff ranking'}
+                      </div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
+                    Month
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: '14px', background: 'rgba(255, 255, 255, 0.03)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'За месяц' : lang === 'kk' ? 'Ай бойы' : 'Month Total'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                      {monthMetrics.createdCount}
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'Затраты' : lang === 'kk' ? 'Шығындар' : 'Procurement'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#fbbf24' }}>
+                      ₸{monthMetrics.spent.toLocaleString()}
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                      {lang === 'ru' ? 'Специалисты' : lang === 'kk' ? 'Мамандар' : 'Staff'}
+                    </div>
+                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#c084fc' }}>
+                      {monthMetrics.handlersCount}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                <span style={{ fontSize: '11px', color: '#fbbf24' }}>
+                  {lang === 'ru' ? 'Недельные тренды и финансовые списания' : lang === 'kk' ? 'Апталық трендтер мен қаржылық есеп' : 'Week-by-week trend & department spend'}
+                </span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#fbbf24', fontSize: '11.5px', fontWeight: '700' }}>
+                  <span>{lang === 'ru' ? 'Открыть' : lang === 'kk' ? 'Ашу' : 'Open'}</span>
+                  <ChevronRight size={14} />
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {(role === 'director' || role === 'admin') && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="dashboard-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
             
             {/* Total School Requests */}
@@ -470,63 +821,6 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
         </div>
       )}
 
-      {/* Everyday Ticket Operations Callout for Non-Directors with Everyday Report Access */}
-      {hasDailyDigestAccess && role !== 'director' && role !== 'admin' && (
-        <div
-          onClick={() => setActiveTab('daily-digest')}
-          style={{
-            background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.7), rgba(18, 25, 44, 0.85))',
-            border: '1px solid rgba(139, 92, 246, 0.35)',
-            borderLeft: '4px solid #8b5cf6',
-            borderRadius: '12px',
-            padding: '14px 18px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '12px',
-            boxShadow: 'var(--shadow-depth-3)',
-            transition: 'all 0.15s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#8b5cf6';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.35)';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: 'rgba(139, 92, 246, 0.2)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
-              <CalendarCheck2 size={22} color="#c4b5fd" />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
-                  {calloutHeadline}
-                </span>
-                <span style={{ fontSize: '10px', fontWeight: '700', padding: '1px 6px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
-                  ● Live Today
-                </span>
-              </div>
-              <div style={{ fontSize: '11.5px', color: '#cbd5e1', marginTop: '3px' }}>
-                {lang === 'ru'
-                  ? `Сегодня создано: ${todayCreatedCount} • Завершено: ${todayFinishedCount} • В процессе: ${inProgressCount}. Откройте почасовую шкалу, время создания и исполнителей.`
-                  : lang === 'kk'
-                  ? `Бүгін берілді: ${todayCreatedCount} • Орындалды: ${todayFinishedCount} • Жұмыста: ${inProgressCount}. Сағаттық шкаланы және орындаушыларды ашу.`
-                  : `Created today: ${todayCreatedCount} • Finished: ${todayFinishedCount} • In process: ${inProgressCount}. View hourly timeline, submission times, and staff.`}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a78bfa', fontSize: '12px', fontWeight: '700' }}>
-            <span>{lang === 'ru' ? 'Открыть отчеты и аналитику' : lang === 'kk' ? 'Есептер мен аналитиканы ашу' : 'Open Reports & Analytics'}</span>
-            <ChevronRight size={16} />
-          </div>
-        </div>
-      )}
 
       {/* Finance Department Specific Cards */}
       {(role === 'finance' || role === 'accountant') && (

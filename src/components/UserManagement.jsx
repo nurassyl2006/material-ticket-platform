@@ -1065,7 +1065,7 @@ export const UserManagement = () => {
                           border: canRoleAccessDailyDigest(r.key, rolesConfig) ? (isLight ? '1px solid #e9d5ff' : '1px solid rgba(168, 85, 247, 0.3)') : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(148, 163, 184, 0.25)')
                         }}>
                           <CalendarCheck2 size={12} />
-                          <span>{canRoleAccessDailyDigest(r.key, rolesConfig) ? (lang === 'ru' ? 'Ежедневный отчет' : lang === 'kk' ? 'Күнделікті есеп' : 'Daily Report') : (lang === 'ru' ? 'Отчет скрыт' : lang === 'kk' ? 'Есеп жабық' : 'Report Hidden')}</span>
+                          <span>{canRoleAccessDailyDigest(r.key, rolesConfig) ? (lang === 'ru' ? 'Отчеты (день/нед/мес)' : lang === 'kk' ? 'Есептер (күн/апта/ай)' : 'Reports (Day/Wk/Mo)') : (lang === 'ru' ? 'Отчет скрыт' : lang === 'kk' ? 'Есеп жабық' : 'Report Hidden')}</span>
                         </span>
 
                         {/* Storage Access Badge */}

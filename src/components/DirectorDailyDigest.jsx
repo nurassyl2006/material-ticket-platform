@@ -143,11 +143,12 @@ const getEndOfMonth = (yearMonthStr) => {
 // MAIN COMPONENT
 // ============================================================================
 
-export const DirectorDailyDigest = ({ onOpenNewTicket, currentPath }) => {
+export const DirectorDailyDigest = ({ onOpenNewTicket, currentPath, initialPeriod }) => {
   const { t, lang, tickets, addTicket, role } = useApp();
 
   // Determine initial period: 'daily' | 'weekly' | 'monthly'
   const determineInitialPeriod = () => {
+    if (initialPeriod) return initialPeriod;
     if (typeof window !== 'undefined') {
       const path = (currentPath || window.location.pathname || '').toLowerCase();
       const search = (window.location.search || '').toLowerCase();
@@ -159,14 +160,16 @@ export const DirectorDailyDigest = ({ onOpenNewTicket, currentPath }) => {
 
   const [reportPeriod, setReportPeriod] = useState(determineInitialPeriod);
 
-  // Sync with currentPath changes
+  // Sync with currentPath and initialPeriod changes
   useEffect(() => {
-    if (currentPath) {
+    if (initialPeriod) {
+      setReportPeriod(initialPeriod);
+    } else if (currentPath) {
       if (currentPath.includes('weekly')) setReportPeriod('weekly');
       else if (currentPath.includes('monthly')) setReportPeriod('monthly');
       else if (currentPath.includes('daily')) setReportPeriod('daily');
     }
-  }, [currentPath]);
+  }, [initialPeriod, currentPath]);
 
   // Today helpers
   const todayStr = useMemo(() => formatLocalDate(new Date()), []);

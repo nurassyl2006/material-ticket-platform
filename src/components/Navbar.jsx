@@ -19,7 +19,10 @@ import {
   ShieldAlert,
   Sun,
   Moon,
-  CalendarCheck2
+  CalendarCheck2,
+  CalendarRange,
+  CalendarDays,
+  ChevronDown
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
 import { Link } from '../router';
@@ -53,9 +56,11 @@ export const Navbar = ({
     canAccessDailyDigest
   } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isReportsDropdownOpen, setIsReportsDropdownOpen] = useState(false);
 
   const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
   const hasDailyDigestAccess = canAccessDailyDigest ? canAccessDailyDigest(role) : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role));
+  const isReportsActive = ['daily-digest', 'dailyDigest', 'weekly-report', 'monthly-report', 'reports'].includes(activeTab);
 
   // Helper for User Initials (e.g., Balkan Kassimov -> BK)
   const getUserInitials = (name) => {
@@ -270,43 +275,222 @@ export const Navbar = ({
             )}
 
             {hasDailyDigestAccess && (
-              <Link
-                to="daily-digest"
-                style={{
-                  height: '30px',
-                  padding: '0 12px',
-                  fontSize: '12.5px',
-                  fontWeight: activeTab === 'daily-digest' ? '600' : '500',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  color: activeTab === 'daily-digest' ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
-                  background: activeTab === 'daily-digest' ? 'rgba(139, 92, 246, 0.28)' : 'transparent',
-                  border: activeTab === 'daily-digest' ? '1px solid rgba(139, 92, 246, 0.45)' : '1px solid transparent',
-                  borderRadius: '7px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  textDecoration: 'none',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  boxShadow: activeTab === 'daily-digest' ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'daily-digest') {
-                    e.currentTarget.style.color = 'var(--text-main, #ffffff)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== 'daily-digest') {
-                    e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
-                    e.currentTarget.style.background = 'transparent';
-                  }
-                }}
+              <div
+                style={{ position: 'relative', display: 'inline-flex' }}
+                onMouseEnter={() => setIsReportsDropdownOpen(true)}
+                onMouseLeave={() => setIsReportsDropdownOpen(false)}
               >
-                <CalendarCheck2 size={14} color={activeTab === 'daily-digest' ? '#c4b5fd' : 'currentColor'} />
-                <span>{t.nav?.dailyDigest || 'Daily Digest'}</span>
-              </Link>
+                <Link
+                  to={activeTab === 'weekly-report' ? 'weekly-report' : activeTab === 'monthly-report' ? 'monthly-report' : 'daily-digest'}
+                  onClick={() => setIsReportsDropdownOpen(false)}
+                  style={{
+                    height: '30px',
+                    padding: '0 10px 0 12px',
+                    fontSize: '12.5px',
+                    fontWeight: isReportsActive ? '600' : '500',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: isReportsActive ? 'var(--text-main, #ffffff)' : 'var(--text-muted, #94a3b8)',
+                    background: isReportsActive ? 'rgba(139, 92, 246, 0.28)' : 'transparent',
+                    border: isReportsActive ? '1px solid rgba(139, 92, 246, 0.45)' : '1px solid transparent',
+                    borderRadius: '7px',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    boxShadow: isReportsActive ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isReportsActive) {
+                      e.currentTarget.style.color = 'var(--text-main, #ffffff)';
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isReportsActive) {
+                      e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
+                      e.currentTarget.style.background = 'transparent';
+                    }
+                  }}
+                >
+                  {activeTab === 'weekly-report' ? (
+                    <CalendarRange size={14} color="#c4b5fd" />
+                  ) : activeTab === 'monthly-report' ? (
+                    <CalendarDays size={14} color="#c4b5fd" />
+                  ) : (
+                    <CalendarCheck2 size={14} color={isReportsActive ? '#c4b5fd' : 'currentColor'} />
+                  )}
+                  <span>
+                    {activeTab === 'weekly-report'
+                      ? (t.nav?.weeklyReport || 'Weekly Report')
+                      : activeTab === 'monthly-report'
+                      ? (t.nav?.monthlyReport || 'Monthly Report')
+                      : (t.nav?.reports || t.nav?.dailyDigest || 'Reports')}
+                  </span>
+                  <ChevronDown size={12} style={{ opacity: 0.7, transform: isReportsDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }} />
+                </Link>
+
+                {/* Dropdown Menu for Daily, Weekly, and Monthly Reports */}
+                {isReportsDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: '4px',
+                      background: 'rgba(15, 23, 42, 0.96)',
+                      backdropFilter: 'blur(20px)',
+                      WebkitBackdropFilter: 'blur(20px)',
+                      border: '1px solid rgba(139, 92, 246, 0.35)',
+                      borderRadius: '10px',
+                      padding: '6px',
+                      minWidth: '240px',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(139, 92, 246, 0.2)',
+                      zIndex: 1000,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
+                    }}
+                  >
+                    {/* 1. Daily Report */}
+                    <Link
+                      to="daily-digest"
+                      onClick={() => { setIsReportsDropdownOpen(false); setActiveTab('daily-digest'); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        background: activeTab === 'daily-digest' ? 'rgba(139, 92, 246, 0.25)' : 'transparent',
+                        color: activeTab === 'daily-digest' ? '#ffffff' : '#cbd5e1',
+                        border: activeTab === 'daily-digest' ? '1px solid rgba(139, 92, 246, 0.35)' : '1px solid transparent',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (activeTab !== 'daily-digest') {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                          e.currentTarget.style.color = '#ffffff';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeTab !== 'daily-digest') {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#cbd5e1';
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <CalendarCheck2 size={15} color="#a78bfa" />
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: '600' }}>
+                            {t.nav?.dailyReport || 'Daily Report'}
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                            {lang === 'ru' ? 'Почасовая шкала и задачи за день' : lang === 'kk' ? 'Күндік жұмыстар мен сағаттық шкала' : 'Hourly timeline & today jobs'}
+                          </div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '9px', fontWeight: '700', padding: '1px 5px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
+                        Live
+                      </span>
+                    </Link>
+
+                    {/* 2. Weekly Report */}
+                    <Link
+                      to="weekly-report"
+                      onClick={() => { setIsReportsDropdownOpen(false); setActiveTab('weekly-report'); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        background: activeTab === 'weekly-report' ? 'rgba(139, 92, 246, 0.25)' : 'transparent',
+                        color: activeTab === 'weekly-report' ? '#ffffff' : '#cbd5e1',
+                        border: activeTab === 'weekly-report' ? '1px solid rgba(139, 92, 246, 0.35)' : '1px solid transparent',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (activeTab !== 'weekly-report') {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                          e.currentTarget.style.color = '#ffffff';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeTab !== 'weekly-report') {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#cbd5e1';
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <CalendarRange size={15} color="#38bdf8" />
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: '600' }}>
+                            {t.nav?.weeklyReport || 'Weekly Report'}
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                            {lang === 'ru' ? 'Динамика Пн–Вс, пиковые дни и SLA' : lang === 'kk' ? 'Дүйсенбі–Жексенбі динамикасы мен SLA' : 'Mon–Sun trends, peak days & SLA'}
+                          </div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '9px', fontWeight: '700', padding: '1px 5px', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8' }}>
+                        7 Days
+                      </span>
+                    </Link>
+
+                    {/* 3. Monthly Report */}
+                    <Link
+                      to="monthly-report"
+                      onClick={() => { setIsReportsDropdownOpen(false); setActiveTab('monthly-report'); }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '8px 10px',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        background: activeTab === 'monthly-report' ? 'rgba(139, 92, 246, 0.25)' : 'transparent',
+                        color: activeTab === 'monthly-report' ? '#ffffff' : '#cbd5e1',
+                        border: activeTab === 'monthly-report' ? '1px solid rgba(139, 92, 246, 0.35)' : '1px solid transparent',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (activeTab !== 'monthly-report') {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                          e.currentTarget.style.color = '#ffffff';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeTab !== 'monthly-report') {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = '#cbd5e1';
+                        }
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <CalendarDays size={15} color="#fbbf24" />
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: '600' }}>
+                            {t.nav?.monthlyReport || 'Monthly Report'}
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                            {lang === 'ru' ? '30-дневная кривая, закупки и рейтинг' : lang === 'kk' ? '30 күндік сұраныс, шығындар мен рейтинг' : '30-day demand, budget & rankings'}
+                          </div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: '9px', fontWeight: '700', padding: '1px 5px', borderRadius: '4px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
+                        Month
+                      </span>
+                    </Link>
+                  </div>
+                )}
+              </div>
             )}
 
             {(role === 'director' || role === 'admin') && (
@@ -813,11 +997,17 @@ export const Navbar = ({
           (role === 'director' || role === 'admin') ? (
             <>
               <Link
-                to="daily-digest"
-                className={`mobile-nav-item ${activeTab === 'daily-digest' ? 'active' : ''}`}
+                to={activeTab === 'weekly-report' ? 'weekly-report' : activeTab === 'monthly-report' ? 'monthly-report' : 'daily-digest'}
+                className={`mobile-nav-item ${isReportsActive ? 'active' : ''}`}
               >
-                <CalendarCheck2 size={20} />
-                <span>{lang === 'ru' ? 'Отчет' : lang === 'kk' ? 'Есеп' : 'Digest'}</span>
+                {activeTab === 'weekly-report' ? (
+                  <CalendarRange size={20} />
+                ) : activeTab === 'monthly-report' ? (
+                  <CalendarDays size={20} />
+                ) : (
+                  <CalendarCheck2 size={20} />
+                )}
+                <span>{t.nav?.reports || 'Reports'}</span>
               </Link>
               <Link
                 to="users"
@@ -830,11 +1020,17 @@ export const Navbar = ({
           ) : hasDailyDigestAccess ? (
             <>
               <Link
-                to="daily-digest"
-                className={`mobile-nav-item ${activeTab === 'daily-digest' ? 'active' : ''}`}
+                to={activeTab === 'weekly-report' ? 'weekly-report' : activeTab === 'monthly-report' ? 'monthly-report' : 'daily-digest'}
+                className={`mobile-nav-item ${isReportsActive ? 'active' : ''}`}
               >
-                <CalendarCheck2 size={20} />
-                <span>{lang === 'ru' ? 'Отчет' : lang === 'kk' ? 'Есеп' : 'Digest'}</span>
+                {activeTab === 'weekly-report' ? (
+                  <CalendarRange size={20} />
+                ) : activeTab === 'monthly-report' ? (
+                  <CalendarDays size={20} />
+                ) : (
+                  <CalendarCheck2 size={20} />
+                )}
+                <span>{t.nav?.reports || 'Reports'}</span>
               </Link>
               {hasStorageAccess && (
                 <Link

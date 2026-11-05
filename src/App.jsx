@@ -300,9 +300,16 @@ function MainApp() {
             </div>
           )
         )}
-        {(activeTab === 'daily-digest' || activeTab === 'dailyDigest') && (
+        {(['daily-digest', 'dailyDigest', 'weekly-report', 'monthly-report', 'reports'].includes(activeTab)) && (
           (canAccessDailyDigest ? canAccessDailyDigest() : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role))) ? (
-            <DirectorDailyDigest onOpenNewTicket={handleOpenNewTicket} currentPath={route.path} />
+            <DirectorDailyDigest 
+              onOpenNewTicket={handleOpenNewTicket} 
+              currentPath={route.path}
+              initialPeriod={
+                activeTab === 'weekly-report' || route.path.includes('weekly') ? 'weekly'
+                : (activeTab === 'monthly-report' || route.path.includes('monthly') ? 'monthly' : 'daily')
+              }
+            />
           ) : (
             <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'rgba(18, 25, 44, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
               <ShieldCheck size={40} color="#8b5cf6" style={{ margin: '0 auto 12px' }} />
@@ -311,10 +318,10 @@ function MainApp() {
               </h3>
               <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
                 {lang === 'ru'
-                  ? 'Ежедневная сводка по заявкам, времени и сотрудникам доступна руководству школы, главному инженеру, зав. клинингом, завскладу, IT отделу и финансовой службе.'
+                  ? 'Оперативные ежедневные, еженедельные и ежемесячные отчеты по заявкам доступны руководству школы, главному инженеру, зав. клинингом, завскладу, IT отделу и финансовой службе.'
                   : lang === 'kk'
-                  ? 'Өтінімдер бойынша күнделікті жедел есеп мектеп басшылығына, бас инженерге, тазалық жетекшісіне, қойма меңгерушісіне, IT және қаржы бөлімдеріне қолжетімді.'
-                  : 'Everyday ticket operations, timestamps, and staff performance digest is accessible to School Directorate, Head of Engineering, Head of Cleaning, Storage Manager, Head of IT, Facilities, and Finance.'}
+                  ? 'Өтінімдер бойынша күнделікті, апталық және айлық операциялық есептер мектеп басшылығына, бас инженерге, тазалық жетекшісіне, қойма меңгерушісіне, IT және қаржы бөлімдеріне қолжетімді.'
+                  : 'Operational daily, weekly, and monthly ticket performance reports are accessible to School Directorate, Head of Engineering, Head of Cleaning, Storage Manager, Head of IT, Facilities, and Finance.'}
               </p>
               <button
                 onClick={handleOpenLogin}
