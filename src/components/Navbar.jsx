@@ -55,7 +55,7 @@ export const Navbar = ({
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
-  const hasDailyDigestAccess = canAccessDailyDigest ? canAccessDailyDigest(role) : (role === 'director' || role === 'admin' || role === 'engineer' || role === 'storage_manager' || role === 'finance');
+  const hasDailyDigestAccess = canAccessDailyDigest ? canAccessDailyDigest(role) : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role));
 
   // Helper for User Initials (e.g., Balkan Kassimov -> BK)
   const getUserInitials = (name) => {

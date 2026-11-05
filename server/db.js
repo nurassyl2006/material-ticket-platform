@@ -608,11 +608,13 @@ if (invCount === 0) {
 export const DEFAULT_PASSWORDS = {
   teacher: "teacher123",
   it_support: "it123",
+  cleaning_head: "clean123",
   cleaning: "clean123",
   storage_manager: "storage123",
   facilities_manager: "facilities123",
   director: "admin123",
   engineer: "engineer123",
+  head_engineer: "engineer123",
   finance: "finance123",
   accountant: "finance123"
 };
@@ -661,7 +663,7 @@ export const FULL_STAFF_ROSTER = [
   {
     roleKey: "engineer",
     id: "usr-eng1",
-    name: "Василий (Engineer)",
+    name: "Василий (Head of Engineering)",
     role: "engineer",
     department: "Engineering, Electrical & HVAC Utilities",
     email: "engineer@school.edu",
@@ -705,7 +707,18 @@ export const FULL_STAFF_ROSTER = [
     password: "school123"
   },
 
-  // --- Two Cleaning Members with their own logins ---
+  // --- Cleaning Management & Staff ---
+  {
+    roleKey: "cleaning_head",
+    id: "usr-cl-head",
+    name: "Акилова Айнур (Head of Cleaning)",
+    role: "cleaning_head",
+    department: "Campus Hygiene & Sanitization",
+    email: "cleaning.head@school.edu",
+    phone: "+7 777 000 0008",
+    avatar: "",
+    password: "clean123"
+  },
   {
     roleKey: "cleaning",
     id: "usr-cl1",
@@ -961,15 +974,32 @@ export function syncFullStaffRoster() {
             const res = hashPassword('engineer123');
             db.prepare(`
               UPDATE users 
-              SET name = 'Василий (Engineer)', role = 'engineer', department = 'Engineering, Electrical & HVAC Utilities', email = 'engineer@school.edu', passwordHash = ?, salt = ?, updatedAt = ?
+              SET name = 'Василий (Head of Engineering)', role = 'engineer', department = 'Engineering, Electrical & HVAC Utilities', email = 'engineer@school.edu', passwordHash = ?, salt = ?, updatedAt = ?
               WHERE id = 'usr-eng1'
             `).run(res.hash, res.salt, now);
           } else {
             db.prepare(`
               UPDATE users 
-              SET name = 'Василий (Engineer)', role = 'engineer', department = 'Engineering, Electrical & HVAC Utilities', email = 'engineer@school.edu', updatedAt = ?
+              SET name = 'Василий (Head of Engineering)', role = 'engineer', department = 'Engineering, Electrical & HVAC Utilities', email = 'engineer@school.edu', updatedAt = ?
               WHERE id = 'usr-eng1'
             `).run(now);
+          }
+        }
+        if (existing.id === 'usr-cl-head' || existing.email === 'cleaning.head@school.edu') {
+          const isClHeadValid = verifyPassword('clean123', existing.salt, existing.passwordHash);
+          if (!isClHeadValid) {
+            const res = hashPassword('clean123');
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Акилова Айнур (Head of Cleaning)', role = 'cleaning_head', roleKey = 'cleaning_head', department = 'Campus Hygiene & Sanitization', email = 'cleaning.head@school.edu', passwordHash = ?, salt = ?, updatedAt = ?
+              WHERE id = ?
+            `).run(res.hash, res.salt, now, existing.id);
+          } else {
+            db.prepare(`
+              UPDATE users 
+              SET name = 'Акилова Айнур (Head of Cleaning)', role = 'cleaning_head', roleKey = 'cleaning_head', department = 'Campus Hygiene & Sanitization', email = 'cleaning.head@school.edu', updatedAt = ?
+              WHERE id = ?
+            `).run(now, existing.id);
           }
         }
         if (existing.id === 'usr-cl1') {

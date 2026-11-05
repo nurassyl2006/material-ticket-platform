@@ -301,7 +301,7 @@ function MainApp() {
           )
         )}
         {(activeTab === 'daily-digest' || activeTab === 'dailyDigest') && (
-          (canAccessDailyDigest ? canAccessDailyDigest() : (role === 'director' || role === 'admin' || role === 'engineer' || role === 'storage_manager' || role === 'finance')) ? (
+          (canAccessDailyDigest ? canAccessDailyDigest() : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role))) ? (
             <DirectorDailyDigest onOpenNewTicket={handleOpenNewTicket} currentPath={route.path} />
           ) : (
             <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'rgba(18, 25, 44, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
@@ -311,10 +311,10 @@ function MainApp() {
               </h3>
               <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
                 {lang === 'ru'
-                  ? 'Ежедневная сводка по заявкам, времени и сотрудникам доступна руководству школы, главному инженеру, завскладу и финансовому отделу.'
+                  ? 'Ежедневная сводка по заявкам, времени и сотрудникам доступна руководству школы, главному инженеру, зав. клинингом, завскладу, IT отделу и финансовой службе.'
                   : lang === 'kk'
-                  ? 'Өтінімдер бойынша күнделікті жедел есеп мектеп басшылығына, бас инженерге, қойма меңгерушісіне және қаржы бөліміне қолжетімді.'
-                  : 'Everyday ticket operations, timestamps, and staff performance digest is accessible to School Directorate, Main Engineer, Storage Manager, and Finance Department.'}
+                  ? 'Өтінімдер бойынша күнделікті жедел есеп мектеп басшылығына, бас инженерге, тазалық жетекшісіне, қойма меңгерушісіне, IT және қаржы бөлімдеріне қолжетімді.'
+                  : 'Everyday ticket operations, timestamps, and staff performance digest is accessible to School Directorate, Head of Engineering, Head of Cleaning, Storage Manager, Head of IT, Facilities, and Finance.'}
               </p>
               <button
                 onClick={handleOpenLogin}

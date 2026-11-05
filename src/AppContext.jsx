@@ -1586,10 +1586,10 @@ export const AppProvider = ({ children }) => {
 
       // 2. Department-level notifications
       if (role === 'it_support' && (recip.includes('it') || recip.includes('helpdesk'))) return true;
-      if (role === 'cleaning' && recip.includes('clean')) return true;
-      if (role === 'engineer' && (recip.includes('engineer') || recip.includes('maintenance') || recip.includes('electric') || recip.includes('plumb') || recip.includes('carpentr') || recip.includes('furnitur'))) return true;
-      if ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse'))) return true;
-      if (role === 'facilities_manager' && (recip.includes('facilities') || recip.includes('deputy') || recip.includes('carpentry'))) return true;
+      if ((role === 'cleaning' || role === 'cleaning_head') && (recip.includes('clean') || recip.includes('айнур') || recip.includes('акилова'))) return true;
+      if ((role === 'engineer' || role === 'head_engineer') && (recip.includes('engineer') || recip.includes('инженер') || recip.includes('василий') || recip.includes('maintenance') || recip.includes('electric') || recip.includes('plumb') || recip.includes('carpentr') || recip.includes('furnitur'))) return true;
+      if ((role === 'storage_manager' || role === 'workerA') && (recip.includes('storage') || recip.includes('warehouse') || recip.includes('склад'))) return true;
+      if (role === 'facilities_manager' && (recip.includes('facilities') || recip.includes('deputy') || recip.includes('carpentry') || recip.includes('ахч'))) return true;
 
       // 3. User name direct match
       if (recip && myName) {

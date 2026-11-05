@@ -79,10 +79,10 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
   if (role === 'it_support' && (resolvedDept === 'it_helpdesk' || resolvedDept === 'it')) {
     return true;
   }
-  if (role === 'cleaning' && resolvedDept === 'cleaning') {
+  if ((role === 'cleaning' || role === 'cleaning_head') && resolvedDept === 'cleaning') {
     return true;
   }
-  if (role === 'engineer' && (
+  if ((role === 'engineer' || role === 'head_engineer') && (
     resolvedDept === 'plumbing' || 
     resolvedDept === 'electrical' || 
     resolvedDept === 'engineering' || 

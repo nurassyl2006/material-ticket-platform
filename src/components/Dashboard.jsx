@@ -28,7 +28,7 @@ import { resolveDepartment, DEPARTMENTS } from '../departments';
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang, canAccessDailyDigest: canAccessDailyDigestFn } = useApp();
 
-  const hasDailyDigestAccess = canAccessDailyDigestFn ? canAccessDailyDigestFn(role) : (role === 'director' || role === 'admin' || role === 'engineer' || role === 'storage_manager' || role === 'finance');
+  const hasDailyDigestAccess = canAccessDailyDigestFn ? canAccessDailyDigestFn(role) : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role));
 
   // Scoped tickets that this user is authorized/related to see
   const scopedTickets = appScopedTickets || [];

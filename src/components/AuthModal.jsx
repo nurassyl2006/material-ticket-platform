@@ -467,12 +467,15 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                 {[
                   { roleName: 'Director (Nurassyl)', email: 'maratov2.2006@gmail.com', pwd: 'facilities123', color: '#a78bfa' },
                   { roleName: 'Director (Balkan)', email: 'b.kassimov@ardingly.edu.kz', pwd: 'admin123', color: '#818cf8' },
-                  { roleName: 'Engineer (Василий)', email: 'engineer@school.edu', pwd: 'engineer123', color: '#f97316' },
+                  { roleName: 'Head of Engineering (Василий)', email: 'engineer@school.edu', pwd: 'engineer123', color: '#f97316' },
+                  { roleName: 'Head of Cleaning (Айнур)', email: 'cleaning.head@school.edu', pwd: 'clean123', color: '#10b981' },
+                  { roleName: 'Head of Storage', email: 'storage@school.edu', pwd: 'storage123', color: '#fb923c' },
+                  { roleName: 'Head of IT', email: 'it.support@school.edu', pwd: 'it123', color: '#38bdf8' },
+                  { roleName: 'Head of Finance', email: 'finance@school.edu', pwd: 'finance123', color: '#34d399' },
                   { roleName: 'Worker A', email: 'workera', pwd: 'school123', color: '#fbbf24' },
                   { roleName: 'Worker B', email: 'workerb', pwd: 'school123', color: '#eab308' },
                   { roleName: 'Cleaner 1', email: 'cleaning1', pwd: 'clean123', color: '#38bdf8' },
                   { roleName: 'Cleaner 2', email: 'cleaning2', pwd: 'clean123', color: '#06b6d4' },
-                  { roleName: 'Storage', email: 'storage@school.edu', pwd: 'storage123', color: '#fb923c' },
                   { roleName: 'Teacher', email: 'teacher@school.edu', pwd: 'teacher123', color: '#60a5fa' }
                 ].map(demo => (
                   <button

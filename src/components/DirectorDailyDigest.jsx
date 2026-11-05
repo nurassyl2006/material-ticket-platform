@@ -1126,7 +1126,9 @@ export const DirectorDailyDigest = ({ onOpenNewTicket, currentPath }) => {
   }, [reportPeriod, dDict]);
 
   const roleBadgeTitle = useMemo(() => {
-    if (role === 'engineer') return dDict.mainEngineerBadge || 'Main Engineer Oversight';
+    if (role === 'engineer' || role === 'head_engineer') return dDict.mainEngineerBadge || 'Main Engineer Oversight';
+    if (role === 'cleaning_head' || role === 'cleaning') return dDict.cleaningHeadBadge || 'Head of Cleaning Oversight';
+    if (role === 'it_support') return dDict.itHeadBadge || 'Head of IT Oversight';
     if (role === 'storage_manager' || role === 'workerA') return dDict.storageBadge || 'Head of Storage Oversight';
     if (role === 'finance' || role === 'accountant') return dDict.financeBadge || 'Head of Finance Oversight';
     if (role === 'facilities_manager') return dDict.facilitiesBadge || 'Facilities Management Oversight';

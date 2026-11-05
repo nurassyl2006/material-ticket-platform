@@ -375,7 +375,16 @@ export const mockUsers = {
   },
   engineer: {
     id: "usr-eng1",
-    name: "Василий (Engineer)",
+    name: "Василий (Head of Engineering)",
+    role: "engineer",
+    department: "Engineering, Electrical & HVAC Utilities",
+    email: "engineer@school.edu",
+    phone: "+7 777 000 0003",
+    avatar: ""
+  },
+  head_engineer: {
+    id: "usr-eng1",
+    name: "Василий (Head of Engineering)",
     role: "engineer",
     department: "Engineering, Electrical & HVAC Utilities",
     email: "engineer@school.edu",
@@ -384,11 +393,20 @@ export const mockUsers = {
   },
   it_support: {
     id: "usr-it1",
-    name: "IT Support",
+    name: "IT Support (Head of IT)",
     role: "it_support",
     department: "Information Technology Support",
     email: "it.support@school.edu",
     phone: "+7 777 000 0004",
+    avatar: ""
+  },
+  cleaning_head: {
+    id: "usr-cl-head",
+    name: "Акилова Айнур (Head of Cleaning)",
+    role: "cleaning_head",
+    department: "Campus Hygiene & Sanitization",
+    email: "cleaning.head@school.edu",
+    phone: "+7 777 000 0008",
     avatar: ""
   },
   cleaning1: {

@@ -243,6 +243,7 @@ app.post('/api/auth/login', (req, res) => {
 
     let normalizedKey = searchId;
     if (normalizedKey === 'storage@school.edu') normalizedKey = 'storage_manager';
+    if (normalizedKey === 'cleaning.head@school.edu') normalizedKey = 'cleaning_head';
     if (normalizedKey === 'admin' || normalizedKey === 'director@school.edu') normalizedKey = 'director';
 
     const user = db.prepare(`
@@ -255,13 +256,36 @@ app.post('/api/auth/login', (req, res) => {
          OR LOWER(email) = LOWER(?) || '@school.edu'
          OR (role = 'director' AND LOWER(?) IN ('director', 'director@school.edu', 'admin', 'b.kassimov', 'balkan'))
          OR (role = 'director' AND LOWER(?) IN ('maratov2.2006@gmail.com', 'n.maratov@ardingly.edu.kz', 'n.maratov', 'nurassyl', 'maratov'))
-         OR (role = 'engineer' AND LOWER(?) IN ('engineer', 'engineer@school.edu', 'василий', 'vasiliy', 'vasily'))
+         OR ((role = 'engineer' OR roleKey = 'engineer' OR id = 'usr-eng1') AND LOWER(?) IN ('engineer', 'engineer@school.edu', 'василий', 'vasiliy', 'vasily', 'head_engineer', 'head of engineering'))
+         OR ((role = 'cleaning_head' OR roleKey = 'cleaning_head' OR id = 'usr-cl-head') AND LOWER(?) IN ('cleaning_head', 'cleaning.head@school.edu', 'cleaning_head@school.edu', 'ainur', 'akilova', 'акилова', 'айнур', 'head of cleaning'))
+         OR ((role = 'it_support' OR roleKey = 'it_support' OR id = 'usr-it1') AND LOWER(?) IN ('it', 'it_support', 'it.support@school.edu', 'it@school.edu', 'head of it'))
+         OR ((role = 'finance' OR roleKey = 'finance' OR id = 'usr-fin1') AND LOWER(?) IN ('finance', 'finance@school.edu', 'accountant', 'head of finance'))
+         OR ((role = 'storage_manager' OR roleKey = 'storage_manager' OR id = 'usr-w1') AND LOWER(?) IN ('storage', 'storage@school.edu', 'storage_manager', 'head of storage'))
          OR (email = 'workera' AND LOWER(?) IN ('workera', 'worker a'))
          OR (email = 'workerb' AND LOWER(?) IN ('workerb', 'worker b'))
          OR (email = 'cleaning1' AND LOWER(?) IN ('cleaning1', 'cleaner 1', 'cleaner1'))
          OR (email = 'cleaning2' AND LOWER(?) IN ('cleaning2', 'cleaner 2', 'cleaner2'))
          OR (roleKey = 'facilities_manager' AND LOWER(?) IN ('facilities', 'facilities@school.edu', 'facilities_manager'))
-    `).get(normalizedKey, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId, searchId);
+    `).get(
+      normalizedKey,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId,
+      searchId
+    );
 
     if (!user) {
       return res.status(401).json({ error: 'User not found. Check your email or username.' });

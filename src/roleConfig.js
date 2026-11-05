@@ -92,9 +92,9 @@ export const DEFAULT_ROLES = {
   },
   it_support: {
     key: 'it_support',
-    label: 'IT Support',
-    labelRu: 'IT специалист',
-    labelKk: 'IT маманы',
+    label: 'Head of IT / IT Support',
+    labelRu: 'Руководитель IT / IT специалист',
+    labelKk: 'IT жетекшісі / IT маманы',
     color: '#38bdf8',
     bg: 'rgba(56, 189, 248, 0.15)',
     border: 'rgba(56, 189, 248, 0.35)',
@@ -104,8 +104,25 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Wi-Fi, ноутбуктер, проекторлар, принтерлер және желі',
     canViewStorage: true,
     canManageStock: false,
-    canViewDailyDigest: false,
+    canViewDailyDigest: true,
     allowedCategories: ['electronics', 'stationary', 'other']
+  },
+  cleaning_head: {
+    key: 'cleaning_head',
+    label: 'Head of Cleaning',
+    labelRu: 'Заведующая клинингом / Бригадир',
+    labelKk: 'Тазалық қызметінің жетекшісі',
+    color: '#10b981',
+    bg: 'rgba(16, 185, 129, 0.15)',
+    border: 'rgba(16, 185, 129, 0.35)',
+    icon: 'Sparkles',
+    scope: 'Supervision of cleaning staff, sanitization reports, daily campus cleanliness inspections',
+    scopeRu: 'Руководство клининговой службой, отчеты о санобработке и ежедневный контроль чистоты',
+    scopeKk: 'Тазалық қызметін басқару, санитарлық есептер және кампус тазалығын күнделікті тексеру',
+    canViewStorage: true,
+    canManageStock: true,
+    canViewDailyDigest: true,
+    allowedCategories: ['cleaning', 'other', 'all']
   },
   cleaning: {
     key: 'cleaning',
@@ -121,7 +138,7 @@ export const DEFAULT_ROLES = {
     scopeKk: 'Кабинеттер тазалығы, қоқыс шығару және санитариялық өңдеу',
     canViewStorage: true,
     canManageStock: false,
-    canViewDailyDigest: false,
+    canViewDailyDigest: true,
     allowedCategories: ['cleaning', 'other']
   },
   teacher: {
@@ -182,7 +199,11 @@ export const DEFAULT_ROLES = {
  */
 export function getRoleDefinition(roleKey, customRoles = {}) {
   const merged = { ...DEFAULT_ROLES, ...customRoles };
-  const normalizedKey = roleKey === 'admin' ? 'director' : (roleKey === 'workerA' ? 'storage_manager' : (roleKey === 'accountant' ? 'finance' : roleKey));
+  const normalizedKey = roleKey === 'admin' ? 'director' 
+    : (roleKey === 'workerA' ? 'storage_manager' 
+    : (roleKey === 'accountant' ? 'finance' 
+    : (roleKey === 'head_engineer' ? 'engineer' 
+    : roleKey)));
   return merged[normalizedKey] || merged[roleKey] || {
     key: roleKey,
     label: roleKey,
@@ -204,10 +225,14 @@ export function getRoleDefinition(roleKey, customRoles = {}) {
 
 /**
  * Check if a role can view everyday report / executive daily ticket digest
- * Main engineer, head of storage, head of finance, director, facilities manager, and roles with explicit permission
+ * Main engineer, head of cleaning, head of storage, head of IT, head of finance, director, facilities manager, and roles with explicit permission
  */
 export function canRoleAccessDailyDigest(roleKey, customRoles = {}) {
-  if (['director', 'admin', 'engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant'].includes(roleKey)) {
+  if ([
+    'director', 'admin', 'engineer', 'head_engineer', 'storage_manager',
+    'workerA', 'facilities_manager', 'finance', 'accountant',
+    'cleaning_head', 'cleaning', 'it_support'
+  ].includes(roleKey)) {
     return true;
   }
   const def = getRoleDefinition(roleKey, customRoles);
