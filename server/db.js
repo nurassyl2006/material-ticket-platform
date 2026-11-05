@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { SEED_TICKETS } from './seedTickets.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1075,12 +1076,60 @@ export function syncFullStaffRoster() {
 // Run initial staff synchronization on module load
 syncFullStaffRoster();
 
-// Helper to reset database to default state (preserves users and credentials permanently)
+// Synchronize preserved school tickets if missing
+export function syncSeedTickets() {
+  try {
+    const count = db.prepare('SELECT COUNT(*) as count FROM tickets').get().count;
+    if (count < SEED_TICKETS.length) {
+      const insertTicket = db.prepare(`
+        INSERT OR IGNORE INTO tickets (
+          id, department, itemTitle, subcategory, category, quantity, unit, urgency, roomNumber,
+          moveDetails, description, photos, completionPhotos,
+          isReturnable, returnStatus, borrowedAt, returnedAt, returnConfirmedAt, returnConfirmedBy,
+          teacherName, teacherPhone,
+          createdById, createdByRole,
+          status, assignedWorker, assignedRole, handledAction, purchaseCost, supplier, notes,
+          createdAt, updatedAt, completedAt, declineReason, declinedBy, declinedAt
+        ) VALUES (
+          @id, @department, @itemTitle, @subcategory, @category, @quantity, @unit, @urgency, @roomNumber,
+          @moveDetails, @description, @photos, @completionPhotos,
+          @isReturnable, @returnStatus, @borrowedAt, @returnedAt, @returnConfirmedAt, @returnConfirmedBy,
+          @teacherName, @teacherPhone,
+          @createdById, @createdByRole,
+          @status, @assignedWorker, @assignedRole, @handledAction, @purchaseCost, @supplier, @notes,
+          @createdAt, @updatedAt, @completedAt, @declineReason, @declinedBy, @declinedAt
+        )
+      `);
+
+      const runTx = db.transaction(() => {
+        for (const t of SEED_TICKETS) {
+          insertTicket.run({
+            ...t,
+            photos: Array.isArray(t.photos) ? JSON.stringify(t.photos) : (typeof t.photos === 'string' ? t.photos : '[]'),
+            completionPhotos: Array.isArray(t.completionPhotos) ? JSON.stringify(t.completionPhotos) : (typeof t.completionPhotos === 'string' ? t.completionPhotos : '[]'),
+            moveDetails: t.moveDetails ? (typeof t.moveDetails === 'object' ? JSON.stringify(t.moveDetails) : t.moveDetails) : null,
+            isReturnable: t.isReturnable ? 1 : 0,
+            purchaseCost: Number(t.purchaseCost) || 0,
+            quantity: Number(t.quantity) || 1
+          });
+        }
+      });
+
+      runTx();
+    }
+  } catch (err) {
+    console.error('Seed tickets synchronization error:', err.message);
+  }
+}
+
+// Ensure preserved school tickets are present on module load
+syncSeedTickets();
+
+// Helper to reset database to default state (preserves users and registered tickets permanently)
 export function resetDatabase() {
   const now = new Date().toISOString();
   db.transaction(() => {
-    // Clear tickets, notifications and active sessions
-    db.prepare('DELETE FROM tickets').run();
+    // Clear only temporary notifications and active sessions (PRESERVE ALL TICKETS!)
     db.prepare('DELETE FROM notifications').run();
     db.prepare('DELETE FROM sessions').run();
 
@@ -1103,6 +1152,9 @@ export function resetDatabase() {
     // DO NOT DELETE USERS: Preserve all registered school staff & customized roles
     // Ensure the full staff roster is guaranteed present
     syncFullStaffRoster();
+
+    // Ensure all school tickets are guaranteed preserved
+    syncSeedTickets();
   })();
 }
 
