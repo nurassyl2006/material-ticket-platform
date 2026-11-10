@@ -350,7 +350,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
           </div>
 
           {/* Status Filter */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card, rgba(15, 23, 42, 0.75))', padding: '0 10px', borderRadius: '8px', border: '1px solid var(--border-color)', height: '36px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '0 10px', borderRadius: '8px', border: '1px solid var(--border-color)', height: '36px' }}>
             <Filter size={14} color="var(--text-muted)" />
             <select
               value={statusFilter}
@@ -364,15 +364,15 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                 outline: 'none'
               }}
             >
-              <option value="all" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.filterAll}</option>
-              <option value="pending" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.pending}</option>
-              <option value="in_progress" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.in_progress}</option>
-              <option value="issued" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.issued}</option>
-              <option value="on_loan" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>⏱️ {t.tickets?.status?.on_loan || 'On Loan (1-2 Lessons)'}</option>
-              <option value="returned_by_teacher" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>⏳ {t.tickets?.status?.returned_by_teacher || 'Returned • Awaiting Warehouse'}</option>
-              <option value="purchasing" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.purchasing}</option>
-              <option value="completed" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>{t.tickets.status.completed}</option>
-              <option value="rejected" style={{ background: 'var(--bg-dialog, #111827)', color: 'var(--text-main, #fff)' }}>🚫 {t.tickets.status.rejected || 'Declined'}</option>
+              <option value="all" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>{t.tickets.filterAll}</option>
+              <option value="pending" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>{t.tickets.status.pending}</option>
+              <option value="in_progress" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>{t.tickets.status.in_progress}</option>
+              <option value="issued" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>{t.tickets.status.issued}</option>
+              <option value="on_loan" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>⏱️ {t.tickets?.status?.on_loan || 'On Loan (1-2 Lessons)'}</option>
+              <option value="returned_by_teacher" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>⏳ {t.tickets?.status?.returned_by_teacher || 'Returned • Awaiting Warehouse'}</option>
+              <option value="purchasing" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>{t.tickets.status.purchasing}</option>
+              <option value="completed" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>{t.tickets.status.completed}</option>
+              <option value="rejected" style={{ background: 'var(--bg-card)', color: 'var(--text-main)' }}>🚫 {t.tickets.status.rejected || 'Declined'}</option>
             </select>
           </div>
 

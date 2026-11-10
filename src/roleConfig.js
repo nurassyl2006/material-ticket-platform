@@ -56,11 +56,28 @@ export const DEFAULT_ROLES = {
     canViewDailyDigest: true,
     allowedCategories: ['all']
   },
+  head_engineer: {
+    key: 'head_engineer',
+    label: 'Head of Engineering',
+    labelRu: 'Главный инженер',
+    labelKk: 'Бас инженер',
+    color: '#ea580c',
+    bg: 'rgba(234, 88, 12, 0.15)',
+    border: 'rgba(234, 88, 12, 0.35)',
+    icon: 'Wrench',
+    scope: 'Supervision of maintenance technicians, heating, ventilation, power grids, and facilities engineering SLA',
+    scopeRu: 'Руководство инженерной службой, электросети, вентиляция, отопление, распределение нарядов и контроль SLA',
+    scopeKk: 'Инженерлік қызметті басқару, электр желілері, желдету, жылыту, тапсырмаларды бөлу және SLA бақылау',
+    canViewStorage: true,
+    canManageStock: true,
+    canViewDailyDigest: true,
+    allowedCategories: ['all']
+  },
   engineer: {
     key: 'engineer',
     label: 'Maintenance Engineer',
-    labelRu: 'Инженер-механик / Электрик',
-    labelKk: 'Инженер-механик / Электрик',
+    labelRu: 'Инженер-электрик / Техник',
+    labelKk: 'Инженер-электрик / Техник',
     color: '#f97316',
     bg: 'rgba(249, 115, 22, 0.15)',
     border: 'rgba(249, 115, 22, 0.35)',
@@ -75,9 +92,9 @@ export const DEFAULT_ROLES = {
   },
   finance: {
     key: 'finance',
-    label: 'Head of Finance / Accountant',
-    labelRu: 'Главный финансист / Бухгалтерия',
-    labelKk: 'Бас қаржыгер / Бухгалтер',
+    label: 'Head of Finance',
+    labelRu: 'Главный финансист',
+    labelKk: 'Бас қаржыгер',
     color: '#10b981',
     bg: 'rgba(16, 185, 129, 0.15)',
     border: 'rgba(16, 185, 129, 0.35)',
@@ -90,11 +107,45 @@ export const DEFAULT_ROLES = {
     canViewDailyDigest: true,
     allowedCategories: ['all']
   },
+  accountant: {
+    key: 'accountant',
+    label: 'Accountant / Bursar',
+    labelRu: 'Бухгалтерия / Финансист',
+    labelKk: 'Бухгалтер / Қаржыгер',
+    color: '#0d9488',
+    bg: 'rgba(13, 148, 136, 0.15)',
+    border: 'rgba(13, 148, 136, 0.35)',
+    icon: 'DollarSign',
+    scope: 'Asset auditing, material expenditure approvals, supplier invoice reconciliation, and inventory write-off reviews',
+    scopeRu: 'Аудит материальных ценностей, согласование закупок, сверка счетов поставщиков и списание инвентаря',
+    scopeKk: 'Материалдық құндылықтар аудиті, сатып алуды мақұлдау, шот-фактураларды салыстыру және мүлікті есептен шығару',
+    canViewStorage: true,
+    canManageStock: true,
+    canViewDailyDigest: true,
+    allowedCategories: ['all']
+  },
+  it_head: {
+    key: 'it_head',
+    label: 'Head of IT',
+    labelRu: 'Руководитель IT',
+    labelKk: 'IT жетекшісі',
+    color: '#0284c7',
+    bg: 'rgba(2, 132, 199, 0.15)',
+    border: 'rgba(2, 132, 199, 0.35)',
+    icon: 'Laptop',
+    scope: 'IT infrastructure, server networks, security policies, campus hardware procurement and helpdesk oversight',
+    scopeRu: 'IT-инфраструктура, безопасность сети, закупка оборудования, школьные системы и руководство IT службой',
+    scopeKk: 'IT-инфрақұрылым, желі қауіпсіздігі, жабдықтарды сатып алу және IT қызметін басқару',
+    canViewStorage: true,
+    canManageStock: true,
+    canViewDailyDigest: true,
+    allowedCategories: ['all']
+  },
   it_support: {
     key: 'it_support',
-    label: 'Head of IT / IT Support',
-    labelRu: 'Руководитель IT / IT специалист',
-    labelKk: 'IT жетекшісі / IT маманы',
+    label: 'IT Support Specialist',
+    labelRu: 'Специалист IT-поддержки',
+    labelKk: 'IT қолдау маманы',
     color: '#38bdf8',
     bg: 'rgba(56, 189, 248, 0.15)',
     border: 'rgba(56, 189, 248, 0.35)',
@@ -112,9 +163,9 @@ export const DEFAULT_ROLES = {
     label: 'Head of Cleaning',
     labelRu: 'Заведующая клинингом / Бригадир',
     labelKk: 'Тазалық қызметінің жетекшісі',
-    color: '#10b981',
-    bg: 'rgba(16, 185, 129, 0.15)',
-    border: 'rgba(16, 185, 129, 0.35)',
+    color: '#059669',
+    bg: 'rgba(5, 150, 105, 0.15)',
+    border: 'rgba(5, 150, 105, 0.35)',
     icon: 'Sparkles',
     scope: 'Supervision of cleaning staff, sanitization reports, daily campus cleanliness inspections',
     scopeRu: 'Руководство клининговой службой, отчеты о санобработке и ежедневный контроль чистоты',
@@ -127,8 +178,8 @@ export const DEFAULT_ROLES = {
   cleaning: {
     key: 'cleaning',
     label: 'Cleaning Staff',
-    labelRu: 'Служба клининга',
-    labelKk: 'Тазалық қызметі',
+    labelRu: 'Служба клининга / Уборщик',
+    labelKk: 'Тазалық қызметі / Еден жуушы',
     color: '#34d399',
     bg: 'rgba(52, 211, 153, 0.15)',
     border: 'rgba(52, 211, 153, 0.35)',
@@ -140,6 +191,23 @@ export const DEFAULT_ROLES = {
     canManageStock: false,
     canViewDailyDigest: true,
     allowedCategories: ['cleaning', 'other']
+  },
+  security_head: {
+    key: 'security_head',
+    label: 'Head of Security',
+    labelRu: 'Начальник службы безопасности',
+    labelKk: 'Күзет қызметінің бастығы',
+    color: '#e11d48',
+    bg: 'rgba(225, 29, 72, 0.15)',
+    border: 'rgba(225, 29, 72, 0.35)',
+    icon: 'ShieldCheck',
+    scope: 'Campus perimeter security, entrance gates access control, safety protocols, and emergency response',
+    scopeRu: 'Пропускной режим кампуса, охрана периметра, протоколы безопасности и реагирование на инциденты',
+    scopeKk: 'Кампустың кіру режимі, периметрді қорғау, қауіпсіздік хаттамалары және оқиғаларға әрекет ету',
+    canViewStorage: true,
+    canManageStock: false,
+    canViewDailyDigest: true,
+    allowedCategories: ['other']
   },
   teacher: {
     key: 'teacher',
@@ -200,9 +268,9 @@ export const DEFAULT_ROLES = {
 export function getRoleDefinition(roleKey, customRoles = {}) {
   const merged = { ...DEFAULT_ROLES, ...customRoles };
   const normalizedKey = roleKey === 'admin' ? 'director' 
-    : (roleKey === 'workerA' ? 'storage_manager' 
-    : (roleKey === 'accountant' ? 'finance' 
-    : (roleKey === 'head_engineer' ? 'engineer' 
+    : (roleKey === 'workerA' || roleKey === 'workerB' ? 'storage_manager' 
+    : (roleKey === 'head_it' ? 'it_head' 
+    : (roleKey === 'security' ? 'security_head' 
     : roleKey)));
   return merged[normalizedKey] || merged[roleKey] || {
     key: roleKey,
@@ -229,9 +297,9 @@ export function getRoleDefinition(roleKey, customRoles = {}) {
  */
 export function canRoleAccessDailyDigest(roleKey, customRoles = {}) {
   if ([
-    'director', 'admin', 'engineer', 'head_engineer', 'storage_manager',
-    'workerA', 'facilities_manager', 'finance', 'accountant',
-    'cleaning_head', 'cleaning', 'it_support'
+    'director', 'admin', 'head_engineer', 'engineer', 'storage_manager',
+    'workerA', 'workerB', 'facilities_manager', 'finance', 'accountant',
+    'cleaning_head', 'cleaning', 'it_support', 'it_head', 'head_it', 'security_head', 'security'
   ].includes(roleKey)) {
     return true;
   }
@@ -243,7 +311,11 @@ export function canRoleAccessDailyDigest(roleKey, customRoles = {}) {
  * Check if a role can view warehouse storage / goods catalog
  */
 export function canRoleAccessStorage(roleKey, customRoles = {}) {
-  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'finance' || roleKey === 'accountant') return true;
+  if ([
+    'director', 'admin', 'finance', 'accountant', 'head_engineer', 
+    'storage_manager', 'workerA', 'workerB', 'facilities_manager', 
+    'it_head', 'cleaning_head'
+  ].includes(roleKey)) return true;
   const def = getRoleDefinition(roleKey, customRoles);
   return Boolean(def.canViewStorage);
 }
@@ -261,7 +333,10 @@ export function canRoleManageStock(roleKey, customRoles = {}) {
  * Get the list of allowed storage category IDs for a role
  */
 export function getRoleAllowedCategories(roleKey, customRoles = {}, allCategories = []) {
-  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'storage_manager' || roleKey === 'workerA' || roleKey === 'finance' || roleKey === 'accountant') {
+  if ([
+    'director', 'admin', 'storage_manager', 'workerA', 'workerB', 
+    'finance', 'accountant', 'head_engineer', 'it_head', 'facilities_manager'
+  ].includes(roleKey)) {
     return allCategories.map(c => c.id || c.key);
   }
   const def = getRoleDefinition(roleKey, customRoles);
@@ -278,7 +353,10 @@ export function getRoleAllowedCategories(roleKey, customRoles = {}, allCategorie
  * Check if a specific category is permitted for a role
  */
 export function isCategoryAllowedForRole(categoryId, roleKey, customRoles = {}, allCategories = []) {
-  if (roleKey === 'director' || roleKey === 'admin' || roleKey === 'storage_manager' || roleKey === 'workerA' || roleKey === 'finance' || roleKey === 'accountant') {
+  if ([
+    'director', 'admin', 'storage_manager', 'workerA', 'workerB', 
+    'finance', 'accountant', 'head_engineer', 'it_head', 'facilities_manager'
+  ].includes(roleKey)) {
     return true;
   }
   const allowed = getRoleAllowedCategories(roleKey, customRoles, allCategories);

@@ -125,10 +125,10 @@ export const CategoryEditorModal = ({
           width: '100%',
           maxWidth: '540px',
           maxHeight: '90vh',
-          background: '#242424',
-          border: '1px solid #383838',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
           borderRadius: '16px',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7)',
+          boxShadow: 'var(--shadow-depth-16)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden'
@@ -138,16 +138,16 @@ export const CategoryEditorModal = ({
         {/* Header */}
         <div style={{
           padding: '16px 20px',
-          borderBottom: '1px solid #383838',
+          borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: '#1f1f1f'
+          background: 'var(--bg-subtle)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '24px' }}>{formData.icon}</span>
             <div>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#fff' }}>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--text-main)' }}>
                 {isEditing
                   ? (lang === 'ru' ? `Редактирование категории: ${formData.nameRu || formData.nameEn}` : `Edit Category: ${formData.nameEn}`)
                   : (lang === 'ru' ? 'Добавить категорию склада' : 'Create New Storage Category')}
@@ -204,8 +204,8 @@ export const CategoryEditorModal = ({
                     fontSize: '16px',
                     padding: '6px 9px',
                     borderRadius: '8px',
-                    background: formData.icon === em ? 'rgba(56, 189, 248, 0.25)' : '#1f1f1f',
-                    border: `1px solid ${formData.icon === em ? '#38bdf8' : '#383838'}`,
+                    background: formData.icon === em ? 'var(--primary-tint)' : 'var(--bg-subtle)',
+                    border: `1px solid ${formData.icon === em ? 'var(--primary)' : 'var(--border-color)'}`,
                     cursor: 'pointer'
                   }}
                 >
@@ -250,9 +250,9 @@ export const CategoryEditorModal = ({
                   width: '100%',
                   padding: '8px 12px',
                   borderRadius: '8px',
-                  background: isEditing ? '#181818' : '#1f1f1f',
-                  border: '1px solid #383838',
-                  color: isEditing ? '#8a8a8a' : '#fff',
+                  background: isEditing ? 'var(--bg-subtle)' : 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: isEditing ? 'var(--text-muted)' : 'var(--text-main)',
                   fontSize: '13px',
                   boxSizing: 'border-box'
                 }}
@@ -260,7 +260,7 @@ export const CategoryEditorModal = ({
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                 Title (English) *
               </label>
               <input
@@ -273,9 +273,9 @@ export const CategoryEditorModal = ({
                   width: '100%',
                   padding: '8px 12px',
                   borderRadius: '8px',
-                  background: '#1f1f1f',
-                  border: '1px solid #383838',
-                  color: '#fff',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
                   fontSize: '13px',
                   boxSizing: 'border-box'
                 }}
@@ -285,7 +285,7 @@ export const CategoryEditorModal = ({
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                 Название (Русский)
               </label>
               <input
@@ -297,9 +297,9 @@ export const CategoryEditorModal = ({
                   width: '100%',
                   padding: '8px 12px',
                   borderRadius: '8px',
-                  background: '#1f1f1f',
-                  border: '1px solid #383838',
-                  color: '#fff',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
                   fontSize: '13px',
                   boxSizing: 'border-box'
                 }}
@@ -307,7 +307,7 @@ export const CategoryEditorModal = ({
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                 Default Storage Location
               </label>
               <input
@@ -319,9 +319,9 @@ export const CategoryEditorModal = ({
                   width: '100%',
                   padding: '8px 12px',
                   borderRadius: '8px',
-                  background: '#1f1f1f',
-                  border: '1px solid #383838',
-                  color: '#fff',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
                   fontSize: '13px',
                   boxSizing: 'border-box'
                 }}
@@ -335,10 +335,10 @@ export const CategoryEditorModal = ({
             alignItems: 'flex-start',
             gap: '10px',
             cursor: 'pointer',
-            background: formData.isReturnable ? 'rgba(249, 115, 22, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+            background: formData.isReturnable ? 'rgba(249, 115, 22, 0.1)' : 'var(--bg-subtle)',
             padding: '10px 12px',
             borderRadius: '8px',
-            border: `1px solid ${formData.isReturnable ? 'rgba(249, 115, 22, 0.35)' : '#383838'}`
+            border: `1px solid ${formData.isReturnable ? 'rgba(249, 115, 22, 0.35)' : 'var(--border-color)'}`
           }}>
             <input
               type="checkbox"
@@ -347,11 +347,11 @@ export const CategoryEditorModal = ({
               style={{ marginTop: '2px' }}
             />
             <div>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Clock size={13} color="#f97316" />
                 <span>{lang === 'ru' ? 'Временная выдача на 1-2 урока (С обязательным возвратом)' : 'Temporary Loan (1-2 Lessons • Returnable to Storage)'}</span>
               </div>
-              <div style={{ fontSize: '11px', color: '#8a8a8a', marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                 {lang === 'ru'
                   ? 'При выдаче предмета учитель должен вернуть его после урока, а завскладом подтвердить возврат'
                   : 'Items in this category must be returned by the teacher and confirmed by the storage manager'}
@@ -367,9 +367,9 @@ export const CategoryEditorModal = ({
               style={{
                 padding: '8px 16px',
                 borderRadius: '8px',
-                background: '#1f1f1f',
-                border: '1px solid #383838',
-                color: '#adadad',
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-main)',
                 fontSize: '12px',
                 fontWeight: '600',
                 cursor: 'pointer'

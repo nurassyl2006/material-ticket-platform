@@ -4,17 +4,13 @@ import {
   Building,
   Layers,
   DoorOpen,
-  Footprints,
-  Droplets,
-  Utensils,
-  Dumbbell,
-  Compass,
   Edit3,
-  School,
   Sparkles,
   Search,
   CheckCircle2,
-  X
+  X,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import {
   CAMPUS_BLOCKS,
@@ -24,6 +20,18 @@ import {
   getRoomsByBlockAndFloor,
   searchCampusRooms
 } from '../campusRooms';
+
+// Popular quick presets for high-frequency school locations
+const POPULAR_LOCATIONS = [
+  { label: '🏫 Library', code: 'D-3-1', block: 'blockD', floor: 'floor3', name: 'Library' },
+  { label: '🍽️ Dining Hall', code: 'Canteen', block: 'blockD', floor: 'floor1', name: 'Dining Hall / Canteen' },
+  { label: '⚽ Sports Hall', code: 'D-2-2', block: 'blockD', floor: 'floor2', name: 'Main Sports Hall' },
+  { label: '💻 IT Lab', code: 'C-1-6', block: 'blockC', floor: 'floor1', name: 'IT 1' },
+  { label: '🧪 Science Lab', code: 'C-3-6', block: 'blockC', floor: 'floor3', name: 'Science Laboratory 1' },
+  { label: '🏊 Swimming Pool', code: 'Pool', block: 'blockD', floor: 'floor1', name: 'Swimming Pool' },
+  { label: '🚻 Restroom', code: 'A-1-10', block: 'blockA', floor: 'floor1', name: 'Toilets & Stairs' },
+  { label: '🎭 Assembly Hall', code: 'Lectorium', block: 'blockD', floor: 'floor1', name: 'Lectorium' }
+];
 
 export const CampusLocationSelector = ({
   value = '',
@@ -37,13 +45,9 @@ export const CampusLocationSelector = ({
   const [selectedRoomCode, setSelectedRoomCode] = useState('');
   const [roomSearchTerm, setRoomSearchTerm] = useState('');
   const [specificSpot, setSpecificSpot] = useState('');
-  const [areaType, setAreaType] = useState(() => {
-    if (department === 'cleaning') return 'corridor';
-    if (department === 'engineering') return 'classroom';
-    return 'classroom';
-  });
+  const [showAdvancedFloorGrid, setShowAdvancedFloorGrid] = useState(false);
 
-  // Try to parse initial value to pre-populate block/floor/room
+  // Parse initial value to pre-populate block/floor/room
   useEffect(() => {
     if (value && typeof value === 'string') {
       const recognized = recognizeRoom(value);
@@ -66,6 +70,12 @@ export const CampusLocationSelector = ({
     if (!roomSearchTerm.trim() || roomSearchTerm.length < 2) return [];
     return searchCampusRooms(roomSearchTerm, 6);
   }, [roomSearchTerm]);
+
+  // Rooms on currently selected Block
+  const blockRooms = useMemo(() => {
+    const bLetter = block.replace('block', '');
+    return CAMPUS_ROOMS.filter(r => r.block === bLetter);
+  }, [block]);
 
   // Rooms on currently selected Block and Floor
   const currentFloorRooms = useMemo(() => {
@@ -105,9 +115,17 @@ export const CampusLocationSelector = ({
     setRoomSearchTerm(roomObj.code);
 
     const formatted = constructLocationString(newBlockKey, newFloorKey, roomObj.code, specificSpot);
-    if (onChange) {
-      onChange(formatted);
-    }
+    if (onChange) onChange(formatted);
+  };
+
+  const handleSelectPreset = (preset) => {
+    setBlock(preset.block);
+    setFloor(preset.floor);
+    setSelectedRoomCode(preset.code);
+    setRoomSearchTerm(preset.code);
+
+    const formatted = constructLocationString(preset.block, preset.floor, preset.code, specificSpot);
+    if (onChange) onChange(formatted);
   };
 
   const handleBlockChange = (newBlockKey) => {
@@ -146,10 +164,10 @@ export const CampusLocationSelector = ({
 
   return (
     <div style={{
-      background: 'var(--bg-card, #242424)',
-      border: '1px solid var(--border-color, #383838)',
-      borderRadius: '10px',
-      padding: '14px',
+      background: 'var(--bg-subtle)',
+      border: '1px solid var(--border-color)',
+      borderRadius: '12px',
+      padding: '16px',
       display: 'flex',
       flexDirection: 'column',
       gap: '12px'
@@ -157,11 +175,11 @@ export const CampusLocationSelector = ({
       {/* Header with Mode Toggle */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <MapPin size={16} color={department === 'storage' ? '#f59e0b' : 'var(--primary, #6366f1)'} />
-          <label style={{ fontSize: '12px', fontWeight: '700', color: department === 'storage' ? '#f59e0b' : 'var(--text-main, #f3f2f1)' }}>
+          <MapPin size={16} color="var(--primary)" />
+          <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>
             {department === 'storage'
               ? (t?.tickets?.storageDeliveryRoom || 'Кабинет доставки (куда принести заказ со склада)')
-              : (t?.tickets?.locationTitle || 'School Campus Location (Official Floor Plan)')} *
+              : (t?.tickets?.locationTitle || 'School Campus Location')} *
           </label>
         </div>
 
@@ -169,12 +187,12 @@ export const CampusLocationSelector = ({
           type="button"
           onClick={() => setMode(m => m === 'structured' ? 'freeform' : 'structured')}
           style={{
-            background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
-            border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
             borderRadius: '6px',
             padding: '3px 8px',
             fontSize: '11px',
-            color: 'var(--text-muted, #adadad)',
+            color: 'var(--text-muted)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -184,7 +202,7 @@ export const CampusLocationSelector = ({
           <Edit3 size={11} />
           {mode === 'structured'
             ? (t?.tickets?.useFreeformLocation || 'Manual text')
-            : (t?.tickets?.useStructuredLocation || 'Floor plan selector')}
+            : (t?.tickets?.useStructuredLocation || 'Location picker')}
         </button>
       </div>
 
@@ -198,11 +216,11 @@ export const CampusLocationSelector = ({
             onChange={e => onChange && onChange(e.target.value)}
             style={{
               width: '100%',
-              background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
-              border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+              background: 'var(--bg-input)',
+              border: '1px solid var(--border-color)',
               borderRadius: '8px',
-              padding: '8px 12px',
-              color: 'var(--text-main, #ffffff)',
+              padding: '9px 12px',
+              color: 'var(--text-main)',
               fontSize: '13px',
               outline: 'none',
               boxSizing: 'border-box'
@@ -210,24 +228,56 @@ export const CampusLocationSelector = ({
           />
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           
-          {/* Smart Room Search & Instant Recognition Bar */}
+          {/* Quick Common Location Chips for 1-click select */}
+          <div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: '600' }}>
+              Quick Selection:
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {POPULAR_LOCATIONS.map(loc => {
+                const isSelected = selectedRoomCode === loc.code || (value && value.includes(loc.name));
+                return (
+                  <button
+                    key={loc.code}
+                    type="button"
+                    onClick={() => handleSelectPreset(loc)}
+                    style={{
+                      background: isSelected ? 'var(--primary)' : 'var(--bg-card)',
+                      border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                      color: isSelected ? '#ffffff' : 'var(--text-main)',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '11px',
+                      fontWeight: isSelected ? '700' : '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {loc.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Smart Room Search Bar with Live Suggestions */}
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'relative' }}>
               <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
-                placeholder="Smart room search: type code or name (e.g. A-1-2, Robotics, Pool, Math, D-3-1, 1A)..."
+                placeholder="Search room: A-1-2, Robotics, Pool, Math, D-3-1, 1A..."
                 value={roomSearchTerm}
                 onChange={e => setRoomSearchTerm(e.target.value)}
                 style={{
                   width: '100%',
-                  background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
-                  border: recognizedFromSearch ? '1px solid #10b981' : '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                  background: 'var(--bg-input)',
+                  border: recognizedFromSearch ? '1px solid #10b981' : '1px solid var(--border-color)',
                   borderRadius: '8px',
                   padding: '8px 12px 8px 32px',
-                  color: 'var(--text-main, #ffffff)',
+                  color: 'var(--text-main)',
                   fontSize: '12px',
                   outline: 'none',
                   boxSizing: 'border-box',
@@ -255,7 +305,7 @@ export const CampusLocationSelector = ({
               )}
             </div>
 
-            {/* Instant AI Recognition Pill */}
+            {/* Instant Recognition Banner */}
             {recognizedFromSearch && (
               <div
                 onClick={() => handleApplyRecognizedSearch(recognizedFromSearch)}
@@ -263,8 +313,8 @@ export const CampusLocationSelector = ({
                   marginTop: '6px',
                   background: 'rgba(16, 185, 129, 0.12)',
                   border: '1px solid rgba(16, 185, 129, 0.35)',
-                  borderRadius: '6px',
-                  padding: '6px 10px',
+                  borderRadius: '8px',
+                  padding: '7px 12px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -273,13 +323,13 @@ export const CampusLocationSelector = ({
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
-                  <Sparkles size={13} color="#10b981" />
-                  <span style={{ color: '#10b981', fontWeight: '700' }}>Recognized:</span>
-                  <strong style={{ color: 'var(--text-main, #ffffff)' }}>
+                  <Sparkles size={14} color="#059669" />
+                  <span style={{ color: '#059669', fontWeight: '700' }}>Match found:</span>
+                  <strong style={{ color: 'var(--text-main)' }}>
                     {recognizedFromSearch.fullLabel}
                   </strong>
                 </div>
-                <span style={{ fontSize: '10px', color: '#10b981', fontWeight: '600', textDecoration: 'underline' }}>
+                <span style={{ fontSize: '10px', color: '#059669', fontWeight: '700', textDecoration: 'underline' }}>
                   Click to select
                 </span>
               </div>
@@ -292,7 +342,7 @@ export const CampusLocationSelector = ({
                 top: '100%',
                 left: 0,
                 right: 0,
-                background: 'var(--bg-dialog, #1e293b)',
+                background: 'var(--bg-card)',
                 border: '1px solid var(--border-color)',
                 borderRadius: '8px',
                 marginTop: '4px',
@@ -311,14 +361,14 @@ export const CampusLocationSelector = ({
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                      color: 'var(--text-main, #ffffff)'
+                      borderBottom: '1px solid var(--border-subtle)',
+                      color: 'var(--text-main)'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-subtle)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <div>
-                      <strong style={{ color: '#818cf8', marginRight: '6px' }}>{s.code}</strong>
+                      <strong style={{ color: 'var(--primary)', marginRight: '6px' }}>{s.code}</strong>
                       <span>{s.name}</span>
                     </div>
                     <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
@@ -330,157 +380,162 @@ export const CampusLocationSelector = ({
             )}
           </div>
 
-          {/* 1. Building Block & Floor Selectors */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-            {/* Block Selection */}
+          {/* Simple Dropdowns: Building Block & Room */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>
-                1. Building Block (A, B, C, D)
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
-                {blocksList.map(bKey => {
-                  const isSelected = block === bKey;
-                  const bMeta = CAMPUS_BLOCKS[bKey];
-                  return (
-                    <button
-                      key={bKey}
-                      type="button"
-                      onClick={() => handleBlockChange(bKey)}
-                      style={{
-                        background: isSelected ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
-                        border: isSelected ? '1px solid #6366f1' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                        borderRadius: '6px',
-                        padding: '6px 8px',
-                        color: isSelected ? '#ffffff' : 'var(--text-main, #1e293b)',
-                        fontSize: '11px',
-                        fontWeight: isSelected ? '700' : '600',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      <div style={{ fontSize: '12px', fontWeight: '700', color: isSelected ? '#ffffff' : 'var(--text-main)' }}>{bMeta.name}</div>
-                      <div style={{ fontSize: '9px', opacity: isSelected ? 0.95 : 0.85, color: isSelected ? '#ffffff' : 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {bMeta.title.split(' ')[0]}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                Building Block
+              </label>
+              <select
+                value={block}
+                onChange={e => handleBlockChange(e.target.value)}
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  padding: '8px 10px',
+                  color: 'var(--text-main)',
+                  fontSize: '12px',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {blocksList.map(bKey => (
+                  <option key={bKey} value={bKey}>
+                    {CAMPUS_BLOCKS[bKey].name} ({CAMPUS_BLOCKS[bKey].title})
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Floor Selection */}
             <div>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>
-                2. Floor (Basement, 1, 2, 3)
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
-                {floorsList.map(fKey => {
-                  const isSelected = floor === fKey;
-                  const fMeta = CAMPUS_FLOORS[fKey];
-                  return (
-                    <button
-                      key={fKey}
-                      type="button"
-                      onClick={() => handleFloorChange(fKey)}
-                      style={{
-                        background: isSelected ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
-                        border: isSelected ? '1px solid #3b82f6' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                        borderRadius: '6px',
-                        padding: '6px 8px',
-                        color: isSelected ? '#ffffff' : 'var(--text-main, #1e293b)',
-                        fontSize: '11px',
-                        fontWeight: isSelected ? '700' : '600',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      {fMeta.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+                Room / Area
+              </label>
+              <select
+                value={selectedRoomCode}
+                onChange={e => {
+                  const r = blockRooms.find(item => item.code === e.target.value);
+                  if (r) handleSelectRoom(r);
+                }}
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  padding: '8px 10px',
+                  color: 'var(--text-main)',
+                  fontSize: '12px',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="">-- Select Room --</option>
+                {blockRooms.map(r => (
+                  <option key={r.code} value={r.code}>
+                    {r.code} {r.name ? `(${r.name})` : ''} - {r.floor === 0 ? 'Basement' : `${r.floor}F`}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* 2. Official Rooms from Architectural Floor Plan */}
+          {/* Expandable Floor Plan Browser (Optional for advanced users) */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>
-                3. Recognized Rooms ({CAMPUS_BLOCKS[block]?.name} • {CAMPUS_FLOORS[floor]?.label})
-              </span>
-              <span style={{ fontSize: '10px', color: '#818cf8', fontWeight: '600' }}>
-                {currentFloorRooms.length} rooms mapped
-              </span>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowAdvancedFloorGrid(prev => !prev)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--primary)',
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: 0
+              }}
+            >
+              <span>{showAdvancedFloorGrid ? 'Hide floor plan room grid' : 'Browse floor plan rooms by floor (1F, 2F, 3F)'}</span>
+              {showAdvancedFloorGrid ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
 
-            {currentFloorRooms.length > 0 ? (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
-                gap: '5px',
-                maxHeight: '170px',
-                overflowY: 'auto',
-                paddingRight: '2px'
-              }}>
-                {currentFloorRooms.map(r => {
-                  const isSelected = selectedRoomCode === r.code;
-                  return (
-                    <button
-                      key={r.code}
-                      type="button"
-                      onClick={() => handleSelectRoom(r)}
-                      style={{
-                        background: isSelected ? 'rgba(99, 102, 241, 0.22)' : 'var(--bg-subtle, rgba(255, 255, 255, 0.03))',
-                        border: isSelected ? '1.5px solid #6366f1' : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                        borderRadius: '6px',
-                        padding: '6px 8px',
-                        color: isSelected ? '#ffffff' : 'var(--text-main, #e2e8f0)',
-                        fontSize: '11px',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '2px',
-                        transition: 'all 0.12s ease'
-                      }}
-                      onMouseEnter={e => {
-                        if (!isSelected) e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
-                      }}
-                      onMouseLeave={e => {
-                        if (!isSelected) e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.08))';
-                      }}
-                    >
-                      <div style={{ fontWeight: '700', color: isSelected ? 'var(--primary, #4f46e5)' : 'var(--text-main)', fontSize: '11px' }}>
-                        {r.code}
-                      </div>
-                      <div style={{
-                        fontSize: '10px',
-                        color: isSelected ? 'var(--text-main)' : 'var(--text-muted, #94a3b8)',
-                        fontWeight: isSelected ? '600' : 'normal',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis'
-                      }}>
-                        {r.name}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : (
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '6px' }}>
-                No rooms mapped on this specific floor/block.
+            {showAdvancedFloorGrid && (
+              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {/* Floor buttons */}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {floorsList.map(fKey => {
+                    const isSelected = floor === fKey;
+                    return (
+                      <button
+                        key={fKey}
+                        type="button"
+                        onClick={() => handleFloorChange(fKey)}
+                        style={{
+                          flex: 1,
+                          padding: '5px 8px',
+                          borderRadius: '6px',
+                          border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                          background: isSelected ? 'var(--primary)' : 'var(--bg-card)',
+                          color: isSelected ? '#ffffff' : 'var(--text-main)',
+                          fontSize: '11px',
+                          fontWeight: isSelected ? '700' : '500',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {CAMPUS_FLOORS[fKey].label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Rooms on this floor */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                  gap: '5px',
+                  maxHeight: '130px',
+                  overflowY: 'auto',
+                  paddingRight: '2px'
+                }}>
+                  {currentFloorRooms.map(r => {
+                    const isSelected = selectedRoomCode === r.code;
+                    return (
+                      <button
+                        key={r.code}
+                        type="button"
+                        onClick={() => handleSelectRoom(r)}
+                        style={{
+                          background: isSelected ? 'var(--primary)' : 'var(--bg-card)',
+                          border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                          borderRadius: '6px',
+                          padding: '6px 8px',
+                          color: isSelected ? '#ffffff' : 'var(--text-main)',
+                          fontSize: '11px',
+                          textAlign: 'left',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div style={{ fontWeight: '700' }}>{r.code}</div>
+                        <div style={{ fontSize: '9px', opacity: 0.85, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {r.name}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
 
-          {/* 3. Specific Detail (e.g. Near board, Stall 2, Window) */}
+          {/* Specific Spot / Desk Notes */}
           <div>
-            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>
-              4. Specific Spot / Notes (Optional)
-            </div>
+            <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
+              Specific Spot / Details (Optional)
+            </label>
             <input
               type="text"
               placeholder="e.g. Near projector screen, Teacher desk, Window side..."
@@ -488,11 +543,11 @@ export const CampusLocationSelector = ({
               onChange={e => handleSpotChange(e.target.value)}
               style={{
                 width: '100%',
-                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.05))',
-                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-color)',
                 borderRadius: '8px',
                 padding: '7px 10px',
-                color: 'var(--text-main, #ffffff)',
+                color: 'var(--text-main)',
                 fontSize: '12px',
                 outline: 'none',
                 boxSizing: 'border-box'
@@ -500,11 +555,11 @@ export const CampusLocationSelector = ({
             />
           </div>
 
-          {/* 4. Live Composed Preview Badge */}
+          {/* Live Selected Location Confirmation */}
           <div style={{
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            borderRadius: '6px',
+            background: 'var(--primary-tint)',
+            border: '1px solid rgba(37, 99, 235, 0.25)',
+            borderRadius: '8px',
             padding: '8px 12px',
             display: 'flex',
             alignItems: 'center',
@@ -512,12 +567,12 @@ export const CampusLocationSelector = ({
             gap: '8px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>{t?.tickets?.locationPreview || 'Confirmed Location'}:</span>
-              <strong style={{ color: '#34d399' }}>
+              <span style={{ color: 'var(--text-muted)', fontWeight: '600' }}>Selected:</span>
+              <strong style={{ color: 'var(--primary)' }}>
                 {value || constructLocationString(block, floor, selectedRoomCode, specificSpot)}
               </strong>
             </div>
-            <Sparkles size={14} color="#34d399" />
+            <CheckCircle2 size={15} color="var(--primary)" />
           </div>
 
         </div>

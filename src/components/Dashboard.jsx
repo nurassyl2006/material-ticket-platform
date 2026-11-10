@@ -168,14 +168,11 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       <div
         style={{ 
           padding: '22px 24px', 
-          background: 'rgba(18, 25, 44, 0.75)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '14px',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          boxShadow: 'var(--shadow-depth-4)',
-          position: 'relative',
-          overflow: 'hidden'
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          boxShadow: 'var(--shadow-depth-2)',
+          position: 'relative'
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', position: 'relative', zIndex: 1 }}>
@@ -185,46 +182,42 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  padding: '3px 9px',
-                  borderRadius: '6px',
+                  gap: '5px',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-color)',
+                  padding: '3px 10px',
+                  borderRadius: '999px',
                   fontSize: '11px',
                   fontWeight: '600',
-                  color: '#94a3b8'
+                  color: 'var(--text-muted)'
                 }}
               >
-                <UserCheck size={12} color="#818cf8" />
+                <UserCheck size={13} color="var(--primary)" />
                 <span>{t.roles[role]}</span>
               </span>
-              <span style={{ fontSize: '11px', color: '#64748b' }}>•</span>
-              <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '500' }}>
-                Campus Operations Suite
+              <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>•</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {lang === 'ru' ? 'Школьный портал сервиса' : lang === 'kk' ? 'Мектеп сервистік порталы' : 'School Campus Operations'}
               </span>
             </div>
 
-            <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)', margin: '0 0 4px 0' }}>
-              {t.dashboard.welcome} {currentUser?.name || 'Staff Member'}
+            <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-main)', margin: '0 0 4px 0', letterSpacing: '-0.3px' }}>
+              {t.dashboard.welcome} {currentUser?.name ? currentUser.name.split(' ')[0] : (role === 'parent' ? (lang === 'ru' ? 'Родитель' : 'Parent') : role === 'guest' ? (lang === 'ru' ? 'Посетитель' : 'Visitor') : 'Staff')}! 👋
             </h2>
 
-            <p style={{ fontSize: '12px', color: 'var(--text-muted, #adadad)', maxWidth: '720px', margin: 0, lineHeight: 1.5 }}>
-              {role === 'director' && t.dashboard.directorSummary}
-              {role === 'facilities_manager' && t.dashboard.facilitiesSummary}
-              {role === 'it_support' && t.dashboard.itSummary}
-              {role === 'cleaning' && t.dashboard.cleaningSummary}
-              {role === 'storage_manager' && t.dashboard.storageSummary}
-              {role === 'engineer' && t.dashboard.engineerSummary}
-              {(role === 'finance' || role === 'accountant') && (t.dashboard.financeSummary || 'Review daily budget spending, procurement requests, asset depreciation, and materials approval.')}
-              {role === 'teacher' && t.dashboard.teacherSummary}
-              {role === 'guest' && (t.dashboard.guestSummary || 'Welcome to our school campus portal! You can submit visitor requests, report facility issues, and follow up with school administration.')}
-              {role === 'parent' && (t.dashboard.parentSummary || 'Welcome to the Parent Portal! Submit classroom, facilities, and maintenance inquiries for your children’s school.')}
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '720px', margin: 0, lineHeight: 1.5 }}>
+              {(role === 'teacher' || role === 'parent' || role === 'guest')
+                ? (lang === 'ru' ? 'Подавайте заявки на ремонт, IT-поддержку, уборку или канцтовары в один клик.' : lang === 'kk' ? 'Жөндеу, IT көмек, тазалық немесе кеңсе тауарларына өтінімді бір рет басу арқылы беріңіз.' : 'Request repairs, technology help, classroom cleaning, or supplies in seconds.')
+                : (role === 'director' || role === 'admin')
+                ? (lang === 'ru' ? 'Оперативный контроль заявок, материального учета и школьных служб.' : lang === 'kk' ? 'Мектеп қызметтері мен материалдық есепті жедел бақылау.' : 'Real-time overview of school requests, repairs, supplies, and facility operations.')
+                : (t.dashboard.welcome + ' • ' + (currentUser?.department || t.roles[role]))
+              }
             </p>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
             {hasDailyDigestAccess && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(139, 92, 246, 0.12)', border: '1px solid rgba(139, 92, 246, 0.35)', borderRadius: '8px', padding: '2px', gap: '2px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '2px', gap: '2px' }}>
                 <button
                   onClick={() => { setActiveTab('daily-digest'); navigate('/daily-digest'); }}
                   style={{
@@ -238,12 +231,12 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '5px',
-                    background: 'rgba(139, 92, 246, 0.28)',
-                    color: '#f8fafc'
+                    background: 'var(--primary-tint)',
+                    color: 'var(--primary)'
                   }}
                   title={t.nav?.dailyReport || 'Daily Report'}
                 >
-                  <CalendarCheck2 size={13} color="#c4b5fd" />
+                  <CalendarCheck2 size={13} color="var(--primary)" />
                   <span>{t.nav?.dailyReport || 'Daily'}</span>
                 </button>
                 <button
@@ -260,13 +253,13 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                     alignItems: 'center',
                     gap: '5px',
                     background: 'transparent',
-                    color: '#c4b5fd'
+                    color: 'var(--text-muted)'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-subtle)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   title={t.nav?.weeklyReport || 'Weekly Report'}
                 >
-                  <CalendarRange size={13} color="#38bdf8" />
+                  <CalendarRange size={13} color="currentColor" />
                   <span>{t.nav?.weeklyReport || 'Weekly'}</span>
                 </button>
                 <button
@@ -283,13 +276,13 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                     alignItems: 'center',
                     gap: '5px',
                     background: 'transparent',
-                    color: '#c4b5fd'
+                    color: 'var(--text-muted)'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--border-subtle)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   title={t.nav?.monthlyReport || 'Monthly Report'}
                 >
-                  <CalendarDays size={13} color="#fbbf24" />
+                  <CalendarDays size={13} color="currentColor" />
                   <span>{t.nav?.monthlyReport || 'Monthly'}</span>
                 </button>
               </div>
@@ -299,7 +292,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               <button
                 onClick={() => setActiveTab('users')}
                 className="fluent-btn-secondary"
-                style={{ height: '32px' }}
+                style={{ height: '34px' }}
               >
                 <Users size={14} />
                 <span>{t.nav?.users || 'Staff & Roles'}</span>
@@ -309,31 +302,418 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             <button
               onClick={() => openNewRequestForDept('engineering')}
               className="fluent-btn-primary"
-              style={{ height: '32px' }}
+              style={{ height: '34px', padding: '0 16px', fontWeight: '700' }}
             >
-              <Plus size={14} />
+              <Plus size={15} />
               <span>{t.tickets.createTitle}</span>
             </button>
           </div>
         </div>
       </div>
 
+      {/* ============================================================== */}
+      {/* HERO QUICK REQUEST LAUNCHPAD ("How can we help today?") */}
+      {/* ============================================================== */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={16} color="var(--primary)" />
+            <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
+              {lang === 'ru' ? 'Чем мы можем вам помочь?' : lang === 'kk' ? 'Сізге қалай көмектесе аламыз?' : 'How can we help you today?'}
+            </h3>
+          </div>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            {lang === 'ru' ? 'Выберите тему обращения' : lang === 'kk' ? 'Қажетті қызметті таңдаңыз' : 'Click a category to submit'}
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+          {/* 1. IT & Technology Support */}
+          <div
+            onClick={() => openNewRequestForDept('it_helpdesk')}
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderTop: '4px solid #2563eb',
+              borderRadius: '14px',
+              padding: '18px 20px',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-depth-2)',
+              transition: 'all 0.18s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '14px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.borderColor = '#2563eb';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(37, 99, 235, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb', flexShrink: 0 }}>
+                <Laptop size={22} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 3px 0' }}>
+                  {lang === 'ru' ? 'IT и смарт-доски' : lang === 'kk' ? 'IT және смарт-тақталар' : 'IT & Tech Support'}
+                </h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                  {lang === 'ru' ? 'Смарт-доски, проекторы, Wi-Fi, ноутбуки учителей' : lang === 'kk' ? 'Смарт-тақта, проектор, Wi-Fi, мұғалім ноутбугы' : 'Smartboards, projectors, Wi-Fi, teacher laptops'}
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '10px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {itTickets.filter(t => t.status === 'in_progress' || t.status === 'pending').length} {lang === 'ru' ? 'активных заявок' : 'in progress'}
+              </span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>{lang === 'ru' ? 'Подать заявку' : lang === 'kk' ? 'Өтінім беру' : 'Request Help'}</span>
+                <ChevronRight size={14} />
+              </span>
+            </div>
+          </div>
+
+          {/* 2. Repairs & Maintenance */}
+          <div
+            onClick={() => openNewRequestForDept('engineering')}
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderTop: '4px solid #f59e0b',
+              borderRadius: '14px',
+              padding: '18px 20px',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-depth-2)',
+              transition: 'all 0.18s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '14px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.borderColor = '#f59e0b';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(245, 158, 11, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#d97706', flexShrink: 0 }}>
+                <Wrench size={22} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 3px 0' }}>
+                  {lang === 'ru' ? 'Ремонт и свет' : lang === 'kk' ? 'Жөндеу және жарық' : 'Repairs & Maintenance'}
+                </h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                  {lang === 'ru' ? 'Освещение, розетки, мебель, сантехника, кондиционеры' : lang === 'kk' ? 'Жарық, розеткалар, жиһаз, сантехника, ауа баптағыш' : 'Lights, sockets, plumbing, heating & furniture'}
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '10px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {engineeringTickets.filter(t => t.status === 'in_progress' || t.status === 'pending').length} {lang === 'ru' ? 'активных заявок' : 'in progress'}
+              </span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>{lang === 'ru' ? 'Подать заявку' : lang === 'kk' ? 'Өтінім беру' : 'Report Issue'}</span>
+                <ChevronRight size={14} />
+              </span>
+            </div>
+          </div>
+
+          {/* 3. Cleaning & Care */}
+          <div
+            onClick={() => openNewRequestForDept('cleaning')}
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderTop: '4px solid #10b981',
+              borderRadius: '14px',
+              padding: '18px 20px',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-depth-2)',
+              transition: 'all 0.18s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '14px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.borderColor = '#10b981';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669', flexShrink: 0 }}>
+                <CheckCircle2 size={22} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 3px 0' }}>
+                  {lang === 'ru' ? 'Клининг и чистота' : lang === 'kk' ? 'Тазалық және гигиена' : 'Cleaning & Hygiene'}
+                </h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                  {lang === 'ru' ? 'Уборка класса, пятна, мусорные корзины, санузлы' : lang === 'kk' ? 'Сыныпты тазалау, дақтар, қоқыс жәшіктері' : 'Classroom spills, sanitization, waste removal'}
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '10px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {cleaningTickets.filter(t => t.status === 'in_progress' || t.status === 'pending').length} {lang === 'ru' ? 'активных заявок' : 'in progress'}
+              </span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>{lang === 'ru' ? 'Вызвать уборку' : lang === 'kk' ? 'Тазалық шақыру' : 'Request Clean'}</span>
+                <ChevronRight size={14} />
+              </span>
+            </div>
+          </div>
+
+          {/* 4. Stationery & Warehouse Supplies */}
+          <div
+            onClick={() => openNewRequestForDept('storage')}
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderTop: '4px solid #8b5cf6',
+              borderRadius: '14px',
+              padding: '18px 20px',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-depth-2)',
+              transition: 'all 0.18s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '14px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.borderColor = '#8b5cf6';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = 'var(--border-color)';
+              e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: 'rgba(139, 92, 246, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7c3aed', flexShrink: 0 }}>
+                <Package size={22} />
+              </div>
+              <div>
+                <h4 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 3px 0' }}>
+                  {lang === 'ru' ? 'Канцтовары и склад' : lang === 'kk' ? 'Кеңсе тауарлары мен қойма' : 'Supplies & Stationery'}
+                </h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                  {lang === 'ru' ? 'Маркеры, бумага А4, папки, расходные материалы' : lang === 'kk' ? 'Маркерлер, А4 қағаз, папкалар, қажетті заттар' : 'Whiteboard markers, copy paper, lesson supplies'}
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '10px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {storageTickets.filter(t => t.status === 'in_progress' || t.status === 'pending').length} {lang === 'ru' ? 'активных заявок' : 'in progress'}
+              </span>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span>{lang === 'ru' ? 'Заказать со склада' : lang === 'kk' ? 'Қоймадан тапсырыс' : 'Request Stock'}</span>
+                <ChevronRight size={14} />
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       {/* ============================================================== */}
-      {/* 1. EXECUTIVE KPI CARDS GRID */}
+      {/* 1. PERSONAL REQUESTS TRACKER FOR TEACHERS, PARENTS, GUESTS */}
       {/* ============================================================== */}
-      {hasDailyDigestAccess && (
+      {(role === 'teacher' || role === 'parent' || role === 'guest') && (
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: 'var(--shadow-depth-2)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '14px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <ClipboardList size={18} color="var(--primary)" />
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
+                {lang === 'ru' ? 'Мои текущие обращения' : lang === 'kk' ? 'Менің өтінімдерім' : 'My Requests & Live Tracking'}
+              </h3>
+            </div>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: '600',
+                padding: '3px 9px',
+                borderRadius: '999px',
+                background: 'rgba(245, 158, 11, 0.1)',
+                color: '#d97706',
+                border: '1px solid rgba(245, 158, 11, 0.25)'
+              }}>
+                ⏳ {scopedTickets.filter(t => t.status === 'pending').length} {lang === 'ru' ? 'на рассмотрении' : 'pending'}
+              </span>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: '600',
+                padding: '3px 9px',
+                borderRadius: '999px',
+                background: 'rgba(37, 99, 235, 0.1)',
+                color: '#2563eb',
+                border: '1px solid rgba(37, 99, 235, 0.25)'
+              }}>
+                ⚙️ {scopedTickets.filter(t => t.status === 'in_progress' || t.status === 'purchasing').length} {lang === 'ru' ? 'в работе' : 'in progress'}
+              </span>
+              <span style={{
+                fontSize: '11px',
+                fontWeight: '600',
+                padding: '3px 9px',
+                borderRadius: '999px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#059669',
+                border: '1px solid rgba(16, 185, 129, 0.25)'
+              }}>
+                ✅ {scopedTickets.filter(t => t.status === 'completed' || t.status === 'delivered').length} {lang === 'ru' ? 'выполнено' : 'done'}
+              </span>
+            </div>
+          </div>
+
+          {scopedTickets.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '28px 16px', background: 'var(--bg-subtle)', borderRadius: '12px', border: '1px dashed var(--border-color)' }}>
+              <CheckCircle size={32} color="var(--success)" style={{ margin: '0 auto 8px' }} />
+              <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 4px 0' }}>
+                {lang === 'ru' ? 'У вас нет активных заявок' : lang === 'kk' ? 'Сізде белсенді өтінімдер жоқ' : 'All clear! No active requests'}
+              </h4>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+                {lang === 'ru' ? 'Если в классе что-то сломалось или нужны канцтовары, нажмите на карточку выше!' : 'If you need supplies or maintenance in your classroom, select a category above.'}
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '10px' }}>
+              {scopedTickets.slice(0, 4).map(ticket => {
+                const deptMeta = resolveDepartment(ticket.department);
+                const deptName = deptMeta.translations?.[lang] || deptMeta.name;
+                const isDone = ticket.status === 'completed' || ticket.status === 'delivered';
+                const isProg = ticket.status === 'in_progress' || ticket.status === 'purchasing';
+
+                return (
+                  <div
+                    key={ticket.id}
+                    onClick={() => setActiveTab('tickets')}
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      padding: '14px 16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      boxShadow: 'var(--shadow-depth-2)',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--primary)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-depth-4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border-color)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span>{deptMeta.emoji}</span>
+                        <span>{deptName}</span>
+                        <span style={{ color: 'var(--text-dim)' }}>• #{ticket.id}</span>
+                      </span>
+                      <span
+                        className={`ticket-badge-status ticket-badge-status-${ticket.status}`}
+                        style={{ fontSize: '10px', padding: '1px 8px', borderRadius: '999px' }}
+                      >
+                        {isDone ? (lang === 'ru' ? '✓ Выполнено' : '✓ Done') : isProg ? (lang === 'ru' ? '⚙️ В работе' : '⚙️ Working') : (lang === 'ru' ? '⏳ На рассмотрении' : '⏳ Pending')}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', lineHeight: 1.3 }}>
+                      {ticket.itemTitle}
+                    </div>
+
+                    <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+                      <span>📍 {ticket.roomNumber || 'Campus'}</span>
+                      {ticket.assignedWorker && (
+                        <span style={{ color: 'var(--primary)', fontWeight: '600' }}>
+                          👤 {ticket.assignedWorker}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {scopedTickets.length > 4 && (
+            <div style={{ textAlign: 'center', paddingTop: '4px' }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('tickets')}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--primary)',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span>{lang === 'ru' ? `Смотреть все мои заявки (${scopedTickets.length})` : `View all requests (${scopedTickets.length})`}</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 2. EXECUTIVE KPI CARDS & OPERATIONS REPORTS (Leadership / Staff) */}
+      {/* ============================================================== */}
+      {hasDailyDigestAccess && (role === 'director' || role === 'admin' || role === 'head_engineer' || role === 'facilities_manager' || role === 'finance') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '8px' }}>
           
           {/* Executive Operations Reports Hub (Daily, Weekly, Monthly) */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BarChart3 size={17} color="#a78bfa" />
-              <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>
+              <BarChart3 size={17} color="var(--primary)" />
+              <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
                 {lang === 'ru' ? 'Центр оперативных отчетов' : lang === 'kk' ? 'Операциялық есептер орталығы' : 'Operations Reports Suite'}
               </h3>
             </div>
-            <span style={{ fontSize: '11.5px', color: '#94a3b8' }}>
+            <span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>
               {lang === 'ru' ? 'Ежедневная, еженедельная и ежемесячная аналитика' : lang === 'kk' ? 'Күнделікті, апталық және айлық аналитика' : 'Real-time operational intelligence across campus'}
             </span>
           </div>
@@ -344,83 +724,85 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             <div
               onClick={() => { setActiveTab('daily-digest'); navigate('/daily-digest'); }}
               style={{
-                background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.75), rgba(18, 25, 44, 0.9))',
-                border: '1px solid rgba(139, 92, 246, 0.35)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
                 borderLeft: '4px solid #8b5cf6',
-                borderRadius: '12px',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 gap: '12px',
-                boxShadow: 'var(--shadow-depth-3)',
+                boxShadow: 'var(--shadow-depth-2)',
                 transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = '#8b5cf6';
                 e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.35)';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
               }}
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ background: 'rgba(139, 92, 246, 0.25)', padding: '7px', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.4)' }}>
-                      <CalendarCheck2 size={18} color="#c4b5fd" />
+                    <div style={{ background: 'rgba(139, 92, 246, 0.12)', padding: '7px', borderRadius: '8px', color: '#7c3aed' }}>
+                      <CalendarCheck2 size={18} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
                         {lang === 'ru' ? 'Ежедневный отчет' : lang === 'kk' ? 'Күнделікті есеп' : 'Daily Operations Digest'}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                         {lang === 'ru' ? 'Почасовой контроль и статус дня' : lang === 'kk' ? 'Сағаттық бақылау және күндік статус' : 'Hourly timeline & live status'}
                       </div>
                     </div>
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399' }}>
+                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(16, 185, 129, 0.12)', color: '#059669' }}>
                     ● Live Today
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '14px', background: 'rgba(255, 255, 255, 0.03)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ display: 'flex', gap: '14px', background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'Создано' : lang === 'kk' ? 'Берілді' : 'Created'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
                       {todayCreatedCount}
                     </div>
                   </div>
-                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div style={{ width: '1px', background: 'var(--border-color)' }} />
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'Завершено' : lang === 'kk' ? 'Орындалды' : 'Resolved'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#34d399' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#059669' }}>
                       {todayFinishedCount}
                     </div>
                   </div>
-                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div style={{ width: '1px', background: 'var(--border-color)' }} />
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'В работе' : lang === 'kk' ? 'Жұмыста' : 'In Progress'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#f59e0b' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#d97706' }}>
                       {inProgressCount}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                <span style={{ fontSize: '11px', color: '#a78bfa' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   {lang === 'ru' ? 'Почасовая шкала и исполнители' : lang === 'kk' ? 'Сағаттық шкала және жауаптылар' : 'Hourly breakdown & team assignments'}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#c4b5fd', fontSize: '11.5px', fontWeight: '700' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#7c3aed', fontSize: '11.5px', fontWeight: '700' }}>
                   <span>{lang === 'ru' ? 'Открыть' : lang === 'kk' ? 'Ашу' : 'Open'}</span>
                   <ChevronRight size={14} />
                 </span>
@@ -431,83 +813,85 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             <div
               onClick={() => { setActiveTab('weekly-report'); navigate('/weekly-report'); }}
               style={{
-                background: 'linear-gradient(135deg, rgba(14, 52, 94, 0.75), rgba(18, 25, 44, 0.9))',
-                border: '1px solid rgba(56, 189, 248, 0.35)',
-                borderLeft: '4px solid #38bdf8',
-                borderRadius: '12px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                borderLeft: '4px solid #0284c7',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 gap: '12px',
-                boxShadow: 'var(--shadow-depth-3)',
+                boxShadow: 'var(--shadow-depth-2)',
                 transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#38bdf8';
+                e.currentTarget.style.borderColor = '#0284c7';
                 e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
               }}
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ background: 'rgba(56, 189, 248, 0.2)', padding: '7px', borderRadius: '8px', border: '1px solid rgba(56, 189, 248, 0.4)' }}>
-                      <CalendarRange size={18} color="#38bdf8" />
+                    <div style={{ background: 'rgba(2, 132, 199, 0.12)', padding: '7px', borderRadius: '8px', color: '#0284c7' }}>
+                      <CalendarRange size={18} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
                         {lang === 'ru' ? 'Еженедельный отчет' : lang === 'kk' ? 'Апталық есеп' : 'Weekly Operations & SLA'}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                         {lang === 'ru' ? 'Динамика Пн–Вс, пиковые дни и SLA' : lang === 'kk' ? 'Дүйсенбі–Жексенбі динамикасы мен SLA' : 'Monday to Sunday trends & SLA'}
                       </div>
                     </div>
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8' }}>
+                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(2, 132, 199, 0.12)', color: '#0284c7' }}>
                     7 Days
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '14px', background: 'rgba(255, 255, 255, 0.03)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ display: 'flex', gap: '14px', background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'За неделю' : lang === 'kk' ? 'Аптада' : 'Week Intake'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
                       {weekMetrics.createdCount}
                     </div>
                   </div>
-                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div style={{ width: '1px', background: 'var(--border-color)' }} />
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'SLA решения' : lang === 'kk' ? 'SLA шешу' : 'SLA Rate'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#38bdf8' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284c7' }}>
                       {weekMetrics.slaPercent}%
                     </div>
                   </div>
-                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div style={{ width: '1px', background: 'var(--border-color)' }} />
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'Закрыто' : lang === 'kk' ? 'Орындалды' : 'Finished'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#34d399' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#059669' }}>
                       {weekMetrics.finishedCount}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                <span style={{ fontSize: '11px', color: '#38bdf8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   {lang === 'ru' ? 'График нагрузки и пиковые дни' : lang === 'kk' ? 'Жұмыс кестесі мен ең ауыр күндер' : 'Weekday comparison & peak workload'}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#38bdf8', fontSize: '11.5px', fontWeight: '700' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0284c7', fontSize: '11.5px', fontWeight: '700' }}>
                   <span>{lang === 'ru' ? 'Открыть' : lang === 'kk' ? 'Ашу' : 'Open'}</span>
                   <ChevronRight size={14} />
                 </span>
@@ -518,83 +902,85 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             <div
               onClick={() => { setActiveTab('monthly-report'); navigate('/monthly-report'); }}
               style={{
-                background: 'linear-gradient(135deg, rgba(80, 50, 10, 0.65), rgba(18, 25, 44, 0.9))',
-                border: '1px solid rgba(251, 191, 36, 0.35)',
-                borderLeft: '4px solid #fbbf24',
-                borderRadius: '12px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                borderLeft: '4px solid #f59e0b',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 gap: '12px',
-                boxShadow: 'var(--shadow-depth-3)',
+                boxShadow: 'var(--shadow-depth-2)',
                 transition: 'all 0.15s ease'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#fbbf24';
+                e.currentTarget.style.borderColor = '#f59e0b';
                 e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'rgba(251, 191, 36, 0.35)';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
                 e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
               }}
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ background: 'rgba(251, 191, 36, 0.2)', padding: '7px', borderRadius: '8px', border: '1px solid rgba(251, 191, 36, 0.4)' }}>
-                      <CalendarDays size={18} color="#fbbf24" />
+                    <div style={{ background: 'rgba(245, 158, 11, 0.12)', padding: '7px', borderRadius: '8px', color: '#d97706' }}>
+                      <CalendarDays size={18} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
                         {lang === 'ru' ? 'Ежемесячный отчет' : lang === 'kk' ? 'Айлық есеп' : 'Monthly Performance & Spend'}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                         {lang === 'ru' ? '30 дней, бюджет закупок и рейтинг' : lang === 'kk' ? '30 күндік талдау, шығындар мен рейтинг' : '30-day curve, procurement & staff ranking'}
                       </div>
                     </div>
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(251, 191, 36, 0.2)', color: '#fbbf24' }}>
+                  <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '5px', background: 'rgba(245, 158, 11, 0.12)', color: '#d97706' }}>
                     Month
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '14px', background: 'rgba(255, 255, 255, 0.03)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <div style={{ display: 'flex', gap: '14px', background: 'var(--bg-subtle)', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'За месяц' : lang === 'kk' ? 'Ай бойы' : 'Month Total'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-main)' }}>
                       {monthMetrics.createdCount}
                     </div>
                   </div>
-                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div style={{ width: '1px', background: 'var(--border-color)' }} />
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'Затраты' : lang === 'kk' ? 'Шығындар' : 'Procurement'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#fbbf24' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: '#d97706' }}>
                       ₸{monthMetrics.spent.toLocaleString()}
                     </div>
                   </div>
-                  <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+                  <div style={{ width: '1px', background: 'var(--border-color)' }} />
                   <div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', fontWeight: '600' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>
                       {lang === 'ru' ? 'Специалисты' : lang === 'kk' ? 'Мамандар' : 'Staff'}
                     </div>
-                    <div style={{ fontSize: '17px', fontWeight: '800', color: '#c084fc' }}>
+                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'var(--primary)' }}>
                       {monthMetrics.handlersCount}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                <span style={{ fontSize: '11px', color: '#fbbf24' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--border-subtle)' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   {lang === 'ru' ? 'Недельные тренды и финансовые списания' : lang === 'kk' ? 'Апталық трендтер мен қаржылық есеп' : 'Week-by-week trend & department spend'}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#fbbf24', fontSize: '11.5px', fontWeight: '700' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#d97706', fontSize: '11.5px', fontWeight: '700' }}>
                   <span>{lang === 'ru' ? 'Открыть' : lang === 'kk' ? 'Ашу' : 'Open'}</span>
                   <ChevronRight size={14} />
                 </span>
@@ -604,7 +990,6 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           </div>
         </div>
       )}
-
       {(role === 'director' || role === 'admin') && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div className="dashboard-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
@@ -612,10 +997,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Total School Requests */}
             <div
               style={{
-                background: 'rgba(18, 25, 44, 0.75)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderLeft: '4px solid #6366f1',
-                borderRadius: '12px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                borderLeft: '4px solid var(--primary)',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
@@ -623,14 +1008,14 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.25)', padding: '10px', borderRadius: '10px' }}>
-                <ClipboardList size={20} color="#818cf8" />
+              <div style={{ background: 'var(--primary-tint)', border: '1px solid rgba(37, 99, 235, 0.2)', padding: '10px', borderRadius: '10px' }}>
+                <ClipboardList size={20} color="var(--primary)" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.totalJobs}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#f8fafc', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.2 }}>
                   {totalTickets}
                 </div>
               </div>
@@ -639,10 +1024,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* In Progress */}
             <div
               style={{
-                background: 'rgba(18, 25, 44, 0.75)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderLeft: '4px solid #3b82f6',
-                borderRadius: '12px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                borderLeft: '4px solid #0284c7',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
@@ -650,14 +1035,14 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.25)', padding: '10px', borderRadius: '10px' }}>
-                <Clock size={20} color="#60a5fa" />
+              <div style={{ background: 'rgba(2, 132, 199, 0.12)', border: '1px solid rgba(2, 132, 199, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <Clock size={20} color="#0284c7" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.inProcessJobs}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#60a5fa', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#0284c7', lineHeight: 1.2 }}>
                   {inProgressCount}
                 </div>
               </div>
@@ -666,10 +1051,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Completed */}
             <div
               style={{
-                background: 'rgba(18, 25, 44, 0.75)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
                 borderLeft: '4px solid #10b981',
-                borderRadius: '12px',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
@@ -677,14 +1062,14 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '10px', borderRadius: '10px' }}>
-                <CheckCircle2 size={20} color="#34d399" />
+              <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <CheckCircle2 size={20} color="#059669" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.completedJobs}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#34d399', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#059669', lineHeight: 1.2 }}>
                   {completedCount}
                 </div>
               </div>
@@ -693,10 +1078,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Pending Assignment */}
             <div
               style={{
-                background: 'rgba(18, 25, 44, 0.75)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
                 borderLeft: '4px solid #f59e0b',
-                borderRadius: '12px',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
@@ -704,14 +1089,14 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '10px', borderRadius: '10px' }}>
-                <AlertTriangle size={20} color="#fbbf24" />
+              <div style={{ background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <AlertTriangle size={20} color="#d97706" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.pendingJobs}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#fbbf24', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#d97706', lineHeight: 1.2 }}>
                   {pendingCount}
                 </div>
               </div>
@@ -720,10 +1105,10 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             {/* Budget / Parts Spent */}
             <div
               style={{
-                background: 'rgba(18, 25, 44, 0.75)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
                 borderLeft: '4px solid #8b5cf6',
-                borderRadius: '12px',
+                borderRadius: '14px',
                 padding: '16px 18px',
                 display: 'flex',
                 alignItems: 'center',
@@ -731,14 +1116,14 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 boxShadow: 'var(--shadow-depth-2)'
               }}
             >
-              <div style={{ background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.25)', padding: '10px', borderRadius: '10px' }}>
-                <DollarSign size={20} color="#a78bfa" />
+              <div style={{ background: 'rgba(139, 92, 246, 0.12)', border: '1px solid rgba(139, 92, 246, 0.25)', padding: '10px', borderRadius: '10px' }}>
+                <DollarSign size={20} color="#7c3aed" />
               </div>
               <div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   {t.dashboard.totalSpent}
                 </div>
-                <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1', lineHeight: 1.2 }}>
+                <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-main)', lineHeight: 1.2 }}>
                   ₸{totalSpent.toLocaleString()}
                 </div>
               </div>
@@ -749,22 +1134,21 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           {/* Department Workload & Completion Status */}
           <div
             style={{
-              background: 'rgba(18, 25, 44, 0.75)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
               borderRadius: '14px',
               padding: '20px 22px',
-              boxShadow: 'var(--shadow-depth-4)',
-              backdropFilter: 'blur(16px)'
+              boxShadow: 'var(--shadow-depth-2)'
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <TrendingUp size={16} color="#818cf8" />
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', margin: 0 }}>
+                <TrendingUp size={16} color="var(--primary)" />
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
                   {t.dashboard.departmentWorkload}
                 </h3>
               </div>
-              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>Campus Operations SLA</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>Campus Operations SLA</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '10px' }}>
@@ -780,37 +1164,37 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                     key={dept.id}
                     onClick={() => setActiveTab('tickets')}
                     style={{
-                      background: 'var(--bg-subtle, rgba(30, 41, 59, 0.6))',
+                      background: 'var(--bg-subtle)',
                       border: '1px solid var(--border-color)',
                       borderRadius: '8px',
                       padding: '12px',
                       cursor: 'pointer',
                       transition: 'border-color 0.15s ease'
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--primary, #0f6cbd)')}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--primary)')}
                     onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border-color)')}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600', color: 'var(--text-main)' }}>
                         <span>{dept.emoji}</span>
                         <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '140px' }}>
                           {deptName}
                         </span>
                       </span>
-                      <span style={{ fontSize: '12px', fontWeight: '600', color: progress === 100 ? '#62c789' : '#0f6cbd' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: progress === 100 ? '#059669' : 'var(--primary)' }}>
                         {progress}%
                       </span>
                     </div>
 
                     {/* Sleek Progress Bar */}
-                    <div style={{ background: 'rgba(255, 255, 255, 0.08)', height: '5px', borderRadius: '9999px', overflow: 'hidden', marginBottom: '8px' }}>
-                      <div style={{ width: `${progress}%`, height: '100%', background: progress === 100 ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #6366f1, #06b6d4)', borderRadius: '9999px' }} />
+                    <div style={{ background: 'var(--border-subtle)', height: '6px', borderRadius: '9999px', overflow: 'hidden', marginBottom: '8px' }}>
+                      <div style={{ width: `${progress}%`, height: '100%', background: progress === 100 ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #3b82f6, #2563eb)', borderRadius: '9999px' }} />
                     </div>
 
-                    <div style={{ fontSize: '11px', color: '#adadad', display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
                       <span>Total: {deptTickets.length}</span>
                       <span>Active: {inProgress}</span>
-                      <span style={{ color: '#62c789' }}>Done: {completed}</span>
+                      <span style={{ color: '#059669', fontWeight: '600' }}>Done: {completed}</span>
                     </div>
                   </div>
                 );
@@ -825,47 +1209,47 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {/* Finance Department Specific Cards */}
       {(role === 'finance' || role === 'accountant') && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #10b981', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <DollarSign size={20} color="#10b981" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #10b981', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <DollarSign size={20} color="#059669" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Finance / Purchasing Jobs</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{financeTickets.length}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Finance / Purchasing Jobs</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>{financeTickets.length}</div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #f59e0b', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Clock size={20} color="#f59e0b" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #f59e0b', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(245, 158, 11, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Clock size={20} color="#d97706" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Pending Procurement</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f59e0b' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Pending Procurement</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#d97706' }}>
                 {financeTickets.filter(t => t.status === 'purchasing').length}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #6366f1', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <TrendingUp size={20} color="#818cf8" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #6366f1', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(99, 102, 241, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <TrendingUp size={20} color="#4f46e5" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Procurement Spent</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Procurement Spent</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>
                 ₸{totalSpent.toLocaleString()}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('inventory')}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Package size={20} color="#10b981" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', boxShadow: 'var(--shadow-depth-2)' }} onClick={() => setActiveTab('inventory')}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Package size={20} color="#059669" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Warehouse Inventory</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Warehouse Inventory</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 Audit Stock <ChevronRight size={14} />
               </div>
             </div>
@@ -878,35 +1262,35 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {/* ============================================================== */}
       {role === 'facilities_manager' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #5b5fc7', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Truck size={20} color="#8b8fe6" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #6366f1', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(99, 102, 241, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Truck size={20} color="#4f46e5" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Facility Tasks</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{facilitiesTickets.length}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Facility Tasks</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>{facilitiesTickets.length}</div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #0f6cbd', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Clock size={20} color="#70b5f9" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #0284c7', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(2, 132, 199, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Clock size={20} color="#0284c7" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Moves In Progress</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#70b5f9' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Moves In Progress</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#0284c7' }}>
                 {facilitiesTickets.filter(t => t.status === 'in_progress').length}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #107c41', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <CheckCircle2 size={20} color="#107c41" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #10b981', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <CheckCircle2 size={20} color="#059669" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Completed Relocations</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#62c789' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Completed Relocations</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#059669' }}>
                 {facilitiesTickets.filter(t => t.status === 'completed').length}
               </div>
             </div>
@@ -916,47 +1300,47 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
 
       {(role === 'storage_manager' || role === 'workerA') && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #fbbf24', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Package size={20} color="#fbbf24" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #f59e0b', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(245, 158, 11, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Package size={20} color="#d97706" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Storage Requests</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{storageTickets.length}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Storage Requests</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>{storageTickets.length}</div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #0f6cbd', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Clock size={20} color="#70b5f9" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #0284c7', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(2, 132, 199, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Clock size={20} color="#0284c7" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Pending Delivery</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#70b5f9' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Pending Delivery</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#0284c7' }}>
                 {storageTickets.filter(t => t.status === 'in_progress' || t.status === 'purchasing').length}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #107c41', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <CheckCircle2 size={20} color="#107c41" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #10b981', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <CheckCircle2 size={20} color="#059669" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Issued & Delivered</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#62c789' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Issued & Delivered</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#059669' }}>
                 {storageTickets.filter(t => t.status === 'completed' || t.status === 'delivered' || t.status === 'issued').length}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('inventory')}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Package size={20} color="#fbbf24" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', boxShadow: 'var(--shadow-depth-2)' }} onClick={() => setActiveTab('inventory')}>
+            <div style={{ background: 'rgba(245, 158, 11, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Package size={20} color="#d97706" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Warehouse Inventory</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Warehouse Inventory</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 View Catalog <ChevronRight size={14} />
               </div>
             </div>
@@ -966,47 +1350,47 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
 
       {role === 'engineer' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #f97316', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Wrench size={20} color="#f97316" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #ea580c', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(234, 88, 12, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Wrench size={20} color="#ea580c" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Engineering Tasks</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{engineeringTickets.length}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Engineering Tasks</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>{engineeringTickets.length}</div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #0f6cbd', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Clock size={20} color="#70b5f9" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #0284c7', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(2, 132, 199, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Clock size={20} color="#0284c7" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>In Repair</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#70b5f9' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>In Repair</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#0284c7' }}>
                 {engineeringTickets.filter(t => t.status === 'in_progress').length}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #107c41', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <CheckCircle2 size={20} color="#107c41" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #10b981', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <CheckCircle2 size={20} color="#059669" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Resolved Maintenance</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#62c789' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Resolved Maintenance</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#059669' }}>
                 {engineeringTickets.filter(t => t.status === 'completed').length}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('inventory')}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Package size={20} color="#f97316" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', boxShadow: 'var(--shadow-depth-2)' }} onClick={() => setActiveTab('inventory')}>
+            <div style={{ background: 'rgba(234, 88, 12, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Package size={20} color="#ea580c" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Warehouse Inventory</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#f97316', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Warehouse Inventory</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#ea580c', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 View Catalog <ChevronRight size={14} />
               </div>
             </div>
@@ -1016,35 +1400,35 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
 
       {role === 'it_support' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px' }}>
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #0f6cbd', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Laptop size={20} color="#0f6cbd" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #2563eb', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(37, 99, 235, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Laptop size={20} color="#2563eb" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Active IT Tickets</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f3f2f1' }}>{itTickets.length}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Active IT Tickets</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text-main)' }}>{itTickets.length}</div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #d83b01', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <Clock size={20} color="#d83b01" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #ea580c', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(234, 88, 12, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <Clock size={20} color="#ea580c" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>In Diagnostics</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#f59e0b' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>In Diagnostics</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#ea580c' }}>
                 {itTickets.filter(t => t.status === 'in_progress').length}
               </div>
             </div>
           </div>
 
-          <div style={{ background: '#292929', border: '1px solid #383838', borderLeft: '3px solid #107c41', borderRadius: '4px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: '#202020', padding: '10px', borderRadius: '4px' }}>
-              <CheckCircle2 size={20} color="#107c41" />
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '4px solid #10b981', borderRadius: '10px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-depth-2)' }}>
+            <div style={{ background: 'rgba(16, 185, 129, 0.12)', padding: '10px', borderRadius: '8px' }}>
+              <CheckCircle2 size={20} color="#059669" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', color: '#adadad', fontWeight: '600' }}>Resolved Tech Issues</div>
-              <div style={{ fontSize: '20px', fontWeight: '600', color: '#62c789' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600' }}>Resolved Tech Issues</div>
+              <div style={{ fontSize: '20px', fontWeight: '700', color: '#059669' }}>
                 {itTickets.filter(t => t.status === 'completed').length}
               </div>
             </div>
@@ -1057,17 +1441,16 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {/* ============================================================== */}
       <div
         style={{
-          background: 'rgba(18, 25, 44, 0.75)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
           borderRadius: '14px',
           padding: '20px 22px',
-          boxShadow: 'var(--shadow-depth-4)',
-          backdropFilter: 'blur(16px)'
+          boxShadow: 'var(--shadow-depth-2)'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-          <Layers size={16} color="var(--primary, #818cf8)" />
-          <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main, #0f172a)', margin: 0 }}>
+          <Layers size={16} color="var(--primary)" />
+          <h3 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
             {t.dashboard.quickActions || 'Submit Service Request by Department'}:
           </h3>
         </div>
@@ -1081,8 +1464,8 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 key={dept.id}
                 onClick={() => openNewRequestForDept(dept.id)}
                 style={{
-                  background: 'var(--bg-card, rgba(15, 23, 42, 0.65))',
-                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-color)',
                   padding: '14px',
                   borderRadius: '10px',
                   textAlign: 'left',
@@ -1093,23 +1476,23 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                   transition: 'all 0.18s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = dept.color || 'var(--primary, #6366f1)';
+                  e.currentTarget.style.borderColor = dept.color || 'var(--primary)';
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = 'var(--shadow-depth-4)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.08))';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main, #f8fafc)', fontWeight: '600', fontSize: '13px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontWeight: '600', fontSize: '13px' }}>
                   <span style={{ fontSize: '16px' }}>{dept.emoji}</span>
                   <span className="dashboard-service-title" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {localizedName}
                   </span>
                 </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted, #94a3b8)', margin: 0, lineHeight: 1.4 }}>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
                   {sampleSubcats}
                 </p>
               </button>
@@ -1122,11 +1505,11 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {['storage_manager', 'workerA', 'engineer', 'director', 'admin'].includes(role) && lowStockItems.length > 0 && (
         <div
           style={{
-            padding: '12px 18px',
-            background: '#2a251b',
-            border: '1px solid #573a11',
-            borderLeft: '4px solid #d83b01',
-            borderRadius: '4px',
+            padding: '14px 18px',
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
+            borderLeft: '4px solid #f59e0b',
+            borderRadius: '10px',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -1135,12 +1518,12 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <AlertTriangle size={18} color="#d83b01" />
+            <AlertTriangle size={18} color="#d97706" />
             <div>
-              <strong style={{ fontSize: '13px', color: '#f59e0b', fontWeight: '600' }}>
+              <strong style={{ fontSize: '13px', color: '#d97706', fontWeight: '700' }}>
                 {t.dashboard.lowStockAlert}
               </strong>
-              <p style={{ fontSize: '12px', color: '#adadad', margin: 0 }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
                 {lowStockItems.length} items in warehouse below minimum threshold (e.g. {lowStockItems[0].name}).
               </p>
             </div>
@@ -1148,7 +1531,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
           <button
             onClick={() => setActiveTab('inventory')}
             className="fluent-btn-secondary"
-            style={{ height: '28px', fontSize: '12px' }}
+            style={{ height: '30px', fontSize: '12px' }}
           >
             Check Warehouse
           </button>
@@ -1158,7 +1541,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
       {/* Recent Requests Section (Activity Feed) */}
       <div style={{ marginTop: '8px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#f3f2f1', margin: 0 }}>
+          <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
             {(role === 'teacher' || role === 'parent' || role === 'guest') ? (t.nav?.myTickets || 'My Requests') : t.dashboard.allJobsOverview}
           </h3>
           <button
@@ -1166,7 +1549,7 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#0f6cbd',
+              color: 'var(--primary)',
               fontSize: '12px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -1192,25 +1575,26 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                 key={ticket.id}
                 onClick={() => setActiveTab('tickets')}
                 style={{
-                  background: 'var(--bg-card, rgba(18, 25, 44, 0.75))',
-                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '12px',
                   padding: '16px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '8px',
                   cursor: 'pointer',
-                  transition: 'all 0.18s ease'
+                  transition: 'all 0.18s ease',
+                  boxShadow: 'var(--shadow-depth-2)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+                  e.currentTarget.style.borderColor = 'var(--primary)';
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px -4px rgba(0, 0, 0, 0.2)';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-depth-8)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border-color, rgba(255, 255, 255, 0.08))';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.boxShadow = 'var(--shadow-depth-2)';
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

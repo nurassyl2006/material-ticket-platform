@@ -88,9 +88,9 @@ export const AppProvider = ({ children }) => {
     cleanupObsoleteStorage();
   }, []);
 
-  // Theme state ('dark' | 'light')
+  // Theme state ('dark' | 'light') - Defaults to light theme for a clean, accessible school platform
   const [theme, setThemeState] = useState(() => {
-    return safeGetItem('app_theme', 'dark');
+    return safeGetItem('app_theme', 'light');
   });
 
   const setTheme = useCallback((newTheme) => {

@@ -44,6 +44,8 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   const [isReturnableOverride, setIsReturnableOverride] = useState(null);
   const [translatedPreview, setTranslatedPreview] = useState(null);
   const [isTranslatingPreview, setIsTranslatingPreview] = useState(false);
+  const PRIMARY_DEPT_IDS = ['it_helpdesk', 'engineering', 'cleaning', 'storage'];
+  const [showAllDepts, setShowAllDepts] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -52,6 +54,9 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     if (isOpen) {
       const resolved = resolveDepartment(initialDepartment);
       setDepartment(resolved.id);
+      if (!PRIMARY_DEPT_IDS.includes(resolved.id)) {
+        setShowAllDepts(true);
+      }
       setFormData(prev => ({
         ...prev,
         itemTitle: initialItem || prev.itemTitle,
@@ -285,11 +290,11 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
 
   const inputStyle = {
     width: '100%',
-    background: 'var(--bg-card, rgba(15, 23, 42, 0.75))',
-    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
+    background: 'var(--bg-input)',
+    border: '1px solid var(--border-color)',
     borderRadius: '8px',
     padding: '9px 12px',
-    color: 'var(--text-main, #ffffff)',
+    color: 'var(--text-main)',
     fontSize: '13px',
     outline: 'none',
     boxSizing: 'border-box'
@@ -298,32 +303,32 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   if (!isOpen) return null;
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.72)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '12px' }}>
-      <div className="fluent-card animate-fade-in modal-dialog-responsive" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-dialog, #111827)', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))', boxShadow: 'var(--shadow-depth-16)' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '12px' }}>
+      <div className="fluent-card animate-fade-in modal-dialog-responsive" style={{ width: '100%', maxWidth: '640px', padding: '24px 28px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-depth-16)' }}>
         
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))', paddingBottom: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid var(--border-color)', paddingBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(59, 130, 246, 0.2))', border: '1px solid rgba(99, 102, 241, 0.3)', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center' }}>
-              <PlusCircle size={20} color="#818cf8" />
+            <div style={{ background: 'var(--primary-tint)', border: '1px solid rgba(37, 99, 235, 0.25)', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center' }}>
+              <PlusCircle size={20} color="var(--primary)" />
             </div>
             <div>
-              <h2 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: 'var(--text-main, #f8fafc)', letterSpacing: '-0.2px' }}>{t.tickets.createTitle}</h2>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted, #94a3b8)' }}>
+              <h2 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.2px' }}>{t.tickets.createTitle}</h2>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                 {role === 'parent' 
                   ? (lang === 'ru' ? 'Подача заявки: Родитель' : lang === 'kk' ? 'Өтінім беруші: Ата-ана' : 'Submitting as: School Parent')
                   : role === 'guest'
                   ? (lang === 'ru' ? 'Подача заявки: Гость школы' : lang === 'kk' ? 'Өтінім беруші: Мектеп қонағы' : 'Submitting as: Campus Guest')
-                  : <>Sender: <strong style={{ color: 'var(--text-main, #f8fafc)' }}>{currentUser?.name || 'Staff'}</strong> ({currentUser?.department || 'Staff'})</>}
+                  : <>Sender: <strong style={{ color: 'var(--text-main)' }}>{currentUser?.name || 'Staff'}</strong> ({currentUser?.department || 'Staff'})</>}
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
             style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              color: '#94a3b8',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-muted)',
               cursor: 'pointer',
               width: '32px',
               height: '32px',
@@ -334,25 +339,44 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               transition: 'all 0.15s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-              e.currentTarget.style.color = '#ffffff';
+              e.currentTarget.style.color = 'var(--text-main)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              e.currentTarget.style.color = '#94a3b8';
+              e.currentTarget.style.color = 'var(--text-muted)';
             }}
           >
             <X size={16} />
           </button>
         </div>
 
-        {/* Step 1: Select Department */}
+        {/* Step 1: Select Department (Streamlined 4 Core Services + Toggle) */}
         <div style={{ marginBottom: '18px' }}>
-          <label style={{ fontSize: '11px', fontWeight: '700', color: '#94a3b8', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {t.tickets.selectDepartment} *
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
-            {departmentList.map(dept => {
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <label style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {t.tickets.selectDepartment} *
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowAllDepts(prev => !prev)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--primary)',
+                fontSize: '11px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                padding: '2px 4px'
+              }}
+            >
+              {showAllDepts
+                ? (lang === 'ru' ? 'Скрыть другие службы' : 'Show main services')
+                : (lang === 'ru' ? '+ Все службы школы (Переезд, Охрана, Столовая...)' : '+ More campus departments')}
+            </button>
+          </div>
+
+          {/* 4 Primary Services */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px', marginBottom: showAllDepts ? '8px' : '0' }}>
+            {departmentList.filter(d => PRIMARY_DEPT_IDS.includes(d.id)).map(dept => {
               const isSelected = department === dept.id;
               const deptTitle = dept.translations?.[lang] || dept.name;
               return (
@@ -368,28 +392,68 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                     }));
                   }}
                   style={{
-                    padding: '10px 8px',
-                    borderRadius: '8px',
-                    border: isSelected ? `1.5px solid ${dept.color || '#6366f1'}` : '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                    background: isSelected ? 'rgba(99, 102, 241, 0.18)' : 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
-                    boxShadow: isSelected ? '0 0 12px rgba(99, 102, 241, 0.25)' : 'none',
+                    padding: '12px 10px',
+                    borderRadius: '10px',
+                    border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+                    background: isSelected ? 'var(--primary-tint)' : 'var(--bg-subtle)',
+                    boxShadow: isSelected ? '0 0 0 1px var(--primary)' : 'none',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '5px',
+                    gap: '6px',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                     textAlign: 'center'
                   }}
                 >
-                  <span style={{ fontSize: '20px', lineHeight: 1 }}>{dept.emoji}</span>
-                  <span style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '600', color: isSelected ? 'var(--text-main, #ffffff)' : 'var(--text-main, #94a3b8)', lineHeight: 1.2 }}>
+                  <span style={{ fontSize: '24px', lineHeight: 1 }}>{dept.emoji}</span>
+                  <span style={{ fontSize: '12px', fontWeight: isSelected ? '700' : '600', color: isSelected ? 'var(--primary)' : 'var(--text-main)', lineHeight: 1.2 }}>
                     {deptTitle}
                   </span>
                 </button>
               );
             })}
           </div>
+
+          {/* Extended Departments if toggled */}
+          {showAllDepts && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(115px, 1fr))', gap: '6px', padding: '8px', background: 'var(--bg-subtle)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              {departmentList.filter(d => !PRIMARY_DEPT_IDS.includes(d.id)).map(dept => {
+                const isSelected = department === dept.id;
+                const deptTitle = dept.translations?.[lang] || dept.name;
+                return (
+                  <button
+                    key={dept.id}
+                    type="button"
+                    onClick={() => {
+                      setDepartment(dept.id);
+                      setFormData(prev => ({
+                        ...prev,
+                        subcategory: '',
+                        itemTitle: prev.subcategory ? '' : prev.itemTitle
+                      }));
+                    }}
+                    style={{
+                      padding: '8px 6px',
+                      borderRadius: '6px',
+                      border: isSelected ? '1.5px solid var(--primary)' : '1px solid var(--border-color)',
+                      background: isSelected ? 'var(--primary-tint)' : 'var(--bg-card)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      cursor: 'pointer',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ fontSize: '15px' }}>{dept.emoji}</span>
+                    <span style={{ fontSize: '11px', fontWeight: isSelected ? '700' : '500', color: isSelected ? 'var(--primary)' : 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {deptTitle}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
         {/* Sender Details for Unregistered Guest / Parent */}
         {(!isAuthenticated || role === 'guest' || role === 'parent') && (
@@ -617,7 +681,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                   whiteSpace: 'nowrap',
                   fontWeight: storageSelectedCategory === 'all' ? '700' : '500',
                   background: storageSelectedCategory === 'all' ? '#fbbf24' : 'rgba(255, 255, 255, 0.08)',
-                  color: storageSelectedCategory === 'all' ? '#0f172a' : '#cbd5e1'
+                  color: storageSelectedCategory === 'all' ? '#0f172a' : 'var(--text-main)'
                 }}
               >
                 {t.inventory?.allCategories || 'All'} {canManageStock ? `(${(inventory || []).length})` : ''}
@@ -1072,11 +1136,11 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                           value={formData.loanDuration || '1_lesson'}
                           onChange={e => setFormData(prev => ({ ...prev, loanDuration: e.target.value }))}
                           style={{
-                            background: '#0f172a',
+                            background: 'var(--bg-input)',
                             border: '1px solid rgba(249, 115, 22, 0.4)',
                             borderRadius: '4px',
                             padding: '2px 6px',
-                            color: '#fff',
+                            color: 'var(--text-main)',
                             fontSize: '11px',
                             outline: 'none',
                             cursor: 'pointer'
@@ -1252,7 +1316,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
           </div>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px', borderTop: '1px solid #383838', paddingTop: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
             <button
               type="button"
               onClick={onClose}

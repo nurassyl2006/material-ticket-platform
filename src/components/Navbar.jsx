@@ -108,38 +108,26 @@ export const Navbar = ({
           >
             <div
               style={{
-                background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                width: '34px',
+                height: '34px',
+                borderRadius: '9px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 2px 10px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2) inset',
+                boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)',
+                color: '#ffffff',
                 flexShrink: 0
               }}
             >
-              <Package size={17} color="#ffffff" />
+              <Package size={18} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-main, #ffffff)', margin: 0, letterSpacing: '-0.3px', whiteSpace: 'nowrap' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-main)', margin: 0, letterSpacing: '-0.3px', lineHeight: 1.1 }}>
                 {t.appName ? (t.appName.includes(' - ') ? t.appName.split(' - ')[0] : t.appName) : 'EduOps'}
               </span>
-              <span
-                className="mobile-hide"
-                style={{
-                  fontSize: '9.5px',
-                  fontWeight: '700',
-                  letterSpacing: '0.5px',
-                  padding: '2px 6px',
-                  borderRadius: '5px',
-                  background: 'rgba(99, 102, 241, 0.15)',
-                  color: '#818cf8',
-                  border: '1px solid rgba(99, 102, 241, 0.25)',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                CAMPUS
+              <span className="mobile-hide" style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: '600' }}>
+                {lang === 'ru' ? 'Школьный сервис' : lang === 'kk' ? 'Мектеп сервисі' : 'Campus Portal'}
               </span>
             </div>
           </Link>
@@ -528,48 +516,10 @@ export const Navbar = ({
                   }
                 }}
               >
-                <Users size={14} color={activeTab === 'users' ? '#818cf8' : 'currentColor'} />
+                <Users size={14} color={activeTab === 'users' ? '#2563eb' : 'currentColor'} />
                 <span>{t.nav?.users || 'Staff & Roles'}</span>
               </Link>
             )}
-            {/* Interactive Presentation Launcher */}
-            <a
-              href="/presentation.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              title={lang === 'ru' ? 'Открыть презентацию платформы для персонала (в новой вкладке)' : lang === 'kk' ? 'Қызметкерлерге арналған таныстырылымды ашу' : 'Open Staff Training Presentation (New Tab)'}
-              style={{
-                height: '30px',
-                padding: '0 10px',
-                fontSize: '12px',
-                fontWeight: '600',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                color: '#cbd5e1',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '7px',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                textDecoration: 'none',
-                whiteSpace: 'nowrap',
-                flexShrink: 0
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#ffffff';
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
-                e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#cbd5e1';
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-              }}
-            >
-              <span>🎓</span>
-              <span>{lang === 'ru' ? 'Презентация' : lang === 'kk' ? 'Презентация' : 'Presentation'}</span>
-            </a>
           </nav>
 
           {/* Right Section: Action CTA + Controls Cluster */}
@@ -722,50 +672,52 @@ export const Navbar = ({
               />
             </div>
 
-            {/* Database Status Pill */}
-            <button
-              type="button"
-              className="mobile-hide"
-              onClick={onOpenServerModal || syncWithCloud}
-              title={
-                cloudStatus === 'syncing'
-                  ? 'Syncing with SQLite database...'
-                  : cloudStatus === 'offline'
-                  ? 'Offline mode (click to configure remote server)'
-                  : 'Connected to SQLite database (click for diagnostics)'
-              }
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                height: '32px',
-                background: 'var(--bg-subtle, rgba(255, 255, 255, 0.04))',
-                border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-                padding: '0 9px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                color: 'var(--text-muted, #94a3b8)',
-                fontSize: '11px',
-                fontWeight: '600',
-                flexShrink: 0,
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Database size={13} color={cloudStatus === 'syncing' ? '#6366f1' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981'} />
-              <span
+            {/* Database Status Pill (Visible to Director / Admin only) */}
+            {(role === 'director' || role === 'admin') && (
+              <button
+                type="button"
+                className="mobile-hide"
+                onClick={onOpenServerModal || syncWithCloud}
+                title={
+                  cloudStatus === 'syncing'
+                    ? 'Syncing with SQLite database...'
+                    : cloudStatus === 'offline'
+                    ? 'Offline mode (click to configure remote server)'
+                    : 'Connected to SQLite database (click for diagnostics)'
+                }
                 style={{
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  background: cloudStatus === 'syncing' ? '#6366f1' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981',
-                  boxShadow: cloudStatus === 'connected' ? '0 0 6px rgba(16, 185, 129, 0.6)' : 'none',
-                  flexShrink: 0
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  height: '32px',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-color)',
+                  padding: '0 9px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted)',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease'
                 }}
-              />
-              <span className="profile-btn-text" style={{ whiteSpace: 'nowrap' }}>
-                {cloudStatus === 'syncing' ? 'Syncing' : cloudStatus === 'offline' ? 'Offline' : 'Connected'}
-              </span>
-            </button>
+              >
+                <Database size={13} color={cloudStatus === 'syncing' ? 'var(--primary)' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981'} />
+                <span
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: cloudStatus === 'syncing' ? 'var(--primary)' : cloudStatus === 'offline' ? '#f59e0b' : '#10b981',
+                    boxShadow: cloudStatus === 'connected' ? '0 0 6px rgba(16, 185, 129, 0.6)' : 'none',
+                    flexShrink: 0
+                  }}
+                />
+                <span className="profile-btn-text" style={{ whiteSpace: 'nowrap' }}>
+                  {cloudStatus === 'syncing' ? 'Syncing' : cloudStatus === 'offline' ? 'Offline' : 'Connected'}
+                </span>
+              </button>
+            )}
 
             {/* Authenticated User OR Guest/Parent Auth Controls */}
             {isAuthenticated ? (

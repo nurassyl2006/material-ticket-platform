@@ -140,54 +140,57 @@ function MainApp() {
 
       {/* Unregistered Guest / Parent Notification & Access Banner */}
       {!isAuthenticated && (
-        <div className="guest-banner-wrapper" style={{ maxWidth: '1360px', margin: '-8px auto 16px', padding: '0 16px' }}>
+        <div className="guest-banner-wrapper" style={{ maxWidth: '1280px', margin: '-4px auto 16px', padding: '0 16px' }}>
           <div className="guest-banner-card" style={{
-            background: 'var(--bg-card, rgba(18, 25, 44, 0.75))',
-            border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-            borderLeft: `4px solid ${role === 'parent' ? '#8b5cf6' : '#6366f1'}`,
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
+            borderLeft: `4px solid ${role === 'parent' ? '#8b5cf6' : 'var(--primary)'}`,
             borderRadius: '12px',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            padding: '14px 18px',
-            boxShadow: 'var(--shadow-depth-2)'
+            padding: '12px 18px',
+            boxShadow: 'var(--shadow-depth-2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '240px' }}>
               <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: role === 'parent' ? 'rgba(91, 95, 199, 0.18)' : 'rgba(15, 108, 189, 0.18)',
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: role === 'parent' ? 'rgba(139, 92, 246, 0.12)' : 'rgba(37, 99, 235, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: role === 'parent' ? '#8b8fe6' : '#70b5f9',
+                color: role === 'parent' ? '#7c3aed' : 'var(--primary)',
                 flexShrink: 0
               }}>
                 {role === 'parent' ? <Users size={18} /> : <Compass size={18} />}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main, #f3f2f1)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>
                     {role === 'parent'
-                      ? (lang === 'ru' ? 'Вы находитесь в режиме «Родитель»' : lang === 'kk' ? 'Сіз «Ата-ана» режиміндесіз' : 'Browsing as School Parent')
-                      : (lang === 'ru' ? 'Вы находитесь в режиме «Гость / Посетитель»' : lang === 'kk' ? 'Сіз «Қонақ / Келуші» режиміндесіз' : 'Browsing as Campus Guest')}
+                      ? (lang === 'ru' ? 'Режим «Родитель»' : lang === 'kk' ? '«Ата-ана» режимі' : 'Parent Mode')
+                      : (lang === 'ru' ? 'Режим «Гость / Посетитель»' : lang === 'kk' ? '«Қонақ / Келуші» режимі' : 'Visitor Mode')}
                   </span>
                   <span style={{ 
                     fontSize: '11px', 
-                    background: 'var(--bg-subtle, rgba(255, 255, 255, 0.08))', 
-                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.12))',
-                    padding: '1px 6px', 
-                    borderRadius: '4px',
-                    color: 'var(--text-muted, #adadad)',
+                    background: 'var(--bg-subtle)', 
+                    border: '1px solid var(--border-color)',
+                    padding: '2px 8px', 
+                    borderRadius: '999px',
+                    color: 'var(--text-muted)',
                     fontWeight: '500'
                   }}>
-                    {t.auth?.unregisteredUser || 'Unregistered'}
+                    {lang === 'ru' ? 'Без входа' : lang === 'kk' ? 'Кірусіз' : 'Quick Access'}
                   </span>
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted, #adadad)', marginTop: '2px', lineHeight: 1.4 }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
                   {role === 'parent'
-                    ? (lang === 'ru' ? 'Вы можете просматривать заявки школы и подавать обращения по классам и безопасности' : lang === 'kk' ? 'Мектеп өтінімдерін қарап, сыныптар мен қауіпсіздік бойынша сұраныс бере аласыз' : 'Submit classroom, maintenance or safety requests without creating an account')
-                    : (lang === 'ru' ? 'Вы можете просматривать общественные заявки и подавать обращения посетителя' : lang === 'kk' ? 'Мектеп бойынша өтінімдерді қарап, келуші сұраныстарын жібере аласыз' : 'Browse requests and submit campus visitor tickets directly')}
+                    ? (lang === 'ru' ? 'Подавайте обращения по классам, удобству и безопасности без регистрации.' : lang === 'kk' ? 'Тіркелусіз сыныптар мен қауіпсіздік бойынша сұраныс беріңіз.' : 'Submit classroom and school maintenance requests directly without signing in.')
+                    : (lang === 'ru' ? 'Вы можете подать обращение или сообщить о неполадке прямо сейчас.' : lang === 'kk' ? 'Мектеп бойынша кез келген өтінімді тіркеусіз-ақ бере аласыз.' : 'Submit a school service request or report an issue instantly.')}
                 </div>
               </div>
             </div>
@@ -197,17 +200,17 @@ function MainApp() {
                 type="button"
                 onClick={() => setRole(role === 'parent' ? 'guest' : 'parent')}
                 className="fluent-btn-secondary"
-                style={{ height: '30px', padding: '0 12px', fontSize: '12px' }}
+                style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
               >
                 {role === 'parent' 
-                  ? (lang === 'ru' ? 'Переключить на Гостя' : lang === 'kk' ? 'Қонаққа ауысу' : 'Switch to Guest')
-                  : (lang === 'ru' ? 'Переключить на Родителя' : lang === 'kk' ? 'Ата-анаға ауысу' : 'Switch to Parent')}
+                  ? (lang === 'ru' ? 'Режим Гостя' : lang === 'kk' ? 'Қонақ режимі' : 'Switch to Guest')
+                  : (lang === 'ru' ? 'Режим Родителя' : lang === 'kk' ? 'Ата-ана режимі' : 'Switch to Parent')}
               </button>
               <button
                 type="button"
                 onClick={handleOpenLogin}
                 className="fluent-btn-secondary"
-                style={{ height: '30px', padding: '0 12px', fontSize: '12px' }}
+                style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
               >
                 <LogIn size={13} />
                 <span>{t.auth?.signIn || 'Sign In'}</span>
@@ -216,7 +219,7 @@ function MainApp() {
                 type="button"
                 onClick={handleOpenRegister}
                 className="fluent-btn-primary"
-                style={{ height: '30px', padding: '0 12px', fontSize: '12px' }}
+                style={{ height: '32px', padding: '0 12px', fontSize: '12px' }}
               >
                 <UserPlus size={13} />
                 <span>{t.auth?.registerWindow || 'Register'}</span>
@@ -241,12 +244,12 @@ function MainApp() {
         )}
         {activeTab === 'inventory' && (
           !isAuthenticated ? (
-            <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '6px', background: '#252525', border: '1px solid #383838' }}>
-              <ShieldCheck size={40} color="#0f6cbd" style={{ margin: '0 auto 12px' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#f3f2f1', marginBottom: '8px' }}>
+            <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-depth-4)' }}>
+              <ShieldCheck size={40} color="var(--primary)" style={{ margin: '0 auto 12px' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>
                 {lang === 'ru' ? 'Доступ только для сотрудников' : lang === 'kk' ? 'Тек қызметкерлер үшін қолжетімді' : 'Staff Verification Required'}
               </h3>
-              <p style={{ fontSize: '13px', color: '#adadad', marginBottom: '20px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px', lineHeight: 1.5 }}>
                 {lang === 'ru' 
                   ? 'Складской учет и каталог доступны для завскладом, инженеров и администрации. Войдите со своей учетной записью.'
                   : lang === 'kk'
@@ -257,14 +260,14 @@ function MainApp() {
                 <button
                   onClick={handleOpenLogin}
                   className="fluent-btn-primary"
-                  style={{ height: '32px', padding: '0 16px' }}
+                  style={{ height: '36px', padding: '0 18px' }}
                 >
                   {t.auth?.signIn || 'Sign In'}
                 </button>
                 <button
                   onClick={handleOpenRegister}
                   className="fluent-btn-secondary"
-                  style={{ height: '32px', padding: '0 16px' }}
+                  style={{ height: '36px', padding: '0 18px' }}
                 >
                   {t.auth?.registerWindow || 'Register'}
                 </button>
@@ -278,12 +281,12 @@ function MainApp() {
           isAuthenticated ? (
             <UserManagement />
           ) : (
-            <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '6px', background: '#252525', border: '1px solid #383838' }}>
-              <ShieldCheck size={40} color="#0f6cbd" style={{ margin: '0 auto 12px' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#f3f2f1', marginBottom: '8px' }}>
+            <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-depth-4)' }}>
+              <ShieldCheck size={40} color="var(--primary)" style={{ margin: '0 auto 12px' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>
                 {lang === 'ru' ? 'Панель управления персоналом' : lang === 'kk' ? 'Қызметкерлерді басқару панелі' : 'Staff Administration Portal'}
               </h3>
-              <p style={{ fontSize: '13px', color: '#adadad', marginBottom: '20px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px', lineHeight: 1.5 }}>
                 {lang === 'ru'
                   ? 'Управление пользователями и распределение ролей доступно только дирекции школы.'
                   : lang === 'kk'
@@ -293,7 +296,7 @@ function MainApp() {
               <button
                 onClick={handleOpenLogin}
                 className="fluent-btn-primary"
-                style={{ height: '32px', padding: '0 18px' }}
+                style={{ height: '36px', padding: '0 18px' }}
               >
                 {t.auth?.signIn || 'Sign In as Director'}
               </button>
@@ -311,12 +314,12 @@ function MainApp() {
               }
             />
           ) : (
-            <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'rgba(18, 25, 44, 0.85)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <ShieldCheck size={40} color="#8b5cf6" style={{ margin: '0 auto 12px' }} />
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#f8fafc', marginBottom: '8px' }}>
+            <div className="glass-panel" style={{ padding: '36px 24px', textAlign: 'center', maxWidth: '520px', margin: '32px auto', borderRadius: '12px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-depth-4)' }}>
+              <ShieldCheck size={40} color="var(--primary)" style={{ margin: '0 auto 12px' }} />
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '8px' }}>
                 {lang === 'ru' ? 'Требуется оперативный доступ' : lang === 'kk' ? 'Операциялық қолжетімділік қажет' : 'Operational Access Required'}
               </h3>
-              <p style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '20px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px', lineHeight: 1.5 }}>
                 {lang === 'ru'
                   ? 'Оперативные ежедневные, еженедельные и ежемесячные отчеты по заявкам доступны руководству школы, главному инженеру, зав. клинингом, завскладу, IT отделу и финансовой службе.'
                   : lang === 'kk'
@@ -326,7 +329,7 @@ function MainApp() {
               <button
                 onClick={handleOpenLogin}
                 className="fluent-btn-primary"
-                style={{ height: '32px', padding: '0 18px' }}
+                style={{ height: '36px', padding: '0 18px' }}
               >
                 {t.auth?.signIn || 'Sign In'}
               </button>

@@ -35,8 +35,8 @@ export class ErrorBoundary extends React.Component {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0f172a',
-          color: '#f8fafc',
+          background: 'var(--bg-page)',
+          color: 'var(--text-main)',
           padding: '20px',
           fontFamily: 'Inter, system-ui, -apple-system, sans-serif'
         }}>

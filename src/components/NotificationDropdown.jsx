@@ -112,11 +112,11 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
         display: 'flex',
         flexDirection: 'column',
         zIndex: 1000,
-        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5)',
-        border: '1px solid #383838',
-        borderRadius: '4px',
+        boxShadow: 'var(--shadow-depth-16)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '12px',
         overflow: 'hidden',
-        background: '#292929'
+        background: 'var(--bg-card)'
       }}
     >
       {/* Header */}
@@ -126,11 +126,11 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'rgba(255, 255, 255, 0.03)'
+        background: 'var(--bg-subtle)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Bell size={16} color="var(--primary)" />
-          <strong style={{ fontSize: '14px', color: '#fff' }}>{t.notifications?.title || 'Notifications'}</strong>
+          <strong style={{ fontSize: '14px', color: 'var(--text-main)' }}>{t.notifications?.title || 'Notifications'}</strong>
           {unreadCount > 0 && (
             <span style={{
               background: 'var(--danger)',
@@ -204,24 +204,24 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
       {/* Device Notifications Enable Banner */}
       <div style={{
         padding: '10px 16px',
-        background: '#242424',
-        borderBottom: '1px solid #383838',
+        background: 'var(--bg-subtle)',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: '10px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Smartphone size={15} color={devicePermission === 'granted' ? '#107c41' : devicePermission === 'denied' ? '#ef4444' : '#0f6cbd'} />
+          <Smartphone size={15} color={devicePermission === 'granted' ? '#107c41' : devicePermission === 'denied' ? '#ef4444' : 'var(--primary)'} />
           <div style={{ fontSize: '11px', lineHeight: 1.2 }}>
-            <div style={{ fontWeight: '600', color: '#f3f2f1' }}>
+            <div style={{ fontWeight: '600', color: 'var(--text-main)' }}>
               {devicePermission === 'granted'
                 ? (lang === 'ru' ? 'Уведомления на устройстве активны' : lang === 'kk' ? 'Құрылғы хабарландырулары белсенді' : 'Device Push Active')
                 : devicePermission === 'denied'
                 ? (lang === 'ru' ? 'Уведомления заблокированы браузером' : 'Browser Blocked Alerts')
                 : (lang === 'ru' ? 'Уведомления на устройство' : lang === 'kk' ? 'Құрылғыға хабарландырулар' : 'Device Push Alerts')}
             </div>
-            <div style={{ color: '#8a8a8a', fontSize: '10px' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
               {devicePermission === 'granted'
                 ? (lang === 'ru' ? 'Звук, вибрация и пуши на экран' : 'Chime, vibration & popups active')
                 : devicePermission === 'denied'
@@ -238,10 +238,10 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               onClick={handleTestNotification}
               style={{
                 padding: '3px 8px',
-                borderRadius: '3px',
-                background: '#1f1f1f',
-                border: '1px solid #383838',
-                color: '#62c789',
+                borderRadius: '6px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                color: '#059669',
                 fontSize: '11px',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -259,10 +259,10 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               title="Configure Telegram Phone Alerts"
               style={{
                 padding: '3px 8px',
-                borderRadius: '3px',
-                background: '#1f1f1f',
-                border: '1px solid #383838',
-                color: '#70b5f9',
+                borderRadius: '6px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--primary)',
                 fontSize: '11px',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -371,21 +371,21 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
               }}
               style={{
                 padding: '12px 16px',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-                background: notif.read ? 'transparent' : 'rgba(99, 102, 241, 0.08)',
+                borderBottom: '1px solid var(--border-subtle)',
+                background: notif.read ? 'transparent' : 'var(--primary-tint)',
                 cursor: 'pointer',
                 display: 'flex',
                 gap: '12px',
                 transition: 'background 0.15s ease'
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)'}
-              onMouseLeave={e => e.currentTarget.style.background = notif.read ? 'transparent' : 'rgba(99, 102, 241, 0.08)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-subtle)'}
+              onMouseLeave={e => e.currentTarget.style.background = notif.read ? 'transparent' : 'var(--primary-tint)'}
             >
               <div style={{
                 width: '32px',
                 height: '32px',
                 borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.06)',
+                background: 'var(--bg-subtle)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -396,7 +396,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '700', color: notif.read ? '#cbd5e1' : '#fff' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: notif.read ? 'var(--text-muted)' : 'var(--text-main)' }}>
                     {notif.title}
                   </span>
                   {!notif.read && (
@@ -415,7 +415,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
                   {notif.message}
                 </p>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: '#64748b' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: 'var(--text-muted)' }}>
                   <span>{notif.ticketId}</span>
                   <span>{new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>

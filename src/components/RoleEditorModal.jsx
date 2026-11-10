@@ -342,10 +342,10 @@ export const RoleEditorModal = ({
           width: '100%',
           maxWidth: '680px',
           maxHeight: '92vh',
-          background: '#242424',
-          border: '1px solid #383838',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
           borderRadius: '16px',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.7)',
+          boxShadow: 'var(--shadow-depth-16)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden'
@@ -355,11 +355,11 @@ export const RoleEditorModal = ({
         {/* Header */}
         <div style={{
           padding: '18px 24px',
-          borderBottom: '1px solid #383838',
+          borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: '#1f1f1f'
+          background: 'var(--bg-subtle)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
@@ -477,9 +477,9 @@ export const RoleEditorModal = ({
                   width: '100%',
                   padding: '9px 12px',
                   borderRadius: '8px',
-                  background: isEditing ? '#181818' : '#1f1f1f',
-                  border: '1px solid #383838',
-                  color: isEditing ? '#8a8a8a' : '#fff',
+                  background: isEditing ? 'var(--bg-subtle)' : 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: isEditing ? 'var(--text-muted)' : 'var(--text-main)',
                   fontSize: '13px',
                   boxSizing: 'border-box'
                 }}
@@ -487,7 +487,7 @@ export const RoleEditorModal = ({
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '5px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '5px' }}>
                 Role Name (English) *
               </label>
               <input
@@ -500,9 +500,9 @@ export const RoleEditorModal = ({
                   width: '100%',
                   padding: '9px 12px',
                   borderRadius: '8px',
-                  background: '#1f1f1f',
-                  border: '1px solid #383838',
-                  color: '#fff',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
                   fontSize: '13px',
                   boxSizing: 'border-box'
                 }}
@@ -510,7 +510,7 @@ export const RoleEditorModal = ({
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#adadad', marginBottom: '5px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '5px' }}>
                 Название роли (Русский)
               </label>
               <input
@@ -522,9 +522,9 @@ export const RoleEditorModal = ({
                   width: '100%',
                   padding: '9px 12px',
                   borderRadius: '8px',
-                  background: '#1f1f1f',
-                  border: '1px solid #383838',
-                  color: '#fff',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-main)',
                   fontSize: '13px',
                   boxSizing: 'border-box'
                 }}
@@ -552,9 +552,9 @@ export const RoleEditorModal = ({
                       style={{
                         padding: '7px 10px',
                         borderRadius: '8px',
-                        background: isSelected ? formData.bg : '#1f1f1f',
-                        border: isSelected ? `2px solid ${formData.color}` : '1px solid #383838',
-                        color: isSelected ? formData.color : '#8a8a8a',
+                        background: isSelected ? formData.bg : 'var(--bg-subtle)',
+                        border: isSelected ? `2px solid ${formData.color}` : '1px solid var(--border-color)',
+                        color: isSelected ? formData.color : 'var(--text-muted)',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
@@ -620,9 +620,9 @@ export const RoleEditorModal = ({
                 width: '100%',
                 padding: '9px 12px',
                 borderRadius: '8px',
-                background: '#1f1f1f',
-                border: '1px solid #383838',
-                color: '#fff',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-main)',
                 fontSize: '13px',
                 lineHeight: 1.4,
                 boxSizing: 'border-box',
@@ -804,9 +804,9 @@ export const RoleEditorModal = ({
               style={{
                 padding: '9px 18px',
                 borderRadius: '8px',
-                background: '#1f1f1f',
-                border: '1px solid #383838',
-                color: '#adadad',
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-main)',
                 fontSize: '12px',
                 fontWeight: '600',
                 cursor: 'pointer'

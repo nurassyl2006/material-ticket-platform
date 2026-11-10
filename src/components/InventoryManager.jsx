@@ -2025,7 +2025,7 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
               </div>
 
               {/* Modal Buttons */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px', borderTop: '1px solid #383838', paddingTop: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '14px', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
                 <button 
                   type="button" 
                   onClick={() => setShowAddModal(false)} 
@@ -2075,9 +2075,9 @@ export const InventoryManager = ({ onOpenNewTicket }) => {
             style={{
               maxWidth: '800px',
               width: '100%',
-              background: '#0f172a',
+              background: 'var(--bg-card)',
               borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              border: '1px solid var(--border-color)',
               overflow: 'hidden',
               boxShadow: '0 20px 40px rgba(0,0,0,0.6)'
             }}

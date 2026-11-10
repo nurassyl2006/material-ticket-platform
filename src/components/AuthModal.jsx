@@ -382,7 +382,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     padding: '8px 12px 8px 34px',
                     borderRadius: '4px',
                     background: 'var(--bg-subtle, #1f1f1f)',
-                    border: '1px solid var(--border-color, #383838)',
+                    border: '1px solid var(--border-color)',
                     color: 'var(--text-main, #ffffff)',
                     fontSize: '13px',
                     outline: 'none',
@@ -412,7 +412,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     padding: '8px 36px 8px 34px',
                     borderRadius: '4px',
                     background: 'var(--bg-subtle, #1f1f1f)',
-                    border: '1px solid var(--border-color, #383838)',
+                    border: '1px solid var(--border-color)',
                     color: 'var(--text-main, #ffffff)',
                     fontSize: '13px',
                     outline: 'none',
@@ -521,7 +521,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                 {lang === 'ru' ? 'Полное имя (ФИО)' : lang === 'kk' ? 'Толық аты-жөніңіз' : 'Full Name *'}
               </label>
               <div style={{ position: 'relative' }}>
-                <User size={15} color="#8a8a8a" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                <User size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
                   required
@@ -531,10 +531,10 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                   style={{
                     width: '100%',
                     padding: '8px 12px 8px 34px',
-                    borderRadius: '4px',
-                    background: '#1f1f1f',
-                    border: '1px solid #383838',
-                    color: '#ffffff',
+                    borderRadius: '6px',
+                    background: 'var(--bg-input)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     outline: 'none',
                     boxSizing: 'border-box'
@@ -544,11 +544,11 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                 {lang === 'ru' ? 'Email или логин' : lang === 'kk' ? 'Email немесе логин' : 'Email or Staff Username *'}
               </label>
               <div style={{ position: 'relative' }}>
-                <Mail size={15} color="#8a8a8a" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Mail size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
                   required
@@ -558,10 +558,10 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                   style={{
                     width: '100%',
                     padding: '8px 12px 8px 34px',
-                    borderRadius: '4px',
-                    background: '#1f1f1f',
-                    border: '1px solid #383838',
-                    color: '#ffffff',
+                    borderRadius: '6px',
+                    background: 'var(--bg-input)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     outline: 'none',
                     boxSizing: 'border-box'
@@ -571,11 +571,11 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                 {lang === 'ru' ? 'Кафедра / Отдел / Статус' : lang === 'kk' ? 'Бөлім / Мәртебе' : 'Department or Affiliation'}
               </label>
               <div style={{ position: 'relative' }}>
-                <Building size={15} color="#8a8a8a" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Building size={15} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
                   placeholder="e.g. STEM, Languages, General"
@@ -584,10 +584,10 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                   style={{
                     width: '100%',
                     padding: '8px 12px 8px 34px',
-                    borderRadius: '4px',
-                    background: '#1f1f1f',
-                    border: '1px solid #383838',
-                    color: '#ffffff',
+                    borderRadius: '6px',
+                    background: 'var(--bg-input)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     outline: 'none',
                     boxSizing: 'border-box'
@@ -598,7 +598,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                   {lang === 'ru' ? 'Пароль' : lang === 'kk' ? 'Құпия сөз' : 'Password *'}
                 </label>
                 <div style={{ position: 'relative' }}>
@@ -611,10 +611,10 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     style={{
                       width: '100%',
                       padding: '8px 32px 8px 10px',
-                      borderRadius: '4px',
-                      background: '#1f1f1f',
-                      border: '1px solid #383838',
-                      color: '#ffffff',
+                      borderRadius: '6px',
+                      background: 'var(--bg-input)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-main)',
                       fontSize: '13px',
                       outline: 'none',
                       boxSizing: 'border-box'
@@ -630,7 +630,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                       transform: 'translateY(-50%)',
                       background: 'transparent',
                       border: 'none',
-                      color: '#8a8a8a',
+                      color: 'var(--text-muted)',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center'
@@ -642,7 +642,7 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#adadad', marginBottom: '4px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '4px' }}>
                   {lang === 'ru' ? 'Повторите' : lang === 'kk' ? 'Қайталаңыз' : 'Confirm *'}
                 </label>
                 <input
@@ -654,10 +654,10 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                   style={{
                     width: '100%',
                     padding: '8px 10px',
-                    borderRadius: '4px',
-                    background: '#1f1f1f',
-                    border: '1px solid #383838',
-                    color: '#ffffff',
+                    borderRadius: '6px',
+                    background: 'var(--bg-input)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     outline: 'none',
                     boxSizing: 'border-box'
@@ -667,18 +667,18 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
             </div>
 
             <div style={{
-              padding: '6px 10px',
-              borderRadius: '4px',
-              background: '#242424',
-              border: '1px solid #383838',
-              borderLeft: '3px solid #0f6cbd',
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-color)',
+              borderLeft: '3px solid var(--primary)',
               display: 'flex',
               gap: '6px',
               fontSize: '11px',
-              color: '#adadad',
+              color: 'var(--text-muted)',
               lineHeight: 1.3
             }}>
-              <Info size={14} color="#0f6cbd" style={{ flexShrink: 0, marginTop: '1px' }} />
+              <Info size={14} color="var(--primary)" style={{ flexShrink: 0, marginTop: '1px' }} />
               <span>
                 {lang === 'ru' 
                   ? 'Новые аккаунты регистрируются с доступом учителя / персонала. Специальные роли назначаются директором.' 
@@ -708,12 +708,12 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         )}
 
         {/* UNREGISTERED GUEST & PARENT SECTION */}
-        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color, #383838)' }}>
+        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
           <div style={{ textAlign: 'center', marginBottom: '12px' }}>
             <span style={{ 
               fontSize: '11px', 
               fontWeight: '600', 
-              color: 'var(--text-muted, #8a8a8a)', 
+              color: 'var(--text-muted)', 
               textTransform: 'uppercase', 
               letterSpacing: '0.5px'
             }}>
@@ -727,15 +727,15 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
               type="button"
               onClick={handleContinueAsGuest}
               style={{
-                padding: '10px 10px',
-                borderRadius: '6px',
+                padding: '12px 10px',
+                borderRadius: '8px',
                 background: (!isAuthenticated && role === 'guest') 
-                  ? 'rgba(15, 108, 189, 0.15)' 
-                  : 'var(--bg-subtle, #242424)',
+                  ? 'var(--primary-tint)' 
+                  : 'var(--bg-subtle)',
                 border: (!isAuthenticated && role === 'guest') 
-                  ? '1.5px solid #0f6cbd' 
-                  : '1px solid var(--border-color, #383838)',
-                color: 'var(--text-main, #ffffff)',
+                  ? '1.5px solid var(--primary)' 
+                  : '1px solid var(--border-color)',
+                color: 'var(--text-main)',
                 cursor: 'pointer',
                 textAlign: 'left',
                 display: 'flex',
@@ -749,19 +749,19 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                   width: '22px', 
                   height: '22px', 
                   borderRadius: '4px', 
-                  background: 'rgba(15, 108, 189, 0.2)', 
+                  background: 'var(--primary-tint)', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
-                  color: '#0f6cbd' 
+                  color: 'var(--primary)' 
                 }}>
                   <Compass size={13} />
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main, #f3f2f1)' }}>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>
                   {t.auth?.continueAsGuest || 'Guest / Visitor'}
                 </span>
               </div>
-              <span style={{ fontSize: '10px', color: 'var(--text-muted, #8a8a8a)', lineHeight: 1.3 }}>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.3 }}>
                 {lang === 'ru' ? 'Для гостей школы и посетителей' : lang === 'kk' ? 'Мектеп келушілері мен қонақтарына' : 'Campus visitors & general inquiries'}
               </span>
             </button>
@@ -771,15 +771,15 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
               type="button"
               onClick={handleContinueAsParent}
               style={{
-                padding: '10px 10px',
-                borderRadius: '6px',
+                padding: '12px 10px',
+                borderRadius: '8px',
                 background: (!isAuthenticated && role === 'parent') 
-                  ? 'rgba(91, 95, 199, 0.15)' 
-                  : 'var(--bg-subtle, #242424)',
+                  ? 'rgba(139, 92, 246, 0.12)' 
+                  : 'var(--bg-subtle)',
                 border: (!isAuthenticated && role === 'parent') 
-                  ? '1.5px solid #5b5fc7' 
-                  : '1px solid var(--border-color, #383838)',
-                color: 'var(--text-main, #ffffff)',
+                  ? '1.5px solid #8b5cf6' 
+                  : '1px solid var(--border-color)',
+                color: 'var(--text-main)',
                 cursor: 'pointer',
                 textAlign: 'left',
                 display: 'flex',
@@ -793,20 +793,20 @@ export const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                   width: '22px', 
                   height: '22px', 
                   borderRadius: '4px', 
-                  background: 'rgba(91, 95, 199, 0.2)', 
+                  background: 'rgba(139, 92, 246, 0.2)', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
-                  color: '#5b5fc7' 
+                  color: '#8b5cf6' 
                 }}>
                   <Users size={13} />
                 </div>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main, #f3f2f1)' }}>
-                  {t.auth?.continueAsParent || 'Parent'}
+                <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)' }}>
+                  {t.auth?.continueAsParent || 'School Parent'}
                 </span>
               </div>
-              <span style={{ fontSize: '10px', color: 'var(--text-muted, #8a8a8a)', lineHeight: 1.3 }}>
-                {lang === 'ru' ? 'Для родителей учеников' : lang === 'kk' ? 'Оқушылардың ата-аналары үшін' : 'Submit classroom & child safety tickets'}
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.3 }}>
+                {lang === 'ru' ? 'Для родителей учеников' : lang === 'kk' ? 'Оқушылардың ата-аналарына' : 'For parents & student inquiries'}
               </span>
             </button>
           </div>
