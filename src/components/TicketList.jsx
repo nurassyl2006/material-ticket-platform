@@ -289,12 +289,13 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
   const getProcessButtonLabel = (ticket) => {
     const deptId = resolveDepartment(ticket.department).id;
-    if (deptId === 'it_helpdesk') return '⚡ Troubleshoot (IT)';
-    if (deptId === 'cleaning') return '🧹 Accept & Clean';
-    if (deptId === 'carpentry' || deptId === 'event_prep' || deptId === 'grounds') return '🚚 Move Furniture / Repair';
-    if (deptId === 'plumbing' || deptId === 'electrical') return '🔧 Repair (Engineer)';
-    if (deptId === 'storage') return lang === 'ru' ? '📦 Выдать / Доставить' : lang === 'kk' ? '📦 Қоймадан беру / Жеткізу' : '📦 Issue / Deliver';
-    return '⚡ Process Request';
+    if (deptId === 'storage') {
+      return lang === 'ru' ? '📦 Выдать / Доставить' : lang === 'kk' ? '📦 Қоймадан беру' : '📦 Issue / Deliver';
+    }
+    if (ticket.status === 'pending') {
+      return lang === 'ru' ? '⚡ Принять / Выполнить' : lang === 'kk' ? '⚡ Қабылдау / Орындау' : '⚡ Accept & Process';
+    }
+    return lang === 'ru' ? '⚙️ Управление заявкой' : lang === 'kk' ? '⚙️ Өтінімді басқару' : '⚙️ Update / Complete';
   };
 
   return (
@@ -314,9 +315,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               fontSize: '11px',
               padding: '3px 8px',
               borderRadius: '6px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              color: 'var(--text-secondary)',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--text-muted)',
               fontWeight: '600'
             }}>
               🔒 {t.auth.scopeLabel} {role === 'teacher' ? t.auth.onlyMyTickets : (role === 'it_support' ? t.auth.onlyIT : (role === 'cleaning' ? t.auth.onlyCleaning : (role === 'engineer' ? t.auth.onlyEngineering : ((role === 'finance' || role === 'accountant') ? (t.auth.onlyFinance || 'Finance & Procurement') : (role === 'storage_manager' ? t.auth.onlyStorage : (role === 'facilities_manager' ? t.auth.onlyFacilities : t.auth.allOperations))))))}
@@ -467,20 +468,13 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
           {onOpenNewTicket && (
             <button
               onClick={onOpenNewTicket}
+              className="fluent-btn-primary"
               style={{
-                background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                color: '#ffffff',
-                padding: '7px 16px',
+                height: '36px',
+                padding: '0 16px',
                 borderRadius: '8px',
                 fontSize: '12px',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
-                transition: 'all 0.15s ease'
+                fontWeight: '600'
               }}
             >
               <Plus size={15} /> {t.nav.newTicket}

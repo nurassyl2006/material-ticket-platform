@@ -214,10 +214,10 @@ export const DeclineTicketModal = ({ ticket, isOpen, onClose, onDeclineSuccess }
                   type="button"
                   onClick={() => handleSelectQuickReason(qr)}
                   style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: 'var(--bg-subtle)',
                     border: '1px solid var(--border-color)',
                     borderRadius: '14px',
-                    padding: '3px 10px',
+                    padding: '4px 10px',
                     fontSize: '11px',
                     color: 'var(--text-main)',
                     cursor: 'pointer',
@@ -230,7 +230,7 @@ export const DeclineTicketModal = ({ ticket, isOpen, onClose, onDeclineSuccess }
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.borderColor = 'var(--border-color)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.background = 'var(--bg-subtle)';
                   }}
                 >
                   + {qr}

@@ -17,7 +17,10 @@ import {
   Globe,
   RotateCcw,
   XCircle,
-  ZoomIn
+  ZoomIn,
+  ChevronDown,
+  ChevronUp,
+  Play
 } from 'lucide-react';
 import { DEPARTMENTS, resolveDepartment, translateSubcategory } from '../departments';
 import { translateText, detectLanguage } from '../services/translator';
@@ -36,10 +39,12 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     updateFacilitiesMove, 
     addPhotosToTicket,
     inventory,
-    lang
+    lang,
+    translatorTargetLang
   } = useApp();
 
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [showTransferList, setShowTransferList] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [viewerState, setViewerState] = useState({
     isOpen: false,
@@ -64,7 +69,6 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const [notes, setNotes] = useState('');
 
   // Ticket translation states for engineer / staff
-  const { translatorTargetLang } = useApp();
   const [modalLang, setModalLang] = useState(translatorTargetLang || 'ru');
   const [modalTransData, setModalTransData] = useState(null);
   const [isModalTranslating, setIsModalTranslating] = useState(false);
@@ -95,6 +99,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   useEffect(() => {
     if (ticket) {
       setNotes(ticket.notes || '');
+      setShowTransferList(false);
       if (ticket.moveDetails) {
         setFromRoom(ticket.moveDetails.fromRoom || '');
         setToRoom(ticket.moveDetails.toRoom || '');
@@ -172,10 +177,10 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             type="button"
             onClick={handleTranslateNoteToEnglish}
             style={{
-              background: 'rgba(99, 102, 241, 0.15)',
-              border: '1px solid rgba(99, 102, 241, 0.35)',
-              color: '#818cf8',
-              padding: '3px 10px',
+              background: 'var(--primary-tint)',
+              border: '1px solid var(--border-color)',
+              color: 'var(--primary)',
+              padding: '4px 10px',
               borderRadius: '6px',
               fontSize: '11px',
               cursor: 'pointer',
@@ -193,18 +198,18 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
         {translatedNotePreview && (
           <div style={{
             marginTop: '6px',
-            padding: '8px 10px',
+            padding: '10px 12px',
             borderRadius: '8px',
-            background: 'rgba(56, 189, 248, 0.1)',
-            border: '1px solid rgba(56, 189, 248, 0.3)',
+            background: 'var(--bg-subtle)',
+            border: '1px solid var(--border-color)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '4px'
+            gap: '6px'
           }}>
-            <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '700' }}>
-              🇬🇧 English for Teacher: "{translatedNotePreview}"
+            <div style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '600' }}>
+              🇬🇧 English for Teacher: <span style={{ fontStyle: 'italic' }}>"{translatedNotePreview}"</span>
             </div>
-            <div style={{ display: 'flex', gap: '6px', marginTop: '2px' }}>
+            <div style={{ display: 'flex', gap: '6px' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -212,13 +217,13 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                   setTranslatedNotePreview(null);
                 }}
                 style={{
-                  background: '#38bdf8',
-                  color: '#000',
+                  background: 'var(--primary)',
+                  color: '#ffffff',
                   border: 'none',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
                   fontSize: '11px',
-                  fontWeight: '700',
+                  fontWeight: '600',
                   cursor: 'pointer'
                 }}
               >
@@ -231,12 +236,13 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                   setTranslatedNotePreview(null);
                 }}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.12)',
-                  color: '#fff',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-main)',
                   border: '1px solid var(--border-color)',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
                   fontSize: '11px',
+                  fontWeight: '600',
                   cursor: 'pointer'
                 }}
               >
@@ -267,6 +273,18 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
   const cleanPhone = (ticket.teacherPhone || '').replace(/[^\d+]/g, '');
 
+  const inputStyle = {
+    width: '100%',
+    background: 'var(--bg-input)',
+    border: '1px solid var(--border-color)',
+    borderRadius: '10px',
+    padding: '10px 12px',
+    color: 'var(--text-main)',
+    fontSize: '13px',
+    outline: 'none',
+    boxSizing: 'border-box'
+  };
+
   const handleStorageSubmit = (e, andDeliver = false) => {
     e.preventDefault();
     if (storageActionType === 'stock') {
@@ -295,87 +313,153 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     onClose();
   };
 
-  const handleITSubmit = (e, markResolved = false) => {
+  const handleStandardDeptSubmit = (e, markResolved = false, defaultProgressNote = 'Request in progress.', defaultDoneNote = 'Request resolved and verified.') => {
     e.preventDefault();
     if (markResolved) {
-      completeTicketDelivery(ticket.id, notes || 'IT issue resolved and verified.');
+      completeTicketDelivery(ticket.id, notes || defaultDoneNote);
       if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
     } else {
-      startTicketWork(ticket.id, notes || 'IT technician diagnosing issue.');
+      startTicketWork(ticket.id, notes || defaultProgressNote);
     }
     onClose();
   };
 
-  const handleCleaningSubmit = (e, markDone = false) => {
-    e.preventDefault();
-    if (markDone) {
-      completeTicketDelivery(ticket.id, notes || 'Area thoroughly cleaned and sanitized.');
-      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
-    } else {
-      startTicketWork(ticket.id, notes || 'Cleaning staff in progress.');
-    }
-    onClose();
-  };
+  const renderCompletionPhotoPicker = () => {
+    if (ticket.status === 'completed' || ticket.status === 'issued') return null;
+    return (
+      <div style={{ marginTop: '4px' }}>
+        {completionPhotos.length > 0 && (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+            {completionPhotos.map((src, idx) => (
+              <div 
+                key={idx} 
+                className="ticket-photo-thumb ticket-photo-thumb-completion"
+                style={{ position: 'relative', width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}
+                onClick={() => setViewerState({
+                  isOpen: true,
+                  photos: completionPhotos,
+                  initialIndex: idx,
+                  title: ticket.itemTitle,
+                  subtitle: `New Completion Photo ${idx + 1}/${completionPhotos.length}`
+                })}
+              >
+                <img src={src} alt={`cp-${idx}`} />
+                <button 
+                  type="button" 
+                  onClick={(e) => { e.stopPropagation(); removeCompletionPhoto(idx); }} 
+                  style={{ position: 'absolute', top: '3px', right: '3px', background: 'rgba(15,23,42,0.85)', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, zIndex: 3 }}
+                  title="Remove"
+                >
+                  <X size={11} color="#ffffff" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-  const handleEngineeringSubmit = (e, markResolved = false) => {
-    e.preventDefault();
-    if (markResolved) {
-      completeTicketDelivery(ticket.id, notes || 'Electrical/Engineering maintenance completed and verified.');
-      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
-    } else {
-      startTicketWork(ticket.id, notes || 'Inspection and repair in progress.');
-    }
-    onClose();
-  };
+        {completionPhotos.length < 5 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => completionCamRef.current?.click()}
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px dashed var(--border-color)',
+                borderRadius: '8px',
+                padding: '7px 12px',
+                color: 'var(--text-main)',
+                fontWeight: '600',
+                fontSize: '12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              <Camera size={14} color="var(--success)" />
+              {lang === 'ru' ? 'Фото результата' : 'Take Proof Photo'}
+            </button>
+            <button
+              type="button"
+              onClick={() => completionFileRef.current?.click()}
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px dashed var(--border-color)',
+                borderRadius: '8px',
+                padding: '7px 12px',
+                color: 'var(--text-main)',
+                fontWeight: '600',
+                fontSize: '12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              <ImagePlus size={14} color="var(--success)" />
+              {lang === 'ru' ? 'Из галереи' : 'Attach Photo'}
+            </button>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {lang === 'ru' ? '(фото выполненной работы, необязательно)' : '(optional completion proof)'}
+            </span>
+          </div>
+        )}
 
-  const handlePlumbingSubmit = (e, markResolved = false) => {
-    e.preventDefault();
-    if (markResolved) {
-      completeTicketDelivery(ticket.id, notes || 'Plumbing maintenance completed and leak/blockage resolved.');
-      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
-    } else {
-      startTicketWork(ticket.id, notes || 'Plumber diagnosing pipe, fixture or heating system.');
-    }
-    onClose();
-  };
-
-  const handleGroundsSubmit = (e, markResolved = false) => {
-    e.preventDefault();
-    if (markResolved) {
-      completeTicketDelivery(ticket.id, notes || 'Grounds maintenance and safety measures completed.');
-      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
-    } else {
-      startTicketWork(ticket.id, notes || 'Grounds maintenance crew in progress.');
-    }
-    onClose();
-  };
-
-  const handleGeneralSubmit = (e, markResolved = false) => {
-    e.preventDefault();
-    if (markResolved) {
-      completeTicketDelivery(ticket.id, notes || 'Request resolved and verified.');
-      if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
-    } else {
-      startTicketWork(ticket.id, notes || 'Request in progress.');
-    }
-    onClose();
+        <input ref={completionCamRef} type="file" accept="image/*" capture="environment" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
+        <input ref={completionFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
+      </div>
+    );
   };
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(5, 10, 20, 0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div className="fluent-card animate-fade-in" style={{ width: '100%', maxWidth: '600px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', margin: '0 auto', background: 'var(--bg-dialog, #111827)', border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))', boxShadow: 'var(--shadow-depth-16)' }}>
-
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(15, 23, 42, 0.55)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '16px'
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="fluent-card animate-fade-in modal-dialog-responsive"
+        style={{
+          width: '100%',
+          maxWidth: '580px',
+          padding: '24px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          borderRadius: '16px',
+          margin: '0 auto',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-color)',
+          boxShadow: 'var(--shadow-depth-16)'
+        }}
+      >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '14px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '14px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', padding: '8px', borderRadius: '10px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--primary-tint)', border: '1px solid var(--border-color)', width: '42px', height: '42px', borderRadius: '12px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {deptMeta.emoji}
             </div>
             <div>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0, color: 'var(--text-primary)' }}>
+              <h2 style={{ fontSize: '17px', fontWeight: '700', margin: 0, color: 'var(--text-main)' }}>
                 {deptMeta.translations?.[lang] || deptMeta.name}
               </h2>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ticket #{ticket.id} • Assigned: <strong style={{ color: 'var(--text-primary)' }}>{currentUser.name}</strong></span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                Ticket #{ticket.id} • {lang === 'ru' ? 'Исполнитель' : 'Handler'}: <strong style={{ color: 'var(--text-main)' }}>{currentUser.name}</strong>
+              </span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -384,9 +468,9 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 type="button"
                 onClick={() => setShowDeclineModal(true)}
                 style={{
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  border: '1px solid rgba(239, 68, 68, 0.35)',
-                  color: '#f87171',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: 'var(--danger)',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   padding: '6px 12px',
@@ -394,8 +478,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                   alignItems: 'center',
                   gap: '5px',
                   fontSize: '12px',
-                  fontWeight: '600',
-                  transition: 'all 0.15s ease'
+                  fontWeight: '600'
                 }}
                 title={t.tickets?.declineTicket || 'Decline Request'}
               >
@@ -403,101 +486,94 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 <span>{t.tickets?.decline || 'Decline'}</span>
               </button>
             )}
-            <button onClick={onClose} style={{ background: 'rgba(255, 255, 255, 0.06)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '6px', display: 'flex', alignItems: 'center', transition: 'all 0.15s ease' }}>
-              <X size={16} />
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '10px',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                width: '34px',
+                height: '34px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <X size={17} />
             </button>
           </div>
         </div>
 
-        {/* Ticket Snapshot Card */}
-        <div style={{ background: 'rgba(15, 23, 42, 0.65)', padding: '14px', borderRadius: '12px', marginBottom: '18px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-          
+        {/* ── TICKET SUMMARY CARD ───────────────────────────────────────────── */}
+        <div style={{
+          background: 'var(--bg-subtle)',
+          padding: '16px',
+          borderRadius: '14px',
+          marginBottom: '18px',
+          border: '1px solid var(--border-color)'
+        }}>
           {/* Translator Bar inside Snapshot */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '10px',
-            paddingBottom: '8px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            marginBottom: '12px',
+            paddingBottom: '10px',
+            borderBottom: '1px solid var(--border-color)',
             flexWrap: 'wrap',
             gap: '8px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#38bdf8', fontWeight: '700' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--primary)', fontWeight: '700' }}>
               <Globe size={13} />
-              <span>{t.translator?.badge || 'Ticket Translator'}:</span>
-              {modalTransData && (
-                <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>
-                  ({modalTransData.detected === 'en' ? 'English Request 🇬🇧' : modalTransData.detected.toUpperCase()})
-                </span>
-              )}
+              <span>{t.translator?.badge || 'Language'}:</span>
               {isModalTranslating && (
-                <span style={{ color: '#fbbf24', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                <span style={{ color: 'var(--warning)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                   <Sparkles size={11} /> {t.translator?.translating || 'Translating...'}
                 </span>
               )}
             </div>
 
             {/* Language switch buttons */}
-            <div style={{ display: 'inline-flex', gap: '3px', background: 'rgba(15, 23, 42, 0.8)', padding: '2px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-              <button
-                type="button"
-                onClick={() => { setModalLang('ru'); setShowModalOriginal(false); }}
-                style={{
-                  background: modalLang === 'ru' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
-                  border: modalLang === 'ru' ? '1px solid #38bdf8' : 'none',
-                  color: modalLang === 'ru' ? '#fff' : 'var(--text-muted)',
-                  borderRadius: '6px',
-                  padding: '2px 8px',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                🇷🇺 Русский
-              </button>
-              <button
-                type="button"
-                onClick={() => { setModalLang('kk'); setShowModalOriginal(false); }}
-                style={{
-                  background: modalLang === 'kk' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
-                  border: modalLang === 'kk' ? '1px solid #38bdf8' : 'none',
-                  color: modalLang === 'kk' ? '#fff' : 'var(--text-muted)',
-                  borderRadius: '6px',
-                  padding: '2px 8px',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                🇰🇿 Қазақша
-              </button>
-              <button
-                type="button"
-                onClick={() => { setModalLang('orig'); setShowModalOriginal(false); }}
-                style={{
-                  background: modalLang === 'orig' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                  border: modalLang === 'orig' ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
-                  color: modalLang === 'orig' ? '#fff' : 'var(--text-muted)',
-                  borderRadius: '6px',
-                  padding: '2px 8px',
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
-              >
-                🇬🇧 Original
-              </button>
+            <div style={{ display: 'inline-flex', gap: '4px', background: 'var(--bg-card)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              {[
+                { code: 'ru', label: '🇷🇺 RU' },
+                { code: 'kk', label: '🇰🇿 KK' },
+                { code: 'orig', label: '🇬🇧 Orig' }
+              ].map(lBtn => {
+                const active = modalLang === lBtn.code;
+                return (
+                  <button
+                    key={lBtn.code}
+                    type="button"
+                    onClick={() => { setModalLang(lBtn.code); setShowModalOriginal(false); }}
+                    style={{
+                      background: active ? 'var(--primary)' : 'transparent',
+                      border: 'none',
+                      color: active ? '#ffffff' : 'var(--text-muted)',
+                      borderRadius: '6px',
+                      padding: '3px 9px',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {lBtn.label}
+                  </button>
+                );
+              })}
 
               {modalTransData && (
                 <button
                   type="button"
                   onClick={() => setShowModalOriginal(prev => !prev)}
-                  title={showModalOriginal ? (t.translator?.showTranslation || 'Hide original') : (t.translator?.showOriginal || 'Show original')}
+                  title="Show original text"
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: showModalOriginal ? '#38bdf8' : 'var(--text-muted)',
+                    color: showModalOriginal ? 'var(--primary)' : 'var(--text-muted)',
                     padding: '2px 6px',
                     cursor: 'pointer',
                     display: 'flex',
@@ -510,63 +586,110 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '6px' }}>
-            <div>
-              <div style={{ fontSize: '16px', fontWeight: '800', color: '#fff' }}>
-                {modalTransData ? modalTransData.title : ticket.itemTitle} {ticket.quantity ? `x ${ticket.quantity} ${ticket.unit}` : ''}
-              </div>
-              {modalTransData && showModalOriginal && (
-                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', marginTop: '2px' }}>
-                  English: "{ticket.itemTitle}"
-                </div>
-              )}
-              {(modalTransData?.subcategory || ticket.subcategory) && (
-                <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-                    🏷️ {modalTransData ? modalTransData.subcategory : ticket.subcategory}
-                  </span>
-                </div>
-              )}
+          {/* Request Title & Subcategory */}
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{ fontSize: '17px', fontWeight: '700', color: 'var(--text-main)', lineHeight: 1.3 }}>
+              {modalTransData ? modalTransData.title : ticket.itemTitle}
+              {ticket.quantity ? ` (${ticket.quantity} ${ticket.unit || 'pcs'})` : ''}
             </div>
+            {modalTransData && showModalOriginal && (
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '2px' }}>
+                Original: "{ticket.itemTitle}"
+              </div>
+            )}
+            {(modalTransData?.subcategory || ticket.subcategory) && (
+              <div style={{ marginTop: '6px' }}>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: 'var(--primary)',
+                  background: 'var(--primary-tint)',
+                  padding: '3px 9px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  display: 'inline-block'
+                }}>
+                  🏷️ {modalTransData ? modalTransData.subcategory : ticket.subcategory}
+                </span>
+              </div>
+            )}
           </div>
 
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
-            <span><Building size={13} style={{ verticalAlign: 'middle' }} /> {ticket.roomNumber}</span>
-            <span><User size={13} style={{ verticalAlign: 'middle' }} /> {ticket.teacherName}</span>
+          {/* Location & Requester Contact Row */}
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', marginBottom: (modalTransData?.description || ticket.description || (ticket.photos && ticket.photos.length > 0)) ? '10px' : '0' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'var(--text-main)', fontWeight: '600' }}>
+              <Building size={14} color="var(--primary)" /> {ticket.roomNumber}
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <User size={14} /> <strong style={{ color: 'var(--text-main)' }}>{ticket.teacherName}</strong>
+            </span>
             {cleanPhone && (
-              <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
-                <a href={`tel:${cleanPhone}`} title={t.profile.call} style={{ color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
+              <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                <a
+                  href={`tel:${cleanPhone}`}
+                  style={{
+                    color: 'var(--success)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    textDecoration: 'none'
+                  }}
+                >
                   <PhoneCall size={12} /> Call
                 </a>
-                <a href={`https://wa.me/${cleanPhone.replace('+', '')}`} target="_blank" rel="noopener noreferrer" title={t.profile.whatsapp} style={{ color: '#4ade80', display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none' }}>
-                  <MessageSquare size={12} /> WA
+                <a
+                  href={`https://wa.me/${cleanPhone.replace('+', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'var(--success)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <MessageSquare size={12} /> WhatsApp
                 </a>
               </div>
             )}
           </div>
 
-          {/* Description with Translation & Original */}
+          {/* Description */}
           {(modalTransData?.description || ticket.description) && (
-            <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <p style={{ fontSize: '13px', color: '#cbd5e1', margin: 0, fontStyle: 'italic', background: 'rgba(0,0,0,0.25)', padding: '8px 10px', borderRadius: '6px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{
+                fontSize: '13px',
+                color: 'var(--text-main)',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-color)',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                lineHeight: 1.45
+              }}>
                 "{modalTransData ? modalTransData.description : ticket.description}"
-              </p>
+              </div>
               {modalTransData && showModalOriginal && ticket.description && (
-                <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic', background: 'rgba(15, 23, 42, 0.4)', padding: '6px 8px', borderRadius: '4px', borderLeft: '2px solid #38bdf8' }}>
-                  Original English: "{ticket.description}"
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic', paddingLeft: '8px', borderLeft: '2px solid var(--primary)' }}>
+                  Original: "{ticket.description}"
                 </div>
               )}
             </div>
           )}
 
-          {/* Show existing ticket photos (submitted by requester) */}
+          {/* Submitted Photos */}
           {ticket.photos && ticket.photos.length > 0 && (
-            <div style={{ marginTop: '14px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>📸 Submitted Photos ({ticket.photos.length}):</span>
-                <span style={{ fontSize: '10px', color: '#38bdf8', textTransform: 'none', fontWeight: '500' }}>
-                  • {lang === 'ru' ? 'нажмите для увеличения' : lang === 'kk' ? 'үлкейту үшін басыңыз' : 'click to enlarge'}
-                </span>
+            <div style={{ marginTop: '12px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase' }}>
+                📸 Attached Photos ({ticket.photos.length}):
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {ticket.photos.map((src, i) => (
@@ -578,13 +701,12 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                       photos: ticket.photos,
                       initialIndex: i,
                       title: ticket.itemTitle,
-                      subtitle: `Ticket #${ticket.id} • ${ticket.teacherName || 'Requester'} (Photo ${i + 1}/${ticket.photos.length})`
+                      subtitle: `Ticket #${ticket.id} • ${ticket.teacherName || 'Requester'}`
                     })}
-                    title={lang === 'ru' ? 'Нажмите для полноразмерного просмотра' : 'Click to view full size'}
                   >
-                    <img key={i} src={src} alt={`ticket-photo-${i + 1}`} />
+                    <img src={src} alt={`ticket-photo-${i + 1}`} />
                     <div className="ticket-photo-thumb-overlay">
-                      <ZoomIn size={20} color="#fff" />
+                      <ZoomIn size={18} color="#fff" />
                     </div>
                   </div>
                 ))}
@@ -592,14 +714,11 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Show existing completion photos if already uploaded */}
+          {/* Existing Completion Photos */}
           {ticket.completionPhotos && ticket.completionPhotos.length > 0 && (
-            <div style={{ marginTop: '14px' }}>
-              <div style={{ fontSize: '11px', color: '#107c41', marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>✅ Completion Photos ({ticket.completionPhotos.length}):</span>
-                <span style={{ fontSize: '10px', color: '#34d399', textTransform: 'none', fontWeight: '500' }}>
-                  • {lang === 'ru' ? 'фото готовой работы' : lang === 'kk' ? 'дайын жұмыс фотосы' : 'after-work proof'}
-                </span>
+            <div style={{ marginTop: '12px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--success)', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase' }}>
+                ✅ Completion Photos ({ticket.completionPhotos.length}):
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {ticket.completionPhotos.map((src, i) => (
@@ -611,13 +730,12 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                       photos: ticket.completionPhotos,
                       initialIndex: i,
                       title: ticket.itemTitle,
-                      subtitle: `Ticket #${ticket.id} • ${ticket.assignedWorker || 'Specialist'} (Completion Proof ${i + 1}/${ticket.completionPhotos.length})`
+                      subtitle: `Ticket #${ticket.id} • Completion Proof`
                     })}
-                    title={lang === 'ru' ? 'Нажмите для полноразмерного просмотра' : 'Click to view full size'}
                   >
-                    <img key={i} src={src} alt={`completion-photo-${i + 1}`} />
+                    <img src={src} alt={`completion-photo-${i + 1}`} />
                     <div className="ticket-photo-thumb-overlay">
-                      <ZoomIn size={20} color="#34d399" />
+                      <ZoomIn size={18} color="#34d399" />
                     </div>
                   </div>
                 ))}
@@ -626,71 +744,16 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
           )}
         </div>
 
-        {/* Completion Photo Upload (shown for in-progress or pending tickets) */}
-        {ticket.status !== 'completed' && ticket.status !== 'issued' && (
-          <div style={{ marginBottom: '16px', background: 'rgba(52, 211, 153, 0.06)', border: '1px dashed rgba(52, 211, 153, 0.3)', padding: '12px', borderRadius: '12px' }}>
-            <div style={{ fontSize: '12px', fontWeight: '700', color: '#34d399', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Camera size={14} /> Completion Photos <span style={{ fontSize: '11px', fontWeight: '400', color: 'var(--text-muted)' }}>(optional, attach after-work photos)</span>
-            </div>
-
-            {completionPhotos.length > 0 && (
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                {completionPhotos.map((src, idx) => (
-                  <div 
-                    key={idx} 
-                    className="ticket-photo-thumb ticket-photo-thumb-completion"
-                    style={{ position: 'relative' }}
-                    onClick={() => setViewerState({
-                      isOpen: true,
-                      photos: completionPhotos,
-                      initialIndex: idx,
-                      title: ticket.itemTitle,
-                      subtitle: `New Completion Photo ${idx + 1}/${completionPhotos.length}`
-                    })}
-                    title={lang === 'ru' ? 'Нажмите для просмотра' : 'Click to preview'}
-                  >
-                    <img src={src} alt={`cp-${idx}`} />
-                    <div className="ticket-photo-thumb-overlay">
-                      <ZoomIn size={18} color="#34d399" />
-                    </div>
-                    <button 
-                      type="button" 
-                      onClick={(e) => { e.stopPropagation(); removeCompletionPhoto(idx); }} 
-                      style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(15,23,42,0.85)', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, zIndex: 3 }}
-                      title="Remove"
-                    >
-                      <X size={12} color="#f87171" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {completionPhotos.length < 5 && (
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button type="button" onClick={() => completionCamRef.current?.click()} style={{ flex: 1, background: 'rgba(52, 211, 153, 0.1)', border: '1px dashed rgba(52,211,153,0.4)', borderRadius: '10px', padding: '10px', color: '#34d399', fontWeight: '600', fontSize: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                  <Camera size={18} /> Take Photo
-                </button>
-                <button type="button" onClick={() => completionFileRef.current?.click()} style={{ flex: 1, background: 'rgba(52, 211, 153, 0.1)', border: '1px dashed rgba(52,211,153,0.4)', borderRadius: '10px', padding: '10px', color: '#34d399', fontWeight: '600', fontSize: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                  <ImagePlus size={18} /> Gallery
-                </button>
-              </div>
-            )}
-
-            <input ref={completionCamRef} type="file" accept="image/*" capture="environment" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
-            <input ref={completionFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
-          </div>
-        )}
-
-        {/* 1. STORAGE MANAGER WORKFLOW */}
+        {/* ── 1. STORAGE MANAGER WORKFLOW ───────────────────────────────────── */}
         {targetDept === 'storage' && (
           <div>
-            {/* Delivery reminder card */}
+            {/* Delivery destination card */}
             <div style={{
-              background: 'rgba(245, 158, 11, 0.1)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: '10px',
-              padding: '10px 14px',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-color)',
+              borderLeft: '4px solid var(--warning)',
+              borderRadius: '12px',
+              padding: '12px 14px',
               marginBottom: '14px',
               display: 'flex',
               alignItems: 'center',
@@ -699,13 +762,13 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               gap: '8px'
             }}>
               <div>
-                <span style={{ fontSize: '11px', color: '#fbbf24', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.4px', display: 'block' }}>
-                  🚚 {lang === 'ru' ? 'Кабинет доставки' : lang === 'kk' ? 'Жеткізу кабинеті' : 'Classroom Destination'}
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>
+                  🚚 {lang === 'ru' ? 'Кабинет доставки' : lang === 'kk' ? 'Жеткізу кабинеті' : 'Delivery Destination'}
                 </span>
-                <strong style={{ fontSize: '13px', color: '#ffffff' }}>
+                <strong style={{ fontSize: '14px', color: 'var(--text-main)' }}>
                   {ticket.roomNumber || 'Main Campus'}
                 </strong>
-                <span style={{ fontSize: '12px', color: '#fbbf24', marginLeft: '8px', fontWeight: '700' }}>
+                <span style={{ fontSize: '13px', color: 'var(--primary)', marginLeft: '8px', fontWeight: '700' }}>
                   ({ticket.quantity || 1} {ticket.unit || 'pcs'})
                 </span>
               </div>
@@ -718,8 +781,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                     onClose();
                   }}
                   style={{
-                    background: '#107c41',
-                    color: '#fff',
+                    background: 'var(--success)',
+                    color: '#ffffff',
                     border: 'none',
                     padding: '8px 14px',
                     borderRadius: '8px',
@@ -738,44 +801,42 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
             {ticket.isReturnable && (
               <div style={{
-                background: 'rgba(249, 115, 22, 0.12)',
-                border: '1px solid rgba(249, 115, 22, 0.35)',
-                borderRadius: '8px',
+                background: 'rgba(249, 115, 22, 0.1)',
+                border: '1px solid rgba(249, 115, 22, 0.3)',
+                borderRadius: '10px',
                 padding: '10px 12px',
                 marginBottom: '14px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 fontSize: '12px',
-                color: '#fed7aa'
+                color: 'var(--text-main)'
               }}>
                 <span style={{ fontSize: '18px' }}>⏱️</span>
                 <div>
-                  <strong style={{ color: '#fb923c', display: 'block' }}>
-                    {lang === 'ru' ? 'Временная выдача на 1-2 урока (С обязательным возвратом)' : lang === 'kk' ? '1-2 сабаққа уақытша беру (Қайтарылуы міндетті)' : 'Temporary Lesson Equipment (Must Be Returned)'}
+                  <strong style={{ color: 'var(--warning)', display: 'block' }}>
+                    {lang === 'ru' ? 'Временная выдача на 1–2 урока (С возвратом)' : 'Temporary Lesson Loan (Returnable)'}
                   </strong>
-                  <span style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                     {lang === 'ru'
-                      ? 'Предмет выдается учителю на время урока. После окончания занятия учитель отметит возврат, а вы подтвердите прием на склад.'
-                      : lang === 'kk'
-                      ? 'Зат мұғалімге сабақ барысына беріледі. Сабақ аяқталған соң мұғалім қайтарылғанын белгілейді, ал сіз қабылдауды растайсыз.'
-                      : 'This equipment is issued for the class duration. Teacher will return it afterwards and you will confirm receipt into stock.'}
+                      ? 'Предмет выдается на время урока с последующим возвратом на склад.'
+                      : 'Issued for class duration; teacher will return it afterwards.'}
                   </span>
                 </div>
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
               <button
                 type="button"
                 onClick={() => setStorageActionType('stock')}
                 style={{
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   border: storageActionType === 'stock' ? '2px solid var(--success)' : '1px solid var(--border-color)',
-                  background: storageActionType === 'stock' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(30, 41, 59, 0.5)',
+                  background: storageActionType === 'stock' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-subtle)',
                   textAlign: 'left',
-                  color: '#fff',
+                  color: 'var(--text-main)',
                   cursor: 'pointer'
                 }}
               >
@@ -784,11 +845,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                   In Stock: <strong style={{ color: isEnoughStock ? 'var(--success)' : 'var(--danger)' }}>{availableQty} {ticket.unit}</strong>
-                  {stockItem?.location && (
-                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      📍 {stockItem.location}
-                    </div>
-                  )}
+                  {stockItem?.location && <span style={{ marginLeft: '6px' }}>• 📍 {stockItem.location}</span>}
                 </div>
               </button>
 
@@ -797,11 +854,11 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 onClick={() => setStorageActionType('purchase')}
                 style={{
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   border: storageActionType === 'purchase' ? '2px solid var(--warning)' : '1px solid var(--border-color)',
-                  background: storageActionType === 'purchase' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(30, 41, 59, 0.5)',
+                  background: storageActionType === 'purchase' ? 'rgba(245, 158, 11, 0.1)' : 'var(--bg-subtle)',
                   textAlign: 'left',
-                  color: '#fff',
+                  color: 'var(--text-main)',
                   cursor: 'pointer'
                 }}
               >
@@ -809,16 +866,16 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                   <ShoppingBag size={16} /> {t.tickets.markToPurchase}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Procure / Buy from Vendor
+                  {lang === 'ru' ? 'Закупить у поставщика' : 'Order from Supplier'}
                 </div>
               </button>
             </div>
 
             <form onSubmit={handleStorageSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {storageActionType === 'purchase' && (
-                <>
+                <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
-                    <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+                    <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
                       {t.tickets.purchaseCost} *
                     </label>
                     <input
@@ -827,63 +884,39 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                       placeholder="e.g. 15000"
                       value={purchaseCost}
                       onChange={e => setPurchaseCost(e.target.value)}
-                      style={{
-                        width: '100%',
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '8px',
-                        padding: '8px 12px',
-                        color: '#fff',
-                        fontSize: '13px'
-                      }}
+                      style={inputStyle}
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+                    <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
                       {t.tickets.supplier}
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Sulpak / Abdi / Local Store"
+                      placeholder="e.g. Abdi / Local Store"
                       value={supplier}
                       onChange={e => setSupplier(e.target.value)}
-                      style={{
-                        width: '100%',
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '8px',
-                        padding: '8px 12px',
-                        color: '#fff',
-                        fontSize: '13px'
-                      }}
+                      style={inputStyle}
                     />
                   </div>
-                </>
+                </div>
               )}
 
               <div>
-                <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
                   {t.tickets.notes}
                 </label>
                 <textarea
                   rows="2"
-                  placeholder="Notes for teacher and warehouse records..."
+                  placeholder={lang === 'ru' ? 'Комментарий к выдаче или доставке...' : 'Notes for teacher and warehouse records...'}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  style={{
-                    width: '100%',
-                    background: 'rgba(15, 23, 42, 0.6)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    color: '#fff',
-                    fontSize: '13px'
-                  }}
+                  style={inputStyle}
                 />
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
-                <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+                <button type="button" onClick={onClose} className="fluent-btn-secondary" style={{ borderRadius: '10px', height: '38px' }}>
                   {t.common.cancel}
                 </button>
                 {storageActionType === 'stock' && (
@@ -891,393 +924,260 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                     type="button"
                     onClick={(e) => handleStorageSubmit(e, true)}
                     style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: '#fff',
+                      background: 'var(--success)',
+                      color: '#ffffff',
                       border: 'none',
-                      padding: '8px 16px',
-                      borderRadius: '8px',
+                      padding: '0 16px',
+                      height: '38px',
+                      borderRadius: '10px',
                       fontSize: '12px',
                       fontWeight: '700',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '5px'
+                      gap: '6px'
                     }}
                   >
-                    <Truck size={14} /> {lang === 'ru' ? '✓ Выдать и доставить в кабинет' : lang === 'kk' ? '✓ Беріп, кабинетке жеткізу' : '✓ Issue & Deliver to Room'}
+                    <Truck size={14} /> {lang === 'ru' ? '✓ Выдать и доставить' : '✓ Issue & Deliver'}
                   </button>
                 )}
-                <button type="submit" style={{ background: storageActionType === 'stock' ? (ticket.isReturnable ? 'linear-gradient(135deg, #f97316, #ea580c)' : '#107c41') : 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                <button
+                  type="submit"
+                  className="fluent-btn-primary"
+                  style={{ height: '38px', borderRadius: '10px', padding: '0 18px', fontSize: '12px', fontWeight: '700' }}
+                >
                   {storageActionType === 'stock'
                     ? (ticket.isReturnable
-                        ? (lang === 'ru' ? '⏱️ Выдать на урок (С возвратом)' : lang === 'kk' ? '⏱️ Сабаққа беру (Қайтарумен)' : '⏱️ Issue on Lesson Loan')
-                        : '✓ Confirm Give from Stock')
-                    : '🛒 Confirm Purchase Order'}
+                        ? (lang === 'ru' ? '⏱️ Выдать на урок' : '⏱️ Issue on Loan')
+                        : (lang === 'ru' ? '✓ Выдать со склада' : '✓ Issue from Stock'))
+                    : (lang === 'ru' ? '🛒 Отправить в закуп' : '🛒 Confirm Purchase Order')}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* 2. FACILITIES / CARPENTRY / EVENT PREP WORKFLOW */}
-        {(targetDept === 'facilities' || targetDept === 'carpentry' || targetDept === 'event_prep' || ticket.moveDetails) && (
+        {/* ── 2. FACILITIES / CARPENTRY / EVENT PREP WORKFLOW ───────────────── */}
+        {(targetDept === 'facilities' || targetDept === 'carpentry' || targetDept === 'event_prep' || ticket.moveDetails) && targetDept !== 'storage' && (
           <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(167, 139, 250, 0.1)', border: '1px solid rgba(167, 139, 250, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#c4b5fd', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Truck size={14} /> Furniture Relocation & Setup Tracking
+            <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', padding: '14px', borderRadius: '12px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Truck size={15} /> {lang === 'ru' ? 'Детали перемещения / работ' : 'Relocation & Setup Details'}
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '8px' }}>
+              <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                 <div>
-                  <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>{t.tickets.fromRoom}</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px', fontWeight: '600' }}>{t.tickets.fromRoom}</label>
                   <input
                     type="text"
                     value={fromRoom}
                     onChange={e => setFromRoom(e.target.value)}
                     placeholder="Origin (e.g. Room 102)"
-                    style={{ width: '100%', background: 'rgba(15, 23, 42, 0.7)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 10px', color: '#fff', fontSize: '12px' }}
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>{t.tickets.toRoom}</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px', fontWeight: '600' }}>{t.tickets.toRoom}</label>
                   <input
                     type="text"
                     value={toRoom}
                     onChange={e => setToRoom(e.target.value)}
                     placeholder="Destination (e.g. Assembly Hall)"
-                    style={{ width: '100%', background: 'rgba(15, 23, 42, 0.7)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 10px', color: '#fff', fontSize: '12px' }}
+                    style={inputStyle}
                   />
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>{t.tickets.furnitureItems}</label>
+                <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px', fontWeight: '600' }}>{t.tickets.furnitureItems}</label>
                 <input
                   type="text"
                   value={furnitureItems}
                   onChange={e => setFurnitureItems(e.target.value)}
-                  placeholder="e.g. 15 student desks, 30 blue chairs, 1 podium"
-                  style={{ width: '100%', background: 'rgba(15, 23, 42, 0.7)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 10px', color: '#fff', fontSize: '12px' }}
+                  placeholder="e.g. 15 student desks, 30 chairs"
+                  style={inputStyle}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                {t.tickets.assignedWorkersList}
-              </label>
-              <input
-                type="text"
-                value={movingCrew}
-                onChange={e => setMovingCrew(e.target.value)}
-                placeholder="e.g. Facilities Logistics Crew"
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '4px', fontWeight: '600' }}>
                 {t.tickets.notes}
               </label>
               <textarea
                 rows="2"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder="Log moving status, equipment used (dollies), or repair notes..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                {t.common.cancel}
-              </button>
-              <button type="button" onClick={(e) => handleFacilitiesSubmit(e, false)} style={{ background: 'rgba(167, 139, 250, 0.2)', border: '1px solid #a78bfa', color: '#c4b5fd', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                🚚 Dispatch / Moving in Progress
-              </button>
-              <button type="button" onClick={(e) => handleFacilitiesSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Mark Relocation Complete
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* 3. IT HELPDESK WORKFLOW */}
-        {(targetDept === 'it' || targetDept === 'it_helpdesk') && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#38bdf8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Laptop size={14} /> IT Support Troubleshooting & Diagnostics
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Investigate Wi-Fi access points, teacher laptop hardware/software, projectors, or credentials.
-              </p>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                {t.tickets.diagnosticNotes}
-              </label>
-              <textarea
-                rows="3"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="e.g. Tested Wi-Fi AP signal, updated graphics drivers, or replaced HDMI cable..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+                placeholder={lang === 'ru' ? 'Комментарий о выполненной работе...' : 'Work or repair notes...'}
+                style={inputStyle}
               />
               {renderNoteTranslatorHelper()}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+            {renderCompletionPhotoPicker()}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
+              <button type="button" onClick={onClose} className="fluent-btn-secondary" style={{ height: '38px', borderRadius: '10px' }}>
                 {t.common.cancel}
               </button>
-              <button type="button" onClick={(e) => handleITSubmit(e, false)} style={{ background: 'rgba(56, 189, 248, 0.2)', border: '1px solid #38bdf8', color: '#38bdf8', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ⚡ In Diagnostics
+              <button
+                type="button"
+                onClick={(e) => handleFacilitiesSubmit(e, false)}
+                style={{
+                  background: 'var(--primary-tint)',
+                  border: '1px solid var(--primary)',
+                  color: 'var(--primary)',
+                  padding: '0 14px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Play size={13} /> {lang === 'ru' ? 'Взять в работу' : 'Mark In Progress'}
               </button>
-              <button type="button" onClick={(e) => handleITSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Mark Issue Resolved
+              <button
+                type="button"
+                onClick={(e) => handleFacilitiesSubmit(e, true)}
+                style={{
+                  background: 'var(--success)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0 18px',
+                  height: '38px',
+                  borderRadius: '10px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <CheckCircle2 size={15} /> {lang === 'ru' ? 'Завершить заявку' : 'Mark Completed'}
               </button>
             </div>
           </form>
         )}
 
-        {/* 4. CLEANING WORKFLOW */}
-        {targetDept === 'cleaning' && (
+        {/* ── 3. UNIFIED WORKFLOW FOR IT, CLEANING, ENGINEERING, PLUMBING, GROUNDS, SECURITY, GENERAL ── */}
+        {targetDept !== 'storage' && targetDept !== 'facilities' && targetDept !== 'carpentry' && targetDept !== 'event_prep' && !ticket.moveDetails && (
           <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#34d399', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Sparkles size={14} /> Campus Hygiene & Cleaning Response
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Respond to floor spills, empty overflowing waste bins, or deep clean classrooms.
-              </p>
-            </div>
-
             <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                {t.tickets.cleaningCompletedNotes}
+              <label style={{ fontSize: '12px', color: 'var(--text-main)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
+                {lang === 'ru' ? 'Комментарий специалиста / Что было сделано:' : lang === 'kk' ? 'Маманның түсініктемесі / Не істелді:' : 'Resolution / Work Notes:'}
               </label>
               <textarea
                 rows="3"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
-                placeholder="e.g. Floor washed with disinfectant, dried, and hazard cone removed..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                {t.common.cancel}
-              </button>
-              <button type="button" onClick={(e) => handleCleaningSubmit(e, false)} style={{ background: 'rgba(52, 211, 153, 0.2)', border: '1px solid #34d399', color: '#34d399', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                🧹 Start Cleaning
-              </button>
-              <button type="button" onClick={(e) => handleCleaningSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Mark Cleaned & Sanitized
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* 5. SECURITY OR GENERAL WORKFLOW */}
-        {targetDept === 'security' && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                Security Action & Resolution Notes
-              </label>
-              <textarea
-                rows="3"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="e.g. Re-encoded teacher RFID card, checked magnetic door lock..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                {t.common.cancel}
-              </button>
-              <button type="button" onClick={() => { completeTicketDelivery(ticket.id, notes || 'Security check completed.'); onClose(); }} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Resolve Security Request
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* 6. ELECTRICAL & TECHNICAL UTILITIES WORKFLOW */}
-        {(targetDept === 'engineering' || targetDept === 'electrical') && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(251, 191, 36, 0.1)', border: '1px solid rgba(251, 191, 36, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#fbbf24', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Wrench size={14} /> 💡 Electrical & Utility Inspection
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Diagnose lighting fixtures, circuits, switches, breakers, sockets, and electrical equipment.
-              </p>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                {t.tickets.engineeringCompletedNotes || 'Diagnostics & Repair Notes'}
-              </label>
-              <textarea
-                rows="3"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="e.g. Replaced LED driver ballast, rewired loose terminal, or tested socket voltage..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+                placeholder={
+                  lang === 'ru'
+                    ? 'Опишите результат работы или причину проверки (необязательно)...'
+                    : 'Briefly describe what was fixed or checked (optional)...'
+                }
+                style={inputStyle}
               />
               {renderNoteTranslatorHelper()}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
+            {renderCompletionPhotoPicker()}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px', paddingTop: '12px', borderTop: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={onClose}
+                className="fluent-btn-secondary"
+                style={{ height: '40px', borderRadius: '10px', padding: '0 16px' }}
+              >
                 {t.common.cancel}
               </button>
-              <button type="button" onClick={(e) => handleEngineeringSubmit(e, false)} style={{ background: 'rgba(251, 191, 36, 0.2)', border: '1px solid #fbbf24', color: '#fbbf24', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ⚡ In Diagnostics / Repair
-              </button>
-              <button type="button" onClick={(e) => handleEngineeringSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Mark Fixed & Operational
+
+              {ticket.status === 'pending' && (
+                <button
+                  type="button"
+                  onClick={(e) => handleStandardDeptSubmit(e, false)}
+                  style={{
+                    background: 'var(--primary-tint)',
+                    border: '1.5px solid var(--primary)',
+                    color: 'var(--primary)',
+                    padding: '0 16px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Play size={14} />
+                  {lang === 'ru' ? 'Принять в работу' : lang === 'kk' ? 'Жұмысқа қабылдау' : 'Accept & Start Work'}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={(e) => handleStandardDeptSubmit(e, true)}
+                style={{
+                  background: 'var(--success)',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0 20px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)'
+                }}
+              >
+                <CheckCircle2 size={16} />
+                {lang === 'ru' ? 'Выполнено (Закрыть заявку)' : lang === 'kk' ? 'Орындалды (Жабу)' : 'Mark Completed'}
               </button>
             </div>
           </form>
         )}
 
-        {/* 6a. PLUMBING WORKFLOW */}
-        {targetDept === 'plumbing' && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#06b6d4', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Wrench size={14} /> 🔧 Plumbing & Heating Diagnostics
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Unclog drains, repair pipe leaks, replace faucet/flush mechanisms, bleed radiators.
-              </p>
-            </div>
+        {/* ── COLLAPSIBLE RE-ROUTE / TRANSFER TICKET ────────────────────────── */}
+        <div style={{ marginTop: '18px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+          <button
+            type="button"
+            onClick={() => setShowTransferList(prev => !prev)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '12px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+              padding: '4px 0'
+            }}
+          >
+            <span>🔄 {lang === 'ru' ? 'Не ваш профиль? Перенаправить в другую службу' : 'Wrong department? Transfer ticket to another team'}</span>
+            {showTransferList ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          </button>
 
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                Plumbing Action & Repair Notes
-              </label>
-              <textarea
-                rows="3"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="e.g. Cleared drain blockage with auger, tightened valve gasket, bled radiator air..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
-              />
-              {renderNoteTranslatorHelper()}
+          {transferSuccess && (
+            <div style={{ marginTop: '8px', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--success)', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>
+              ✓ {lang === 'ru' ? 'Заявка перенаправлена в другую службу!' : 'Ticket transferred!'}
             </div>
+          )}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                {t.common.cancel}
-              </button>
-              <button type="button" onClick={(e) => handlePlumbingSubmit(e, false)} style={{ background: 'rgba(6, 182, 212, 0.2)', border: '1px solid #06b6d4', color: '#06b6d4', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                🔧 In Diagnostics / Repair
-              </button>
-              <button type="button" onClick={(e) => handlePlumbingSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Mark Plumbing Fixed
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* 6b. GROUNDS & TERRITORY WORKFLOW */}
-        {targetDept === 'grounds' && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#10b981', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>🌳</span> Grounds Maintenance & Campus Safety
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Snow/ice removal, walkway sanding, rooftop clearing, outdoor path safety.
-              </p>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                Grounds Action Notes
-              </label>
-              <textarea
-                rows="3"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="e.g. Cleared snow from entrance stairs, spread anti-slip sand along main pathway..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                {t.common.cancel}
-              </button>
-              <button type="button" onClick={(e) => handleGroundsSubmit(e, false)} style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10b981', color: '#10b981', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                🌳 In Progress
-              </button>
-              <button type="button" onClick={(e) => handleGroundsSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Mark Grounds Work Complete
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* 6c. ADMIN / GENERAL WORKFLOW */}
-        {(targetDept === 'admin' || (targetDept === 'other' && !stockItem)) && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'rgba(129, 140, 248, 0.1)', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '12px', borderRadius: '10px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#818cf8', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>{deptMeta.emoji}</span> {deptMeta.translations?.[lang] || deptMeta.name} Action
-              </div>
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                Process institutional appeals, administrative paperwork, or custom services.
-              </p>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px' }}>
-                Resolution / Response Notes
-              </label>
-              <textarea
-                rows="3"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-                placeholder="Log resolution steps, documents prepared, or administrative feedback..."
-                style={{ width: '100%', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
-              <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>
-                {t.common.cancel}
-              </button>
-              <button type="button" onClick={(e) => handleGeneralSubmit(e, false)} style={{ background: 'rgba(129, 140, 248, 0.2)', border: '1px solid #818cf8', color: '#818cf8', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                In Review
-              </button>
-              <button type="button" onClick={(e) => handleGeneralSubmit(e, true)} style={{ background: '#107c41', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                ✓ Mark Resolved
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* 7. RE-ROUTE / FORWARD TICKET TO ANOTHER FACILITY */}
-        <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            🔄 Re-route / Transfer Ticket to Another Facility:
-          </div>
-
-          {transferSuccess ? (
-            <div style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700', textAlign: 'center' }}>
-              ✓ Ticket successfully transferred to new facility!
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+          {showTransferList && !transferSuccess && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(145px, 1fr))', gap: '8px', marginTop: '10px' }}>
               {Object.values(DEPARTMENTS).map(fac => {
                 if (fac.id === targetDept) return null;
                 const facLabel = fac.translations?.[lang] || fac.name;
@@ -1286,7 +1186,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                     key={fac.id}
                     type="button"
                     onClick={() => {
-                      const transferNote = `[Transferred to ${facLabel} by ${currentUser.name || 'Staff'}]: ${notes || 'Transferred for specialized facility resolution.'}`;
+                      const transferNote = `[Transferred to ${facLabel} by ${currentUser.name || 'Staff'}]: ${notes || 'Transferred for specialized resolution.'}`;
                       updateTicket(ticket.id, {
                         department: fac.id,
                         status: 'pending',
@@ -1298,28 +1198,25 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                       setTimeout(() => {
                         setTransferSuccess(false);
                         onClose();
-                      }, 1000);
+                      }, 900);
                     }}
                     style={{
-                      background: 'rgba(30, 41, 59, 0.7)',
-                      border: `1px solid ${fac.color}60`,
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-color)',
                       borderRadius: '8px',
                       padding: '8px 10px',
                       fontSize: '11px',
-                      fontWeight: '700',
-                      color: '#fff',
+                      fontWeight: '600',
+                      color: 'var(--text-main)',
                       cursor: 'pointer',
-                      textAlign: 'center',
-                      transition: 'all 0.2s ease',
+                      textAlign: 'left',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
+                      gap: '6px',
+                      transition: 'all 0.15s ease'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = fac.color}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = `${fac.color}60`}
                   >
-                    <span>{fac.emoji}</span>
+                    <span style={{ fontSize: '15px' }}>{fac.emoji}</span>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {facLabel}
                     </span>
