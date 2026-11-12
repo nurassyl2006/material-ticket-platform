@@ -21,7 +21,9 @@ import {
   ChevronDown,
   ChevronUp,
   Play,
-  HelpCircle
+  HelpCircle,
+  Trash2,
+  BellOff
 } from 'lucide-react';
 import { DEPARTMENTS, resolveDepartment, translateSubcategory } from '../departments';
 import { translateText, detectLanguage } from '../services/translator';
@@ -31,8 +33,10 @@ import { ImageViewerModal } from './ImageViewerModal';
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const { 
     t, 
+    role,
     currentUser, 
     updateTicket,
+    deleteTicketSilently,
     issueTicketFromStock, 
     markTicketToPurchase, 
     startTicketWork, 
@@ -47,6 +51,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const [transferSuccess, setTransferSuccess] = useState(false);
   const [showTransferList, setShowTransferList] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [confirmSilentDelete, setConfirmSilentDelete] = useState(false);
+  const canSilentDelete = role === 'director' || role === 'admin';
   const [viewerState, setViewerState] = useState({
     isOpen: false,
     photos: [],
@@ -507,6 +513,57 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 <XCircle size={14} />
                 <span>{t.tickets?.decline || 'Decline'}</span>
               </button>
+            )}
+            {canSilentDelete && (
+              !confirmSilentDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmSilentDelete(true)}
+                  style={{
+                    background: 'var(--bg-subtle)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-muted)',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    padding: '6px 10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '12px',
+                    fontWeight: '600'
+                  }}
+                  title={lang === 'ru' ? 'Тихо удалить заявку без уведомлений' : 'Silently delete without notifications'}
+                >
+                  <Trash2 size={14} color="var(--danger, #dc2626)" />
+                  <span>{lang === 'ru' ? 'Удалить тихо' : lang === 'kk' ? 'Өшіру' : 'Silent Delete'}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    deleteTicketSilently(ticket.id);
+                    setConfirmSilentDelete(false);
+                    onClose();
+                  }}
+                  style={{
+                    background: 'var(--danger, #dc2626)',
+                    border: 'none',
+                    color: '#ffffff',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    padding: '6px 10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '12px',
+                    fontWeight: '700'
+                  }}
+                  title={lang === 'ru' ? 'Подтвердить тихое удаление' : 'Confirm silent delete'}
+                >
+                  <BellOff size={13} />
+                  <span>{lang === 'ru' ? 'Подтвердить (без уведомл.)' : 'Confirm Silent Delete'}</span>
+                </button>
+              )
             )}
             <button
               type="button"

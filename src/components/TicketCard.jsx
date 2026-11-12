@@ -12,7 +12,9 @@ import {
   Clock,
   Check,
   XCircle,
-  ZoomIn
+  ZoomIn,
+  Trash2,
+  BellOff
 } from 'lucide-react';
 import { useApp } from '../AppContext';
 import { translateText, detectLanguage, TRANSLATOR_LANGUAGES } from '../services/translator';
@@ -35,13 +37,18 @@ export const TicketCard = ({
   getUrgencyBadge,
   renderLocationBadge,
   onSelectTicket,
-  onCompleteTicket
+  onCompleteTicket,
+  isSelected = false,
+  onToggleSelect = null
 }) => {
-  const { markTicketReturnedByTeacher, confirmTicketReturn } = useApp();
+  const { markTicketReturnedByTeacher, confirmTicketReturn, deleteTicketSilently } = useApp();
   const [activeLang, setActiveLang] = useState(autoTranslate ? targetLang : 'orig');
   const [showOriginal, setShowOriginal] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translatedData, setTranslatedData] = useState(null);
+  const [confirmSilentDelete, setConfirmSilentDelete] = useState(false);
+
+  const canSilentDelete = role === 'director' || role === 'admin';
 
   const cleanPhone = (ticket.teacherPhone || '').replace(/[^\d+]/g, '');
   const targetDept = ticket.department || 'storage';
@@ -197,6 +204,30 @@ export const TicketCard = ({
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 200px', minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            {canSilentDelete && onToggleSelect && (
+              <label
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  marginRight: '2px'
+                }}
+                title={lang === 'ru' ? 'Выбрать заявку для тихого удаления' : 'Select ticket for silent deletion'}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => onToggleSelect(ticket.id)}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    cursor: 'pointer',
+                    accentColor: 'var(--danger, #dc2626)'
+                  }}
+                />
+              </label>
+            )}
             {getDepartmentBadge(ticket)}
             <span className="ticket-id-badge">#{ticket.id}</span>
 
@@ -572,6 +603,102 @@ export const TicketCard = ({
               <XCircle size={13} />
               <span>{t.tickets?.decline || 'Decline'}</span>
             </button>
+          )}
+
+          {/* Silent Delete Ticket Button for Director / Admin (No Notifications) */}
+          {canSilentDelete && (
+            !confirmSilentDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmSilentDelete(true)}
+                style={{
+                  height: '28px',
+                  padding: '0 10px',
+                  fontSize: '11.5px',
+                  fontWeight: '600',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-muted)',
+                  borderRadius: '6px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--danger, #dc2626)';
+                  e.currentTarget.style.color = 'var(--danger, #dc2626)';
+                  e.currentTarget.style.background = 'rgba(220, 38, 38, 0.08)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
+                  e.currentTarget.style.color = 'var(--text-muted)';
+                  e.currentTarget.style.background = 'var(--bg-subtle)';
+                }}
+                title={
+                  lang === 'ru'
+                    ? 'Тихо удалить заявку (без уведомлений учителю или сотрудникам)'
+                    : lang === 'kk'
+                    ? 'Өтінімді хабарламасыз өшіру'
+                    : 'Silently delete ticket without sending any notifications'
+                }
+              >
+                <Trash2 size={13} />
+                <span>{lang === 'ru' ? 'Удалить тихо' : lang === 'kk' ? 'Өшіру' : 'Silent Delete'}</span>
+              </button>
+            ) : (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'rgba(220, 38, 38, 0.1)',
+                  border: '1px solid rgba(220, 38, 38, 0.35)',
+                  borderRadius: '6px',
+                  padding: '2px 6px'
+                }}
+              >
+                <BellOff size={12} color="var(--danger, #dc2626)" />
+                <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--danger, #dc2626)', marginRight: '2px' }}>
+                  {lang === 'ru' ? 'Без уведомлений?' : lang === 'kk' ? 'Хабарламасыз?' : 'No alerts?'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => deleteTicketSilently(ticket.id)}
+                  style={{
+                    height: '22px',
+                    padding: '0 8px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    background: 'var(--danger, #dc2626)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {lang === 'ru' ? 'Да, удалить' : lang === 'kk' ? 'Иә' : 'Yes, Delete'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmSilentDelete(false)}
+                  style={{
+                    height: '22px',
+                    padding: '0 6px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-muted)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {lang === 'ru' ? 'Отмена' : lang === 'kk' ? 'Жоқ' : 'Cancel'}
+                </button>
+              </div>
+            )
           )}
 
         </div>

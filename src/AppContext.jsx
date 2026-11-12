@@ -5,6 +5,8 @@ import {
   fetchTicketsFromDb,
   createTicketInDb,
   updateTicketInDb,
+  deleteTicketFromDb,
+  bulkDeleteTicketsFromDb,
   bulkSyncTicketsToDb,
   fetchInventoryFromDb,
   createInventoryItemInDb,
@@ -366,6 +368,7 @@ export const AppProvider = ({ children }) => {
   myCreatedTicketIdsRef.current = myCreatedTicketIds;
   const usersRef = React.useRef(users);
   usersRef.current = users;
+  const deletedTicketIdsRef = React.useRef(new Set());
 
   // Synchronize state with SQLite database
   const syncWithDb = useCallback(async () => {
@@ -388,15 +391,17 @@ export const AppProvider = ({ children }) => {
       let freshTickets = ticketsRef.current || [];
       if (ticketsResult.status === 'fulfilled' && Array.isArray(ticketsResult.value)) {
         reachedServer = true;
-        const dbTickets = ticketsResult.value.filter(t => !OLD_MOCK_IDS.has(t.id));
+        const deletedSet = deletedTicketIdsRef.current;
+        const dbTickets = ticketsResult.value.filter(t => !OLD_MOCK_IDS.has(t.id) && !deletedSet.has(t.id));
         freshTickets = dbTickets;
         ticketsRef.current = dbTickets;
 
-        // If DB is empty but local storage has user tickets, migrate them to DB
+        // If DB is empty but local storage has user tickets, migrate them to DB (excluding intentionally deleted tickets)
         setTickets(currentLocalTickets => {
-          if (dbTickets.length === 0 && currentLocalTickets.length > 0) {
-            bulkSyncTicketsToDb(currentLocalTickets).catch(() => {});
-            return currentLocalTickets;
+          const validLocal = currentLocalTickets.filter(t => !deletedSet.has(t.id));
+          if (dbTickets.length === 0 && validLocal.length > 0 && deletedSet.size === 0) {
+            bulkSyncTicketsToDb(validLocal).catch(() => {});
+            return validLocal;
           }
           return dbTickets;
         });
@@ -436,7 +441,8 @@ export const AppProvider = ({ children }) => {
       // 4. Process Notifications from DB
       if (notifsResult.status === 'fulfilled' && Array.isArray(notifsResult.value)) {
         reachedServer = true;
-        const incomingNotifs = notifsResult.value;
+        const deletedSet = deletedTicketIdsRef.current;
+        const incomingNotifs = notifsResult.value.filter(n => !n.ticketId || !deletedSet.has(n.ticketId));
         setNotifications(incomingNotifs);
 
         if (isInitialNotifLoadRef.current) {
@@ -986,6 +992,29 @@ export const AppProvider = ({ children }) => {
 
     // Persist in DB
     updateTicketInDb(ticketId, { ...updates, ...completionExtra, updatedAt }).catch(() => {});
+  };
+
+  // Silently delete a single ticket and its associated notifications without triggering any alerts
+  const deleteTicketSilently = (ticketId) => {
+    if (!ticketId) return;
+    deletedTicketIdsRef.current.add(ticketId);
+    ticketsRef.current = (ticketsRef.current || []).filter(t => t.id !== ticketId);
+    setTickets(prev => prev.filter(t => t.id !== ticketId));
+    setMyCreatedTicketIds(prev => prev.filter(id => id !== ticketId));
+    setNotifications(prev => prev.filter(n => n.ticketId !== ticketId));
+    deleteTicketFromDb(ticketId).catch(() => {});
+  };
+
+  // Silently delete multiple tickets at once without triggering any alerts
+  const bulkDeleteTicketsSilently = (ticketIds = []) => {
+    if (!Array.isArray(ticketIds) || ticketIds.length === 0) return;
+    const idSet = new Set(ticketIds);
+    ticketIds.forEach(id => deletedTicketIdsRef.current.add(id));
+    ticketsRef.current = (ticketsRef.current || []).filter(t => !idSet.has(t.id));
+    setTickets(prev => prev.filter(t => !idSet.has(t.id)));
+    setMyCreatedTicketIds(prev => prev.filter(id => !idSet.has(id)));
+    setNotifications(prev => prev.filter(n => !idSet.has(n.ticketId)));
+    bulkDeleteTicketsFromDb(ticketIds).catch(() => {});
   };
 
   // Start working on ticket (used by IT, Cleaning, Facilities, Engineer)
@@ -1661,6 +1690,8 @@ export const AppProvider = ({ children }) => {
       playNotificationSound,
       addTicket,
       updateTicket,
+      deleteTicketSilently,
+      bulkDeleteTicketsSilently,
       startTicketWork,
       issueTicketFromStock,
       markTicketReturnedByTeacher,

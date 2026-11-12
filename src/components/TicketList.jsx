@@ -26,7 +26,9 @@ import {
   DoorOpen,
   Globe,
   RotateCcw,
-  XCircle
+  XCircle,
+  Trash2,
+  BellOff
 } from 'lucide-react';
 import { DepartmentActionModal } from './DepartmentActionModal';
 import { TicketCard } from './TicketCard';
@@ -40,12 +42,22 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     role, 
     currentUser, 
     completeTicketDelivery, 
+    bulkDeleteTicketsSilently,
     lang,
     autoTranslateTickets,
     setAutoTranslateTickets,
     translatorTargetLang,
     setTranslatorTargetLang
   } = useApp();
+
+  const canSilentDelete = role === 'director' || role === 'admin';
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+
+  const toggleSelectTicket = (ticketId) => {
+    setSelectedIds(prev => prev.includes(ticketId) ? prev.filter(id => id !== ticketId) : [...prev, ticketId]);
+    setConfirmBulkDelete(false);
+  };
   
   // Available departments based on DEPARTMENTS core specification
   const allDepartments = React.useMemo(() => [
@@ -564,7 +576,157 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
             </button>
           );
         })}
+        {canSilentDelete && filteredTickets.length > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              const allShownIds = filteredTickets.map(tk => tk.id);
+              const allSelected = allShownIds.every(id => selectedIds.includes(id));
+              if (allSelected) {
+                setSelectedIds(prev => prev.filter(id => !allShownIds.includes(id)));
+              } else {
+                setSelectedIds(Array.from(new Set([...selectedIds, ...allShownIds])));
+              }
+              setConfirmBulkDelete(false);
+            }}
+            style={{
+              marginLeft: 'auto',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontWeight: '600',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-card)',
+              color: 'var(--text-muted)',
+              cursor: 'pointer'
+            }}
+          >
+            <Trash2 size={12} color="var(--danger, #dc2626)" />
+            <span>
+              {filteredTickets.every(tk => selectedIds.includes(tk.id))
+                ? (lang === 'ru' ? 'Снять выделение' : lang === 'kk' ? 'Таңдауды алу' : 'Deselect All')
+                : (lang === 'ru' ? 'Выбрать все для удаления' : lang === 'kk' ? 'Барлығын таңдау' : 'Select All to Delete')}
+            </span>
+          </button>
+        )}
       </div>
+
+      {/* Silent Bulk Delete Action Bar for Director / Admin */}
+      {canSilentDelete && selectedIds.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px',
+            padding: '10px 16px',
+            borderRadius: '10px',
+            background: 'rgba(220, 38, 38, 0.08)',
+            border: '1px solid rgba(220, 38, 38, 0.3)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: 'var(--text-main)' }}>
+            <BellOff size={15} color="var(--danger, #dc2626)" />
+            <span>
+              <strong>{selectedIds.length}</strong>{' '}
+              {lang === 'ru'
+                ? 'выбрано — удаление произойдёт полностью без уведомлений (ни в портале, ни в Telegram).'
+                : lang === 'kk'
+                ? 'таңдалды — ешқандай хабарламасыз толығымен өшіріледі.'
+                : 'selected — will be permanently deleted with zero notifications.'}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!confirmBulkDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmBulkDelete(true)}
+                style={{
+                  height: '32px',
+                  padding: '0 14px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  background: 'var(--danger, #dc2626)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Trash2 size={13} />
+                <span>
+                  {lang === 'ru'
+                    ? `Удалить выбранные (${selectedIds.length}) без уведомлений`
+                    : lang === 'kk'
+                    ? `Таңдалғанды өшіру (${selectedIds.length})`
+                    : `Delete Selected (${selectedIds.length}) Silently`}
+                </span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  bulkDeleteTicketsSilently(selectedIds);
+                  setSelectedIds([]);
+                  setConfirmBulkDelete(false);
+                }}
+                style={{
+                  height: '32px',
+                  padding: '0 14px',
+                  fontSize: '12px',
+                  fontWeight: '800',
+                  background: '#991b1b',
+                  color: '#ffffff',
+                  border: '1px solid #f87171',
+                  borderRadius: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Trash2 size={13} />
+                <span>
+                  {lang === 'ru'
+                    ? `Подтвердить тихое удаление (${selectedIds.length})`
+                    : lang === 'kk'
+                    ? `Растау (${selectedIds.length})`
+                    : `Confirm Silent Delete (${selectedIds.length})`}
+                </span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedIds([]);
+                setConfirmBulkDelete(false);
+              }}
+              style={{
+                height: '32px',
+                padding: '0 12px',
+                fontSize: '12px',
+                fontWeight: '600',
+                background: 'var(--bg-card)',
+                color: 'var(--text-muted)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              {lang === 'ru' ? 'Отмена' : lang === 'kk' ? 'Болдырмау' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Ticket List Grid */}
       {filteredTickets.length === 0 ? (
@@ -591,6 +753,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               renderLocationBadge={renderLocationBadge}
               onSelectTicket={setSelectedTicket}
               onCompleteTicket={completeTicketDelivery}
+              isSelected={selectedIds.includes(ticket.id)}
+              onToggleSelect={canSilentDelete ? toggleSelectTicket : null}
             />
           ))}
         </div>

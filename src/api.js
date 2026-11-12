@@ -159,8 +159,15 @@ export async function updateTicketInDb(id, updates) {
 }
 
 export async function deleteTicketFromDb(id) {
-  return request(`/tickets/${id}`, {
+  return request(`/tickets/${encodeURIComponent(id)}`, {
     method: 'DELETE'
+  });
+}
+
+export async function bulkDeleteTicketsFromDb(ids) {
+  return request('/tickets/bulk-delete', {
+    method: 'POST',
+    body: JSON.stringify({ ids })
   });
 }
 

@@ -24,13 +24,15 @@ import {
   CalendarDays,
   Calendar,
   Sparkles,
-  BarChart3
+  BarChart3,
+  Trash2
 } from 'lucide-react';
 import { resolveDepartment, DEPARTMENTS } from '../departments';
 import { navigate } from '../router';
 
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
-  const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang, canAccessDailyDigest: canAccessDailyDigestFn } = useApp();
+  const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang, canAccessDailyDigest: canAccessDailyDigestFn, deleteTicketSilently } = useApp();
+  const canSilentDelete = role === 'director' || role === 'admin';
 
   const hasDailyDigestAccess = canAccessDailyDigestFn ? canAccessDailyDigestFn(role) : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role));
 
@@ -1603,12 +1605,45 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
                     <span>{deptName}</span>
                     <span className="ticket-id-badge">• #{ticket.id}</span>
                   </span>
-                  <span
-                    className={`ticket-badge-status ticket-badge-status-${ticket.status}`}
-                    style={{ fontSize: '10px', padding: '1px 6px' }}
-                  >
-                    {ticket.status}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span
+                      className={`ticket-badge-status ticket-badge-status-${ticket.status}`}
+                      style={{ fontSize: '10px', padding: '1px 6px' }}
+                    >
+                      {ticket.status}
+                    </span>
+                    {canSilentDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteTicketSilently(ticket.id);
+                        }}
+                        style={{
+                          background: 'var(--bg-subtle)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '6px',
+                          color: 'var(--text-muted)',
+                          cursor: 'pointer',
+                          padding: '3px 6px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'var(--danger, #dc2626)';
+                          e.currentTarget.style.borderColor = 'var(--danger, #dc2626)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--text-muted)';
+                          e.currentTarget.style.borderColor = 'var(--border-color)';
+                        }}
+                        title={lang === 'ru' ? 'Тихо удалить без уведомлений' : 'Silently delete without notifications'}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-main)' }}>

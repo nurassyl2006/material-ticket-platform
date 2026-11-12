@@ -863,15 +863,39 @@ app.post('/api/tickets/:id/confirm-return', (req, res) => {
   }
 });
 
-// DELETE ticket
+// DELETE ticket silently (removes ticket and its notifications without triggering any alerts)
 app.delete('/api/tickets/:id', (req, res) => {
   try {
     const { id } = req.params;
     const info = db.prepare('DELETE FROM tickets WHERE id = ?').run(id);
-    if (info.changes === 0) {
-      return res.status(404).json({ error: 'Ticket not found' });
+    db.prepare('DELETE FROM notifications WHERE ticketId = ?').run(id);
+    res.json({ success: true, id, deleted: info.changes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST bulk delete tickets silently (removes multiple tickets and their notifications without any alerts)
+app.post('/api/tickets/bulk-delete', (req, res) => {
+  try {
+    const { ids } = req.body || {};
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Expected non-empty array of ticket ids' });
     }
-    res.json({ success: true, id });
+    const delTicketStmt = db.prepare('DELETE FROM tickets WHERE id = ?');
+    const delNotifStmt = db.prepare('DELETE FROM notifications WHERE ticketId = ?');
+    const runBulkDelete = db.transaction((ticketIds) => {
+      let deletedCount = 0;
+      for (const tid of ticketIds) {
+        if (!tid) continue;
+        const info = delTicketStmt.run(tid);
+        delNotifStmt.run(tid);
+        deletedCount += info.changes;
+      }
+      return deletedCount;
+    });
+    const deleted = runBulkDelete(ids);
+    res.json({ success: true, ids, deleted });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
