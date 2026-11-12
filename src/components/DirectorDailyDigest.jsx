@@ -951,7 +951,7 @@ export const DirectorDailyDigest = ({ onOpenNewTicket, currentPath, initialPerio
         const dateBase = selectedDate;
         const sampleItems = [
           { dept: 'it_helpdesk', title: 'Projector HDMI Signal Lost in Classroom', teacher: 'Aigul Karimova (Physics)', room: 'B-2-4 (Science)', hour: 8, min: 15, status: 'completed', worker: 'Alexey IT Support', durationMins: 35, cost: 4500 },
-          { dept: 'cleaning', title: 'Water & Juice Spill Emergency near Corridor East', teacher: 'Elena Volkova (English)', room: 'A-1-2 (Year 1A)', hour: 9, min: 10, status: 'completed', worker: 'Cleaning Staff (Gulnara)', durationMins: 20, cost: 0 },
+          { dept: 'cleaning', title: 'Sanitization & Floor Cleaning in Medical Block', teacher: 'Elena Volkova (Nurse)', room: 'A-1-2 (Medical Block)', hour: 9, min: 10, status: 'completed', worker: 'Cleaning Staff (Gulnara)', durationMins: 20, cost: 0 },
           { dept: 'storage', title: 'A4 Printing Paper & Whiteboard Markers Set', teacher: 'Marat Sadykov (Maths)', room: 'C-3-10 (High School)', hour: 10, min: 5, status: 'completed', worker: 'Erzhan (Storage Manager)', durationMins: 45, cost: 8200 },
           { dept: 'electrical', title: 'Ceiling Fluorescent Light Flickering Rapidly', teacher: 'Sarah Jenkins (Art)', room: 'C-1-4 (Art Studio)', hour: 11, min: 30, status: 'in_progress', worker: 'Bakhyt (Electrician)', durationMins: null, cost: 3200 },
           { dept: 'carpentry', title: 'Relocate 12 Student Desks and 24 Chairs', teacher: 'Kairat Ospanov (Admin)', room: 'D-2-1 (Auditorium)', hour: 13, min: 45, status: 'in_progress', worker: 'Facilities Moving Team', durationMins: null, cost: 0 },

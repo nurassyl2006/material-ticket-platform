@@ -8,10 +8,10 @@ export const CAMPUS_BLOCKS = {
     id: 'A',
     key: 'blockA',
     name: 'Block A',
-    title: 'Primary Wing',
-    titleRu: 'Блок А (Начальная школа)',
-    titleKk: 'А блогы (Бастауыш сыныптар)',
-    desc: 'Primary School (Years 1-6), Primary Art & Staff'
+    title: 'Primary & Medical Wing',
+    titleRu: 'Блок А (Начальная школа и Медблок)',
+    titleKk: 'А блогы (Бастауыш мектеп және Медпункт)',
+    desc: 'Primary School (Years 1-6), Medical Block (A-1-2), Primary Art & Staff'
   },
   blockB: {
     id: 'B',
@@ -84,10 +84,10 @@ export const CAMPUS_ROOMS = [
   // ==========================================
   // Block A - 1st Floor
   { code: 'A-1-1', name: 'Primary Office A-1-1', block: 'A', floor: 1, areaType: 'office', keywords: ['a-1-1', 'a11', 'primary office'] },
-  { code: 'A-1-2', name: 'Year 1A', block: 'A', floor: 1, areaType: 'classroom', keywords: ['a-1-2', 'a12', 'year 1a', '1a', '1-a', 'класс 1а', 'сынып 1а'] },
-  { code: 'A-1-2.1', name: 'Year 1A Prep Room', block: 'A', floor: 1, areaType: 'storage', keywords: ['a-1-2.1', 'prep 1a'] },
-  { code: 'A-1-2.2', name: 'Learning Support 1.2', block: 'A', floor: 1, areaType: 'classroom', keywords: ['a-1-2.2', 'learning support'] },
-  { code: 'A-1-2.3', name: 'Learning Support 1.3', block: 'A', floor: 1, areaType: 'classroom', keywords: ['a-1-2.3'] },
+  { code: 'A-1-2', name: 'Medical Block (Медблок)', block: 'A', floor: 1, areaType: 'medical', keywords: ['a-1-2', 'a12', 'medical', 'medical block', 'nurse', 'dispensary', 'clinic', 'медблок', 'медпункт', 'медкабинет', 'врач', 'медсестра', 'дәрігер', 'медбике'] },
+  { code: 'A-1-2.1', name: 'Medical Room 1 — Procedure Room (Процедурный кабинет)', block: 'A', floor: 1, areaType: 'medical', keywords: ['a-1-2.1', 'a121', 'medical room 1', 'procedure room', 'treatment room', 'процедурный кабинет', 'ем-шара кабинеті', 'медкабинет 1'] },
+  { code: 'A-1-2.2', name: 'Medical Room 2 — Doctor / Examination (Кабинет врача)', block: 'A', floor: 1, areaType: 'medical', keywords: ['a-1-2.2', 'a122', 'medical room 2', 'doctor office', 'examination room', 'кабинет врача', 'дәрігер кабинеті', 'медкабинет 2'] },
+  { code: 'A-1-2.3', name: 'Medical Room 3 — Isolation / Ward (Изолятор / Палата)', block: 'A', floor: 1, areaType: 'medical', keywords: ['a-1-2.3', 'a123', 'medical room 3', 'isolation room', 'ward', 'infirmary', 'изолятор', 'палата', 'оқшаулау бөлмесі', 'медкабинет 3'] },
   { code: 'A-1-3', name: 'Year 1B', block: 'A', floor: 1, areaType: 'classroom', keywords: ['a-1-3', 'a13', 'year 1b', '1b', '1-b', 'класс 1б', 'сынып 1б'] },
   { code: 'A-1-4', name: 'Year 2A', block: 'A', floor: 1, areaType: 'classroom', keywords: ['a-1-4', 'a14', 'year 2a', '2a', '2-a', 'класс 2а', 'сынып 2а'] },
   { code: 'A-1-5', name: 'Year 2B', block: 'A', floor: 1, areaType: 'classroom', keywords: ['a-1-5', 'a15', 'year 2b', '2b', '2-b', 'класс 2б', 'сынып 2б'] },

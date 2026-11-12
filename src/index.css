@@ -1202,6 +1202,14 @@ body[data-theme="light"] {
     height: calc(64px + env(safe-area-inset-bottom, 0px));
   }
 
+  .floating-help-btn {
+    bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 14px !important;
+    height: 40px !important;
+    padding: 0 14px !important;
+    font-size: 12px !important;
+  }
+
   .role-logged-text {
     display: none !important;
   }

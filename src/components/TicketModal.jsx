@@ -15,7 +15,8 @@ import {
   Minus,
   Plus,
   Check,
-  AlertCircle
+  AlertCircle,
+  HelpCircle
 } from 'lucide-react';
 import { CampusLocationSelector } from './CampusLocationSelector';
 import { DEPARTMENTS, resolveDepartment, getSubcategories, isReturnableSubcategory } from '../departments';
@@ -45,7 +46,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     quantity: 1,
     unit: 'pcs',
     urgency: 'medium',
-    roomNumber: 'Block A • 1st Floor • A-1-2 (Year 1A)',
+    roomNumber: 'Block A • 1st Floor • A-1-3 (Year 1B)',
     description: '',
     fromRoom: '',
     toRoom: '',
@@ -81,7 +82,7 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
         subcategory: initialItem || '',
         roomNumber: prev.roomNumber && prev.roomNumber !== 'Room 101'
           ? prev.roomNumber
-          : (resolved.id === 'cleaning' ? 'Block A • 1st Floor • A-1-10 (Toilets & Stairs)' : 'Block A • 1st Floor • A-1-2 (Year 1A)')
+          : (resolved.id === 'cleaning' ? 'Block A • 1st Floor • A-1-10 (Toilets & Stairs)' : 'Block A • 1st Floor • A-1-3 (Year 1B)')
       }));
     }
   }, [isOpen, initialDepartment, initialItem]);
@@ -113,7 +114,9 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
     setFormData(prev => {
       let room = prev.roomNumber;
       const lower = subcat.toLowerCase();
-      if (lower.includes('унитаз') || lower.includes('раковин') || lower.includes('смесител') || lower.includes('санузл') || lower.includes('полотенцесушител') || lower.includes('toilet') || lower.includes('sink') || lower.includes('faucet') || lower.includes('restroom') || lower.includes('әжетхана')) {
+      if (lower.includes('мед') || lower.includes('врач') || lower.includes('medical') || lower.includes('nurse') || lower.includes('дәрігер')) {
+        room = 'Block A • 1st Floor • A-1-2 (Medical Block (Медблок))';
+      } else if (lower.includes('унитаз') || lower.includes('раковин') || lower.includes('смесител') || lower.includes('санузл') || lower.includes('полотенцесушител') || lower.includes('toilet') || lower.includes('sink') || lower.includes('faucet') || lower.includes('restroom') || lower.includes('әжетхана')) {
         room = 'Block A • 1st Floor • A-1-10 (Toilets & Stairs)';
       } else if (lower.includes('робот') || lower.includes('robot') || lower.includes('3d')) {
         room = 'Block C • 1st Floor • C-1-5 (Robotics)';
@@ -390,25 +393,49 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'var(--bg-subtle)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              width: '34px',
-              height: '34px',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <X size={17} />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => window.__onOpenHelpGuide && window.__onOpenHelpGuide()}
+              style={{
+                background: 'var(--primary-tint)',
+                border: '1px solid rgba(37, 99, 235, 0.25)',
+                color: 'var(--primary)',
+                cursor: 'pointer',
+                height: '34px',
+                padding: '0 10px',
+                borderRadius: '10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '12px',
+                fontWeight: '700'
+              }}
+              title={lang === 'ru' ? 'Как подать заявку' : 'How to submit a request'}
+            >
+              <HelpCircle size={14} />
+              <span>{lang === 'ru' ? 'Помощь' : lang === 'kk' ? 'Көмек' : 'Help'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <X size={17} />
+            </button>
+          </div>
         </div>
 
         {/* Sender Details for Unregistered Guest / Parent */}

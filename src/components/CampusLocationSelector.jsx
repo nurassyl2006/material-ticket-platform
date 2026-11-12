@@ -23,6 +23,7 @@ import {
 
 // Popular quick presets for high-frequency school locations
 const POPULAR_LOCATIONS = [
+  { label: '🏥 Medical Block (A-1-2)', code: 'A-1-2', block: 'blockA', floor: 'floor1', name: 'Medical Block (Медблок)' },
   { label: '🏫 Library', code: 'D-3-1', block: 'blockD', floor: 'floor3', name: 'Library' },
   { label: '🍽️ Dining Hall', code: 'Canteen', block: 'blockD', floor: 'floor1', name: 'Dining Hall / Canteen' },
   { label: '⚽ Sports Hall', code: 'D-2-2', block: 'blockD', floor: 'floor2', name: 'Main Sports Hall' },
@@ -268,7 +269,7 @@ export const CampusLocationSelector = ({
               <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
-                placeholder="Search room: A-1-2, Robotics, Pool, Math, D-3-1, 1A..."
+                placeholder="Search room: A-1-2 (Medical), Robotics, Pool, Math, D-3-1..."
                 value={roomSearchTerm}
                 onChange={e => setRoomSearchTerm(e.target.value)}
                 style={{

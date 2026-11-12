@@ -22,9 +22,11 @@ import {
   CalendarCheck2,
   CalendarRange,
   CalendarDays,
-  ChevronDown
+  ChevronDown,
+  HelpCircle
 } from 'lucide-react';
 import { NotificationDropdown } from './NotificationDropdown';
+import { HelpGuideModal } from './HelpGuideModal';
 import { Link } from '../router';
 
 export const Navbar = ({ 
@@ -57,6 +59,14 @@ export const Navbar = ({
   } = useApp();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isReportsDropdownOpen, setIsReportsDropdownOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  React.useEffect(() => {
+    window.__onOpenHelpGuide = () => setIsHelpOpen(true);
+    return () => {
+      window.__onOpenHelpGuide = null;
+    };
+  }, []);
 
   const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
   const hasDailyDigestAccess = canAccessDailyDigest ? canAccessDailyDigest(role) : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role));
@@ -1024,6 +1034,53 @@ export const Navbar = ({
           </button>
         )}
       </nav>
+
+      {/* Separate Floating Help & Guide Button (Bottom-Right Corner) */}
+      <button
+        type="button"
+        onClick={() => setIsHelpOpen(true)}
+        className="floating-help-btn"
+        title={lang === 'ru' ? 'Помощь, инструкция и контакты' : lang === 'kk' ? 'Көмек, нұсқаулық және байланыс' : 'Help Guide & Contact Numbers'}
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 950,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          height: '46px',
+          padding: '0 18px',
+          borderRadius: '999px',
+          background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+          color: '#ffffff',
+          border: '2px solid rgba(255, 255, 255, 0.25)',
+          boxShadow: '0 8px 24px rgba(37, 99, 235, 0.4)',
+          fontSize: '13px',
+          fontWeight: '700',
+          cursor: 'pointer',
+          transition: 'transform 0.18s ease, box-shadow 0.18s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px) scale(1.03)';
+          e.currentTarget.style.boxShadow = '0 12px 28px rgba(37, 99, 235, 0.5)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'none';
+          e.currentTarget.style.boxShadow = '0 8px 24px rgba(37, 99, 235, 0.4)';
+        }}
+      >
+        <HelpCircle size={19} strokeWidth={2.4} />
+        <span>
+          {lang === 'ru' ? 'Помощь и контакты' : lang === 'kk' ? 'Көмек / Байланыс' : 'Help & Contacts'}
+        </span>
+      </button>
+
+      <HelpGuideModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        onOpenNewTicket={onOpenNewTicket}
+      />
     </>
   );
 };

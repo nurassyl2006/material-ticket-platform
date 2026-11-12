@@ -20,7 +20,8 @@ import {
   ZoomIn,
   ChevronDown,
   ChevronUp,
-  Play
+  Play,
+  HelpCircle
 } from 'lucide-react';
 import { DEPARTMENTS, resolveDepartment, translateSubcategory } from '../departments';
 import { translateText, detectLanguage } from '../services/translator';
@@ -463,6 +464,27 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => window.__onOpenHelpGuide && window.__onOpenHelpGuide()}
+              style={{
+                background: 'var(--primary-tint)',
+                border: '1px solid rgba(37, 99, 235, 0.25)',
+                color: 'var(--primary)',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                padding: '6px 10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '12px',
+                fontWeight: '700'
+              }}
+              title={lang === 'ru' ? 'Инструкция по обработке заявок' : 'Staff guide'}
+            >
+              <HelpCircle size={14} />
+              <span>{lang === 'ru' ? 'Инструкция' : lang === 'kk' ? 'Көмек' : 'Guide'}</span>
+            </button>
             {ticket.status !== 'rejected' && ticket.status !== 'declined' && ticket.status !== 'completed' && (
               <button
                 type="button"
