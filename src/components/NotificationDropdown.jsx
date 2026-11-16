@@ -38,7 +38,13 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
   } = useApp();
 
   const dropdownRef = useRef(null);
-  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('app_notification_sound_muted') === 'true');
+  const [isMuted, setIsMuted] = useState(() => {
+    try {
+      return localStorage.getItem('app_notification_sound_muted') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [testSent, setTestSent] = useState(false);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
 
@@ -50,16 +56,20 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
     };
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside, { passive: true });
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isOpen, onClose]);
 
   const toggleSound = () => {
     setIsMuted(prev => {
       const next = !prev;
-      localStorage.setItem('app_notification_sound_muted', String(next));
+      try {
+        localStorage.setItem('app_notification_sound_muted', String(next));
+      } catch {}
       if (!next) {
         playNotificationSound();
       }
@@ -101,7 +111,7 @@ export const NotificationDropdown = ({ isOpen, onClose, onSelectTicket }) => {
   return (
     <div 
       ref={dropdownRef}
-      className="fluent-card animate-fade-in"
+      className="fluent-card animate-fade-in notification-dropdown-panel"
       style={{
         position: 'absolute',
         top: 'calc(100% + 6px)',

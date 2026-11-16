@@ -38,7 +38,10 @@ if (typeof window !== 'undefined') {
 
 // Web Audio synthesizer for pleasant alert chimes (zero dependencies, 0ms latency)
 export function playNotificationSound() {
-  const isMuted = localStorage.getItem('app_notification_sound_muted') === 'true';
+  let isMuted = false;
+  try {
+    isMuted = localStorage.getItem('app_notification_sound_muted') === 'true';
+  } catch {}
   if (isMuted) return;
 
   try {
@@ -118,7 +121,8 @@ export async function ensureServiceWorkerReady() {
     reg = await navigator.serviceWorker.getRegistration();
     if (reg) return reg;
 
-    reg = await navigator.serviceWorker.register('/sw.js');
+    const swPath = `${import.meta.env.BASE_URL || '/'}sw.js`;
+    reg = await navigator.serviceWorker.register(swPath);
     return reg;
   } catch (err) {
     console.warn('[EduOps] Service Worker readiness check warning:', err);
@@ -133,7 +137,9 @@ export async function requestDeviceNotificationPermission() {
 
   try {
     const permission = await Notification.requestPermission();
-    localStorage.setItem('app_notification_permission', permission);
+    try {
+      localStorage.setItem('app_notification_permission', permission);
+    } catch {}
 
     // Warm up service worker registration when permission is granted
     if (permission === 'granted') {

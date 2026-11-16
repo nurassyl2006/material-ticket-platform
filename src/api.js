@@ -6,11 +6,13 @@
 // Dynamic API Base URL resolver: checks user-configured custom server URL, VITE_API_URL, or defaults to '/api'
 export function getApiBaseUrl() {
   if (typeof window !== 'undefined') {
-    const custom = localStorage.getItem('app_custom_api_url');
-    if (custom && custom.trim()) {
-      const clean = custom.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
-      return `${clean}/api`;
-    }
+    try {
+      const custom = localStorage.getItem('app_custom_api_url');
+      if (custom && custom.trim()) {
+        const clean = custom.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
+        return `${clean}/api`;
+      }
+    } catch {}
   }
   const envUrl = (import.meta.env.VITE_API_URL || '').trim();
   if (envUrl) {
@@ -22,18 +24,24 @@ export function getApiBaseUrl() {
 
 export function getCurrentApiServerUrl() {
   if (typeof window === 'undefined') return '';
-  return localStorage.getItem('app_custom_api_url') || import.meta.env.VITE_API_URL || '';
+  try {
+    return localStorage.getItem('app_custom_api_url') || import.meta.env.VITE_API_URL || '';
+  } catch {
+    return import.meta.env.VITE_API_URL || '';
+  }
 }
 
 export function setCustomApiServerUrl(url) {
   if (typeof window === 'undefined') return;
   const cleaned = (url || '').trim();
-  if (!cleaned) {
-    localStorage.removeItem('app_custom_api_url');
-  } else {
-    const normalized = cleaned.replace(/\/api\/?$/, '').replace(/\/$/, '');
-    localStorage.setItem('app_custom_api_url', normalized);
-  }
+  try {
+    if (!cleaned) {
+      localStorage.removeItem('app_custom_api_url');
+    } else {
+      const normalized = cleaned.replace(/\/api\/?$/, '').replace(/\/$/, '');
+      localStorage.setItem('app_custom_api_url', normalized);
+    }
+  } catch {}
 }
 
 async function request(endpoint, options = {}) {
@@ -48,7 +56,10 @@ async function request(endpoint, options = {}) {
     'Accept': 'application/json'
   };
 
-  const token = localStorage.getItem('app_auth_token');
+  let token = '';
+  try {
+    token = localStorage.getItem('app_auth_token') || '';
+  } catch {}
   if (token) {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
   }

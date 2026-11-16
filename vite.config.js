@@ -4,6 +4,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
   base: mode === 'production' ? '/material-ticket-platform/' : '/',
+  build: {
+    target: ['es2019', 'safari13', 'ios13'],
+    cssTarget: ['safari13', 'ios13']
+  },
   server: {
     port: 5173,
     proxy: {

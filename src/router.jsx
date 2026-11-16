@@ -225,16 +225,24 @@ export function navigate(target, options = {}) {
   // If already at target URL, avoid duplicate push
   const currentFull = `${window.location.pathname}${window.location.search}`;
   if (currentFull !== targetUrl) {
-    if (options.replace) {
-      window.history.replaceState({ url: targetUrl }, '', targetUrl);
-    } else {
-      window.history.pushState({ url: targetUrl }, '', targetUrl);
+    try {
+      if (options.replace) {
+        window.history.replaceState({ url: targetUrl }, '', targetUrl);
+      } else {
+        window.history.pushState({ url: targetUrl }, '', targetUrl);
+      }
+    } catch {
+      // Fallback for restricted iOS WebViews
     }
   }
 
   // Notify router listeners
   window.dispatchEvent(new Event('popstate'));
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  try {
+    window.scrollTo(0, 0);
+  } catch {
+    // ignore
+  }
 }
 
 /**

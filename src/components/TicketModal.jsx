@@ -224,21 +224,30 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
   }, [isReturnableOverride, formData.category, formData.subcategory, formData.itemTitle, matchedStockItem]);
 
   // ── Photo helpers ──────────────────────────────────────────────────────────
-  const processFiles = async (files) => {
+  const processFiles = async (fileList, inputEl = null) => {
     const remaining = 5 - photos.length;
-    if (remaining <= 0) return;
-    const toProcess = Array.from(files).slice(0, remaining);
-    for (const file of toProcess) {
-      if (!file.type.startsWith('image/')) continue;
-      try {
-        const compressed = await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, quality: 0.82 });
-        setPhotos(prev => prev.length < 5 ? [...prev, compressed] : prev);
-      } catch {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setPhotos(prev => prev.length < 5 ? [...prev, e.target.result] : prev);
-        };
-        reader.readAsDataURL(file);
+    if (remaining <= 0) {
+      if (inputEl) inputEl.value = '';
+      return;
+    }
+    const toProcess = Array.from(fileList || []).slice(0, remaining);
+    try {
+      for (const file of toProcess) {
+        if (!file) continue;
+        try {
+          const compressed = await compressImageFile(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
+          setPhotos(prev => prev.length < 5 ? [...prev, compressed] : prev);
+        } catch {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            setPhotos(prev => prev.length < 5 ? [...prev, e.target.result] : prev);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    } finally {
+      if (inputEl) {
+        try { inputEl.value = ''; } catch {}
       }
     }
   };
@@ -1264,17 +1273,16 @@ export const TicketModal = ({ isOpen, onClose, initialDepartment = 'it_helpdesk'
                 type="file"
                 accept="image/*"
                 capture="environment"
-                multiple
                 style={{ display: 'none' }}
-                onChange={e => { processFiles(e.target.files); e.target.value = ''; }}
+                onChange={e => processFiles(e.target.files, e.target)}
               />
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,image/heic,image/heif"
                 multiple
                 style={{ display: 'none' }}
-                onChange={e => { processFiles(e.target.files); e.target.value = ''; }}
+                onChange={e => processFiles(e.target.files, e.target)}
               />
             </div>
           </div>

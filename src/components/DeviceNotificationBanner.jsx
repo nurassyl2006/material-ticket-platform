@@ -22,6 +22,12 @@ export const DeviceNotificationBanner = () => {
   const [testResult, setTestResult] = useState(null);
   const [isTelegramOpen, setIsTelegramOpen] = useState(false);
 
+  const isIOS = typeof navigator !== 'undefined' && (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+  const isUnsupported = devicePermission === 'unsupported';
+
   const handleDismiss = () => {
     setDismissed(true);
     try {
@@ -37,6 +43,22 @@ export const DeviceNotificationBanner = () => {
         text: lang === 'ru' ? '✅ Уведомления активированы на этом устройстве!' : lang === 'kk' ? '✅ Хабарландырулар осы құрылғыда қосылды!' : '✅ Device alerts activated on this device!'
       });
       setTimeout(() => setTestResult(null), 4000);
+    } else if (res === 'unsupported' || isIOS) {
+      setTestResult({
+        success: true,
+        text: lang === 'ru'
+          ? '🔊 Звук в приложении включен! На iPhone для пушей подключите Telegram или нажмите «Поделиться ⬆️ → На экран Домой».'
+          : lang === 'kk'
+          ? '🔊 Дыбыс қосылды! iPhone-да хабарлама алу үшін Telegram қосыңыз немесе «Бөлісу ⬆️ → Басты экранға» басыңыз.'
+          : '🔊 In-app sound enabled! On iPhone/iPad, connect Telegram or tap Share ⬆️ → "Add to Home Screen" for push alerts.'
+      });
+      setTimeout(() => setTestResult(null), 7000);
+    } else {
+      setTestResult({
+        success: false,
+        text: lang === 'ru' ? '⚠️ Разрешите уведомления в настройках браузера или подключите Telegram' : '⚠️ Allow notifications in browser settings or connect Telegram'
+      });
+      setTimeout(() => setTestResult(null), 5000);
     }
   };
 
@@ -47,7 +69,14 @@ export const DeviceNotificationBanner = () => {
       if (diag.delivered) {
         setTestResult({
           success: true,
-          text: lang === 'ru' ? '✅ Тестовый алерт со звуком и вибрацией отправлен!' : '✅ Test alert with sound & vibration delivered!'
+          text: lang === 'ru' ? '✅ Тестовый алерт со звуком отправлен!' : '✅ Test alert with sound delivered!'
+        });
+      } else if (isIOS || !diag.supported) {
+        setTestResult({
+          success: true,
+          text: lang === 'ru'
+            ? '🔊 Звуковой сигнал воспроизведен! Для пуш-уведомлений на iPhone подключите Telegram.'
+            : '🔊 Audio chime played! Connect Telegram for instant iPhone lock-screen push alerts.'
         });
       } else {
         setTestResult({
@@ -59,7 +88,7 @@ export const DeviceNotificationBanner = () => {
       setTestResult({ success: false, text: 'Test alert failed' });
     } finally {
       setTesting(false);
-      setTimeout(() => setTestResult(null), 5000);
+      setTimeout(() => setTestResult(null), 6000);
     }
   };
 
@@ -75,30 +104,29 @@ export const DeviceNotificationBanner = () => {
           maxWidth: '1360px',
           margin: '-4px auto 14px',
           padding: '12px 18px',
-          background: devicePermission === 'denied'
-            ? 'linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.08) 100%)'
-            : 'linear-gradient(90deg, rgba(99, 102, 241, 0.16) 0%, rgba(56, 189, 248, 0.12) 100%)',
-          border: `1px solid ${devicePermission === 'denied' ? 'rgba(239, 68, 68, 0.35)' : 'rgba(99, 102, 241, 0.35)'}`,
+          background: 'var(--bg-card)',
+          border: `1px solid ${devicePermission === 'denied' ? 'rgba(239, 68, 68, 0.35)' : 'var(--border-color)'}`,
+          borderLeft: `4px solid ${devicePermission === 'denied' ? 'var(--danger)' : 'var(--primary)'}`,
           borderRadius: '12px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '12px',
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)'
+          boxShadow: 'var(--shadow-depth-2)'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 300px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 260px' }}>
           <div
             style={{
               width: '36px',
               height: '36px',
               borderRadius: '10px',
-              background: devicePermission === 'denied' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(99, 102, 241, 0.25)',
+              background: devicePermission === 'denied' ? 'rgba(239, 68, 68, 0.12)' : 'var(--primary-tint)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: devicePermission === 'denied' ? '#f87171' : '#818cf8',
+              color: devicePermission === 'denied' ? 'var(--danger)' : 'var(--primary)',
               flexShrink: 0
             }}
           >
@@ -106,10 +134,12 @@ export const DeviceNotificationBanner = () => {
           </div>
 
           <div>
-            <div style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span>
                 {devicePermission === 'denied'
                   ? (lang === 'ru' ? 'Уведомления заблокированы браузером' : lang === 'kk' ? 'Хабарландырулар браузерде бұғатталған' : 'Device Notifications Blocked')
+                  : isIOS && isUnsupported
+                  ? (lang === 'ru' ? 'Уведомления на iPhone / iPad' : lang === 'kk' ? 'iPhone / iPad хабарландырулары' : 'iPhone / iPad Instant Alerts')
                   : (lang === 'ru' ? 'Включите уведомления прямо на это устройство' : lang === 'kk' ? 'Хабарландыруларды осы құрылғыға қосыңыз' : 'Enable Direct Device Push & Sound Alerts')}
               </span>
               <span
@@ -118,35 +148,41 @@ export const DeviceNotificationBanner = () => {
                   fontWeight: '600',
                   padding: '2px 7px',
                   borderRadius: '10px',
-                  background: devicePermission === 'denied' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(56, 189, 248, 0.2)',
-                  color: devicePermission === 'denied' ? '#fca5a5' : '#38bdf8'
+                  background: devicePermission === 'denied' ? 'rgba(239, 68, 68, 0.15)' : 'var(--primary-tint)',
+                  color: devicePermission === 'denied' ? 'var(--danger)' : 'var(--primary)'
                 }}
               >
-                {devicePermission === 'denied' ? 'Settings Required' : 'Instant Sound & Push'}
+                {devicePermission === 'denied' ? 'Settings Required' : (isIOS ? 'iOS & Telegram' : 'Instant Sound & Push')}
               </span>
             </div>
 
-            <div style={{ fontSize: '12px', color: '#cbd5e1', marginTop: '2px', lineHeight: 1.4 }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', lineHeight: 1.4 }}>
               {devicePermission === 'denied'
                 ? (lang === 'ru'
-                    ? 'Нажмите на замочек или иконку настроек возле строки адреса и разрешите «Уведомления», либо используйте Telegram.'
+                    ? 'Нажмите на замочек возле строки адреса и разрешите «Уведомления», либо подключите Telegram.'
                     : lang === 'kk'
                     ? 'Мекенжай жолындағы құлып белгішесін басып, «Хабарландыруларға» рұқсат беріңіз немесе Telegram пайдаланыңыз.'
-                    : 'Click the tune/lock icon in your browser URL bar and allow Notifications, or connect Telegram.')
-                : (lang === 'ru'
-                    ? 'Мгновенно получайте звуковые оповещения, вибрацию и пуши на экран телефона или компьютера при новых заявках и изменениях статусов.'
+                    : 'Click the lock icon in your browser URL bar and allow Notifications, or connect Telegram.')
+                : isIOS && isUnsupported
+                ? (lang === 'ru'
+                    ? 'Для мгновенных уведомлений на iPhone подключите Telegram или добавьте сайт на экран «Домой» (Поделиться ⬆️ → На экран «Домой»).'
                     : lang === 'kk'
-                    ? 'Өтініштер мен күйлер өзгерген кезде дыбыстық сигналдар, діріл және телефонға пуш хабарландырулар алыңыз.'
-                    : 'Receive real-time chime, vibration & popups directly on your phone or laptop whenever tickets are created or updated.')}
+                    ? 'iPhone-да жедел хабарламалар алу үшін Telegram қосыңыз немесе сайтты «Басты экранға» қосыңыз.'
+                    : 'For instant alerts on iPhone/iPad, connect Telegram or tap Share ⬆️ → "Add to Home Screen".')
+                : (lang === 'ru'
+                    ? 'Мгновенно получайте звуковые оповещения и пуши на экран телефона или компьютера при новых заявках и изменениях статусов.'
+                    : lang === 'kk'
+                    ? 'Өтініштер мен күйлер өзгерген кезде дыбыстық сигналдар және телефонға пуш хабарландырулар алыңыз.'
+                    : 'Receive real-time chime & popups directly on your phone or laptop whenever tickets are created or updated.')}
             </div>
 
             {testResult && (
               <div
                 style={{
                   marginTop: '6px',
-                  fontSize: '11px',
+                  fontSize: '11.5px',
                   fontWeight: '600',
-                  color: testResult.success ? '#34d399' : '#f87171'
+                  color: testResult.success ? 'var(--success)' : 'var(--danger)'
                 }}
               >
                 {testResult.text}
@@ -162,7 +198,7 @@ export const DeviceNotificationBanner = () => {
               type="button"
               onClick={handleEnable}
               style={{
-                background: 'linear-gradient(135deg, #4f46e5, #6366f1)',
+                background: 'var(--primary)',
                 border: 'none',
                 borderRadius: '8px',
                 padding: '7px 14px',
@@ -172,12 +208,15 @@ export const DeviceNotificationBanner = () => {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 4px 12px rgba(79, 70, 229, 0.4)'
+                gap: '6px'
               }}
             >
               <Bell size={13} />
-              <span>{lang === 'ru' ? 'Включить на этом устройстве' : lang === 'kk' ? 'Құрылғыда қосу' : 'Turn On on This Device'}</span>
+              <span>
+                {isIOS && isUnsupported
+                  ? (lang === 'ru' ? 'Включить звук' : lang === 'kk' ? 'Дыбысты қосу' : 'Enable Sound')
+                  : (lang === 'ru' ? 'Включить на этом устройстве' : lang === 'kk' ? 'Құрылғыда қосу' : 'Turn On on This Device')}
+              </span>
             </button>
           )}
 
@@ -186,11 +225,11 @@ export const DeviceNotificationBanner = () => {
             onClick={handleTest}
             disabled={testing}
             style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-color)',
               borderRadius: '8px',
               padding: '7px 12px',
-              color: '#e2e8f0',
+              color: 'var(--text-main)',
               fontSize: '12px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -200,20 +239,20 @@ export const DeviceNotificationBanner = () => {
             }}
           >
             <Volume2 size={13} />
-            <span>{testing ? 'Testing...' : (lang === 'ru' ? 'Проверить звук/пуш' : 'Test Device Alert')}</span>
+            <span>{testing ? 'Testing...' : (lang === 'ru' ? 'Проверить звук' : 'Test Sound')}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsTelegramOpen(true)}
             style={{
-              background: 'rgba(2, 132, 199, 0.18)',
-              border: '1px solid rgba(56, 189, 248, 0.35)',
+              background: 'rgba(2, 132, 199, 0.12)',
+              border: '1px solid rgba(2, 132, 199, 0.35)',
               borderRadius: '8px',
               padding: '7px 12px',
-              color: '#38bdf8',
+              color: '#0284c7',
               fontSize: '12px',
-              fontWeight: '600',
+              fontWeight: '700',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -231,7 +270,7 @@ export const DeviceNotificationBanner = () => {
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#94a3b8',
+              color: 'var(--text-muted)',
               cursor: 'pointer',
               padding: '6px',
               display: 'flex',

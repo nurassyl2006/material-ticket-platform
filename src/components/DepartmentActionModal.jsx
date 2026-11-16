@@ -29,6 +29,7 @@ import { DEPARTMENTS, resolveDepartment, translateSubcategory } from '../departm
 import { translateText, detectLanguage } from '../services/translator';
 import { DeclineTicketModal } from './DeclineTicketModal';
 import { ImageViewerModal } from './ImageViewerModal';
+import { compressImageFile } from '../utils/imageCompressor';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const { 
@@ -90,15 +91,30 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   const completionFileRef = useRef(null);
   const completionCamRef = useRef(null);
 
-  const processCompletionFiles = (files) => {
+  const processCompletionFiles = async (fileList, inputEl = null) => {
     const remaining = 5 - completionPhotos.length;
-    if (remaining <= 0) return;
-    Array.from(files).slice(0, remaining).forEach(file => {
-      if (!file.type.startsWith('image/')) return;
-      const reader = new FileReader();
-      reader.onload = e => setCompletionPhotos(prev => prev.length < 5 ? [...prev, e.target.result] : prev);
-      reader.readAsDataURL(file);
-    });
+    if (remaining <= 0) {
+      if (inputEl) inputEl.value = '';
+      return;
+    }
+    const toProcess = Array.from(fileList || []).slice(0, remaining);
+    try {
+      for (const file of toProcess) {
+        if (!file) continue;
+        try {
+          const compressed = await compressImageFile(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8 });
+          setCompletionPhotos(prev => prev.length < 5 ? [...prev, compressed] : prev);
+        } catch {
+          const reader = new FileReader();
+          reader.onload = e => setCompletionPhotos(prev => prev.length < 5 ? [...prev, e.target.result] : prev);
+          reader.readAsDataURL(file);
+        }
+      }
+    } finally {
+      if (inputEl) {
+        try { inputEl.value = ''; } catch {}
+      }
+    }
   };
 
   const removeCompletionPhoto = (idx) => setCompletionPhotos(prev => prev.filter((_, i) => i !== idx));
@@ -412,8 +428,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
           </div>
         )}
 
-        <input ref={completionCamRef} type="file" accept="image/*" capture="environment" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
-        <input ref={completionFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => { processCompletionFiles(e.target.files); e.target.value = ''; }} />
+        <input ref={completionCamRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => processCompletionFiles(e.target.files, e.target)} />
+        <input ref={completionFileRef} type="file" accept="image/*,image/heic,image/heif" multiple style={{ display: 'none' }} onChange={e => processCompletionFiles(e.target.files, e.target)} />
       </div>
     );
   };

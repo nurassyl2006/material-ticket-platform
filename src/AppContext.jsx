@@ -138,11 +138,11 @@ export const AppProvider = ({ children }) => {
   }, [myCreatedTicketIds]);
 
   // Language state
-  const [lang, setLang] = useState(() => localStorage.getItem('app_lang') || 'en');
+  const [lang, setLang] = useState(() => safeGetItem('app_lang', 'en'));
 
   // Auto-translate state (Engineers have auto-translation active by default for English tickets)
   const [autoTranslateTickets, setAutoTranslateTicketsState] = useState(() => {
-    const saved = localStorage.getItem('app_auto_translate_tickets');
+    const saved = safeGetItem('app_auto_translate_tickets', null);
     if (saved !== null) return saved === 'true';
     return true; // Default ON to immediately help engineers
   });
@@ -150,53 +150,53 @@ export const AppProvider = ({ children }) => {
   const setAutoTranslateTickets = useCallback((val) => {
     setAutoTranslateTicketsState(prev => {
       const next = typeof val === 'function' ? val(prev) : val;
-      localStorage.setItem('app_auto_translate_tickets', String(next));
+      safeSetItem('app_auto_translate_tickets', String(next));
       return next;
     });
   }, []);
 
   // Translator target language (default 'ru' for engineers, can be toggled to 'kk' or 'en')
   const [translatorTargetLang, setTranslatorTargetLangState] = useState(() => {
-    return localStorage.getItem('app_translator_target_lang') || (lang === 'kk' ? 'kk' : 'ru');
+    return safeGetItem('app_translator_target_lang', null) || (lang === 'kk' ? 'kk' : 'ru');
   });
 
   const setTranslatorTargetLang = useCallback((val) => {
     setTranslatorTargetLangState(val);
-    localStorage.setItem('app_translator_target_lang', val);
+    safeSetItem('app_translator_target_lang', val);
   }, []);
 
   // Role state with legacy mapping and guest/parent unregistered defaults
   const [role, setRoleState] = useState(() => {
-    const isAuth = localStorage.getItem('app_auth') === 'true';
+    const isAuth = safeGetItem('app_auth', 'false') === 'true';
     if (isAuth) {
-      const saved = localStorage.getItem('app_role');
+      const saved = safeGetItem('app_role', null);
       if (saved === 'workerA') return 'storage_manager';
       if (saved === 'admin') return 'director';
       return saved || 'teacher';
     }
-    const unreg = localStorage.getItem('app_unregistered_role');
+    const unreg = safeGetItem('app_unregistered_role', null);
     return unreg === 'parent' ? 'parent' : 'guest';
   });
 
   const setRole = useCallback((newRole) => {
     setRoleState(newRole);
-    const isAuth = localStorage.getItem('app_auth') === 'true';
+    const isAuth = safeGetItem('app_auth', 'false') === 'true';
     if (!isAuth) {
-      localStorage.setItem('app_unregistered_role', newRole);
+      safeSetItem('app_unregistered_role', newRole);
     } else {
-      localStorage.setItem('app_role', newRole);
+      safeSetItem('app_role', newRole);
     }
   }, []);
 
   // Authentication session state
-  const [authToken, setAuthToken] = useState(() => localStorage.getItem('app_auth_token') || '');
+  const [authToken, setAuthToken] = useState(() => safeGetItem('app_auth_token', ''));
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('app_auth') === 'true';
+    return safeGetItem('app_auth', 'false') === 'true';
   });
 
   // Active authenticated user object
   const [activeUser, setActiveUser] = useState(() => {
-    const saved = localStorage.getItem('app_active_user');
+    const saved = safeGetItem('app_active_user', null);
     if (saved) {
       try { return JSON.parse(saved); } catch {}
     }
@@ -208,7 +208,7 @@ export const AppProvider = ({ children }) => {
 
   // Roles & Tasks Matrix Configuration (Director controls roles, tasks, and category access)
   const [rolesConfig, setRolesConfig] = useState(() => {
-    const saved = localStorage.getItem('app_roles_config_v1');
+    const saved = safeGetItem('app_roles_config_v1', null);
     if (saved) {
       try {
         return { ...DEFAULT_ROLES, ...JSON.parse(saved) };
@@ -219,7 +219,7 @@ export const AppProvider = ({ children }) => {
 
   // Storage Categories Configuration (Director controls categories, returnable policy, shelf locations)
   const [customCategories, setCustomCategories] = useState(() => {
-    const saved = localStorage.getItem('app_storage_categories_v1');
+    const saved = safeGetItem('app_storage_categories_v1', null);
     if (saved) {
       try {
         return mergeCategories(JSON.parse(saved));
@@ -236,13 +236,14 @@ export const AppProvider = ({ children }) => {
   // Register service worker on mount for native background push & click actions
   useEffect(() => {
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      const swPath = `${import.meta.env.BASE_URL || '/'}sw.js`;
+      navigator.serviceWorker.register(swPath).catch(() => {});
     }
   }, []);
 
   // Inventory state (Goods storage)
   const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem('app_inventory_v3');
+    const saved = safeGetItem('app_inventory_v3', null);
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -255,7 +256,7 @@ export const AppProvider = ({ children }) => {
 
   // Tickets state
   const [tickets, setTickets] = useState(() => {
-    const saved = localStorage.getItem('app_tickets_v3') || localStorage.getItem('app_tickets_v2');
+    const saved = safeGetItem('app_tickets_v3', null) || safeGetItem('app_tickets_v2', null);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -271,7 +272,7 @@ export const AppProvider = ({ children }) => {
 
   // Users state
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('app_users_v3');
+    const saved = safeGetItem('app_users_v3', null);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -298,7 +299,7 @@ export const AppProvider = ({ children }) => {
 
   // Notifications state
   const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('app_notifications_v3');
+    const saved = safeGetItem('app_notifications_v3', null);
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -431,7 +432,7 @@ export const AppProvider = ({ children }) => {
           const fresh = (usersResult.value.list || []).find(u => u.id === currentAct.id || u.email === currentAct.email || u.roleKey === currentAct.roleKey);
           if (fresh && (fresh.role !== currentAct.role || fresh.name !== currentAct.name || fresh.department !== currentAct.department)) {
             setRole(fresh.role || fresh.roleKey);
-            localStorage.setItem('app_active_user', JSON.stringify(fresh));
+            safeSetItem('app_active_user', fresh);
             return fresh;
           }
           return currentAct;
@@ -555,7 +556,7 @@ export const AppProvider = ({ children }) => {
         reachedServer = true;
         const merged = { ...DEFAULT_ROLES, ...rolesResult.value.roles };
         setRolesConfig(merged);
-        localStorage.setItem('app_roles_config_v1', JSON.stringify(merged));
+        safeSetItem('app_roles_config_v1', merged);
       }
 
       // 6. Process Storage Categories from DB
@@ -563,7 +564,7 @@ export const AppProvider = ({ children }) => {
         reachedServer = true;
         const merged = mergeCategories(catsResult.value.categories);
         setCustomCategories(merged);
-        localStorage.setItem('app_storage_categories_v1', JSON.stringify(merged));
+        safeSetItem('app_storage_categories_v1', merged);
       }
 
       if (reachedServer) {
@@ -595,7 +596,7 @@ export const AppProvider = ({ children }) => {
 
   // Validate active auth token with database on initial mount
   useEffect(() => {
-    const token = localStorage.getItem('app_auth_token');
+    const token = safeGetItem('app_auth_token', '');
     if (token) {
       fetchAuthMeApi()
         .then(res => {
@@ -877,9 +878,9 @@ export const AppProvider = ({ children }) => {
     setInventory(mockInventory);
     setTickets([]);
     setNotifications([]);
-    localStorage.removeItem('app_inventory_v3');
-    localStorage.removeItem('app_tickets_v3');
-    localStorage.removeItem('app_notifications_v3');
+    safeRemoveItem('app_inventory_v3');
+    safeRemoveItem('app_tickets_v3');
+    safeRemoveItem('app_notifications_v3');
     // Ensure all real registered staff members are re-synchronized from database
     syncWithDb();
   };
@@ -1447,7 +1448,7 @@ export const AppProvider = ({ children }) => {
           key: roleKey
         }
       };
-      localStorage.setItem('app_roles_config_v1', JSON.stringify(updated));
+      safeSetItem('app_roles_config_v1', updated);
       saveRolesApi(updated).catch(() => {});
       return updated;
     });
@@ -1477,7 +1478,7 @@ export const AppProvider = ({ children }) => {
           allowedCategories: Array.isArray(newRoleData.allowedCategories) ? newRoleData.allowedCategories : ['all']
         }
       };
-      localStorage.setItem('app_roles_config_v1', JSON.stringify(updated));
+      safeSetItem('app_roles_config_v1', updated);
       saveRolesApi(updated).catch(() => {});
       return updated;
     });
@@ -1492,7 +1493,7 @@ export const AppProvider = ({ children }) => {
     setRolesConfig(prev => {
       const updated = { ...prev };
       delete updated[roleKey];
-      localStorage.setItem('app_roles_config_v1', JSON.stringify(updated));
+      safeSetItem('app_roles_config_v1', updated);
       saveRolesApi(updated).catch(() => {});
       return updated;
     });
@@ -1535,7 +1536,7 @@ export const AppProvider = ({ children }) => {
 
     setCustomCategories(prev => {
       const merged = mergeCategories([...prev, catObj]);
-      localStorage.setItem('app_storage_categories_v1', JSON.stringify(merged));
+      safeSetItem('app_storage_categories_v1', merged);
       saveCategoriesApi(merged).catch(() => {});
       return merged;
     });
@@ -1561,7 +1562,7 @@ export const AppProvider = ({ children }) => {
         }
         return c;
       });
-      localStorage.setItem('app_storage_categories_v1', JSON.stringify(updated));
+      safeSetItem('app_storage_categories_v1', updated);
       saveCategoriesApi(updated).catch(() => {});
       return updated;
     });
