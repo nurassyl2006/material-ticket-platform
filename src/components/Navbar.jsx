@@ -28,6 +28,7 @@ import {
 import { NotificationDropdown } from './NotificationDropdown';
 import { HelpGuideModal } from './HelpGuideModal';
 import { Link } from '../router';
+import { getStaffManagementScope } from '../roleConfig';
 
 export const Navbar = ({ 
   activeTab, 
@@ -71,6 +72,10 @@ export const Navbar = ({
   const hasStorageAccess = canAccessStorage ? canAccessStorage(role) : true;
   const hasDailyDigestAccess = canAccessDailyDigest ? canAccessDailyDigest(role) : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role));
   const isReportsActive = ['daily-digest', 'dailyDigest', 'weekly-report', 'monthly-report', 'reports'].includes(activeTab);
+  const staffScope = getStaffManagementScope(role, currentUser);
+  const staffTabLabel = staffScope === 'all'
+    ? (t.nav?.users || 'Staff & Roles')
+    : (lang === 'ru' ? 'Моя бригада' : lang === 'kk' ? 'Менің тобым' : 'My Workers');
 
   // Helper for User Initials (e.g., Balkan Kassimov -> BK)
   const getUserInitials = (name) => {
@@ -491,7 +496,7 @@ export const Navbar = ({
               </div>
             )}
 
-            {(role === 'director' || role === 'admin') && (
+            {Boolean(staffScope) && (
               <Link
                 to="users"
                 style={{
@@ -513,21 +518,9 @@ export const Navbar = ({
                   flexShrink: 0,
                   boxShadow: activeTab === 'users' ? '0 1px 3px rgba(0, 0, 0, 0.2)' : 'none'
                 }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'users') {
-                    e.currentTarget.style.color = 'var(--text-main, #ffffff)';
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== 'users') {
-                    e.currentTarget.style.color = 'var(--text-muted, #94a3b8)';
-                    e.currentTarget.style.background = 'transparent';
-                  }
-                }}
               >
                 <Users size={14} color={activeTab === 'users' ? '#2563eb' : 'currentColor'} />
-                <span>{t.nav?.users || 'Staff & Roles'}</span>
+                <span>{staffTabLabel}</span>
               </Link>
             )}
           </nav>
@@ -956,7 +949,7 @@ export const Navbar = ({
         </button>
 
         {isAuthenticated && (
-          (role === 'director' || role === 'admin') ? (
+          staffScope ? (
             <>
               <Link
                 to={activeTab === 'weekly-report' ? 'weekly-report' : activeTab === 'monthly-report' ? 'monthly-report' : 'daily-digest'}
@@ -976,7 +969,7 @@ export const Navbar = ({
                 className={`mobile-nav-item ${activeTab === 'users' ? 'active' : ''}`}
               >
                 <Users size={20} />
-                <span>{t.nav?.users || 'Staff'}</span>
+                <span>{staffScope === 'all' ? (t.nav?.users || 'Staff') : (lang === 'ru' ? 'Бригада' : lang === 'kk' ? 'Тобым' : 'Workers')}</span>
               </Link>
             </>
           ) : hasDailyDigestAccess ? (

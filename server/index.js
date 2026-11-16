@@ -1236,29 +1236,81 @@ app.get('/api/users/:id', (req, res) => {
   }
 });
 
-// POST create new user (Director provisioned)
+// Helper: Determine staff management scope for Director, Head of Engineering, and Head of Cleaning
+function getStaffManagementScope(auth) {
+  if (!auth || !auth.user) return 'all'; // Fallback if unauthenticated local session
+  const r = auth.user.role || auth.roleKey || '';
+  const id = auth.user.id || '';
+  const email = (auth.user.email || '').toLowerCase();
+  const name = (auth.user.name || '').toLowerCase();
+
+  if (r === 'director' || r === 'admin' || auth.roleKey === 'director') {
+    return 'all';
+  }
+  if (
+    r === 'head_engineer' ||
+    auth.roleKey === 'head_engineer' ||
+    id === 'usr-eng1' ||
+    auth.roleKey === 'engineer' ||
+    email === 'engineer@school.edu' ||
+    (r === 'engineer' && (name.includes('head') || name.includes('василий') || name.includes('главный')))
+  ) {
+    return 'engineering';
+  }
+  if (
+    r === 'cleaning_head' ||
+    auth.roleKey === 'cleaning_head' ||
+    id === 'usr-cl-head' ||
+    email === 'cleaning.head@school.edu' ||
+    (r === 'cleaning' && (name.includes('head') || name.includes('айнур') || name.includes('акилова') || name.includes('заведующ')))
+  ) {
+    return 'cleaning';
+  }
+  return null;
+}
+
+// POST create new user (Director, Head of Engineering, or Head of Cleaning)
 app.post('/api/users', (req, res) => {
   try {
     const auth = authenticateSession(req);
-    if (auth && auth.user.role !== 'director' && auth.user.role !== 'admin' && auth.roleKey !== 'director') {
-      return res.status(403).json({ error: 'Only the Director can create users' });
+    const scope = getStaffManagementScope(auth);
+    if (!scope) {
+      return res.status(403).json({ error: 'Only the Director, Head of Engineering, or Head of Cleaning can add staff members' });
     }
 
-    const { name, email, role = 'teacher', department = '', phone = '', password = 'school123' } = req.body;
+    let { name, email, role = 'teacher', department = '', phone = '', password = 'school123' } = req.body;
     const cleanName = (name || '').trim();
-    const cleanEmail = (email || '').trim().toLowerCase();
-    const rawPassword = (password || '').trim() || 'school123';
-
     if (!cleanName) {
       return res.status(400).json({ error: 'Name is required' });
     }
-    if (!cleanEmail) {
-      return res.status(400).json({ error: 'Email is required' });
+
+    // Enforce department role restrictions for Head of Engineering and Head of Cleaning
+    if (scope === 'engineering') {
+      role = 'engineer';
+      department = (department || '').trim() || 'Engineering, Electrical & HVAC Utilities';
+      password = (password || '').trim() || 'engineer123';
+    } else if (scope === 'cleaning') {
+      role = 'cleaning';
+      department = (department || '').trim() || 'Campus Hygiene & Sanitization';
+      password = (password || '').trim() || 'clean123';
     }
+
+    // If login/email was left blank by department head, auto-generate a simple login from name or phone
+    let cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) {
+      const cleanPhoneDigits = (phone || '').replace(/\D/g, '');
+      if (cleanPhoneDigits.length >= 4) {
+        cleanEmail = `${role}_${cleanPhoneDigits.slice(-4)}`;
+      } else {
+        cleanEmail = `${role}_${Math.floor(100 + Math.random() * 900)}`;
+      }
+    }
+
+    const rawPassword = (password || '').trim() || 'school123';
 
     const existing = db.prepare('SELECT id FROM users WHERE LOWER(email) = ? OR LOWER(name) = ?').get(cleanEmail, cleanName.toLowerCase());
     if (existing) {
-      return res.status(400).json({ error: 'User with this email or name already exists' });
+      return res.status(400).json({ error: 'User with this login/email or name already exists' });
     }
 
     const id = `usr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -1292,11 +1344,6 @@ app.patch('/api/users/:id/role', (req, res) => {
       return res.status(400).json({ error: 'Role is required' });
     }
 
-    const validRoles = ['director', 'facilities_manager', 'storage_manager', 'engineer', 'it_support', 'cleaning', 'teacher'];
-    if (!validRoles.includes(newRole)) {
-      return res.status(400).json({ error: `Invalid role. Allowed roles: ${validRoles.join(', ')}` });
-    }
-
     const user = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -1326,23 +1373,31 @@ app.patch('/api/users/:id/role', (req, res) => {
   }
 });
 
-// POST reset user password (Director only)
+// POST reset user password (Director, Head of Engineering, or Head of Cleaning)
 app.post('/api/users/:id/reset-password', (req, res) => {
   try {
     const auth = authenticateSession(req);
-    if (auth && auth.user.role !== 'director' && auth.user.role !== 'admin' && auth.roleKey !== 'director') {
-      return res.status(403).json({ error: 'Only the Director can reset passwords' });
+    const scope = getStaffManagementScope(auth);
+    if (!scope) {
+      return res.status(403).json({ error: 'Unauthorized to reset passwords' });
     }
 
     const { id } = req.params;
     const { newPassword } = req.body;
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters long' });
     }
 
     const user = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (scope === 'engineering' && user.role !== 'engineer') {
+      return res.status(403).json({ error: 'Head of Engineering can only reset passwords for Engineering workers' });
+    }
+    if (scope === 'cleaning' && user.role !== 'cleaning') {
+      return res.status(403).json({ error: 'Head of Cleaning can only reset passwords for Cleaning workers' });
     }
 
     const { salt, hash } = hashPassword(newPassword);
@@ -1356,18 +1411,26 @@ app.post('/api/users/:id/reset-password', (req, res) => {
   }
 });
 
-// DELETE user (Director only)
+// DELETE user (Director, Head of Engineering, or Head of Cleaning)
 app.delete('/api/users/:id', (req, res) => {
   try {
     const auth = authenticateSession(req);
-    if (auth && auth.user.role !== 'director' && auth.user.role !== 'admin' && auth.roleKey !== 'director') {
-      return res.status(403).json({ error: 'Only the Director can delete users' });
+    const scope = getStaffManagementScope(auth);
+    if (!scope) {
+      return res.status(403).json({ error: 'Unauthorized to delete users' });
     }
 
     const { id } = req.params;
     const user = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(id, id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (scope === 'engineering' && (user.role !== 'engineer' || user.id === 'usr-eng1' || user.roleKey === 'engineer')) {
+      return res.status(403).json({ error: 'Head of Engineering can only remove Engineering workers' });
+    }
+    if (scope === 'cleaning' && (user.role !== 'cleaning' || user.id === 'usr-cl-head' || user.roleKey === 'cleaning_head')) {
+      return res.status(403).json({ error: 'Head of Cleaning can only remove Cleaning workers' });
     }
 
     // Safety: Cannot delete director roleKey if it's the main director

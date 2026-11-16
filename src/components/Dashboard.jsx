@@ -29,10 +29,12 @@ import {
 } from 'lucide-react';
 import { resolveDepartment, DEPARTMENTS } from '../departments';
 import { navigate } from '../router';
+import { getStaffManagementScope } from '../roleConfig';
 
 export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
   const { t, role, currentUser, tickets, scopedTickets: appScopedTickets, myCreatedTicketIds, inventory, lang, canAccessDailyDigest: canAccessDailyDigestFn, deleteTicketSilently } = useApp();
   const canSilentDelete = role === 'director' || role === 'admin';
+  const staffScope = getStaffManagementScope(role, currentUser);
 
   const hasDailyDigestAccess = canAccessDailyDigestFn ? canAccessDailyDigestFn(role) : (['director', 'admin', 'engineer', 'head_engineer', 'storage_manager', 'workerA', 'facilities_manager', 'finance', 'accountant', 'cleaning_head', 'cleaning', 'it_support'].includes(role));
 
@@ -290,14 +292,18 @@ export const Dashboard = ({ setActiveTab, onOpenNewTicket }) => {
               </div>
             )}
 
-            {(role === 'director' || role === 'admin') && (
+            {Boolean(staffScope) && (
               <button
-                onClick={() => setActiveTab('users')}
+                onClick={() => { setActiveTab('users'); navigate('/users'); }}
                 className="fluent-btn-secondary"
                 style={{ height: '34px' }}
               >
                 <Users size={14} />
-                <span>{t.nav?.users || 'Staff & Roles'}</span>
+                <span>
+                  {staffScope === 'all'
+                    ? (t.nav?.users || 'Staff & Roles')
+                    : (lang === 'ru' ? '👥 Моя бригада (Работники)' : lang === 'kk' ? '👥 Менің жұмысшыларым' : '👥 My Workers')}
+                </span>
               </button>
             )}
 

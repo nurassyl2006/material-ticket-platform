@@ -36,6 +36,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
     t, 
     role,
     currentUser, 
+    usersList,
     updateTicket,
     deleteTicketSilently,
     issueTicketFromStock, 
@@ -338,14 +339,37 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
 
   const handleStandardDeptSubmit = (e, markResolved = false, defaultProgressNote = 'Request in progress.', defaultDoneNote = 'Request resolved and verified.') => {
     e.preventDefault();
+    const chosenWorker = (movingCrew || '').trim() || currentUser.name;
     if (markResolved) {
       completeTicketDelivery(ticket.id, notes || defaultDoneNote);
+      if (chosenWorker && chosenWorker !== currentUser.name) {
+        updateTicket(ticket.id, { assignedWorker: chosenWorker });
+      }
       if (completionPhotos.length > 0) addPhotosToTicket(ticket.id, completionPhotos, true);
     } else {
       startTicketWork(ticket.id, notes || defaultProgressNote);
+      if (chosenWorker && chosenWorker !== currentUser.name) {
+        updateTicket(ticket.id, { assignedWorker: chosenWorker });
+      }
     }
     onClose();
   };
+
+  // Department workers list for assigning tickets (Engineering or Cleaning workers added by their Heads)
+  const deptWorkers = React.useMemo(() => {
+    if (!ticket || !Array.isArray(usersList)) return [];
+    const dId = resolveDepartment(ticket.department).id;
+    if (dId === 'cleaning') {
+      return usersList.filter(u => ['cleaning', 'cleaning_head'].includes(u.role || u.roleKey));
+    }
+    if (['plumbing', 'electrical', 'carpentry', 'engineering', 'facilities'].includes(dId)) {
+      return usersList.filter(u => ['engineer', 'head_engineer', 'facilities_manager'].includes(u.role || u.roleKey));
+    }
+    if (dId === 'it_helpdesk') {
+      return usersList.filter(u => ['it_support', 'it_head'].includes(u.role || u.roleKey));
+    }
+    return [];
+  }, [ticket, usersList]);
 
   const renderCompletionPhotoPicker = () => {
     if (ticket.status === 'completed' || ticket.status === 'issued') return null;
@@ -1162,6 +1186,43 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
         {/* ── 3. UNIFIED WORKFLOW FOR IT, CLEANING, ENGINEERING, PLUMBING, GROUNDS, SECURITY, GENERAL ── */}
         {targetDept !== 'storage' && targetDept !== 'facilities' && targetDept !== 'carpentry' && targetDept !== 'event_prep' && !ticket.moveDetails && (
           <form style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {deptWorkers.length > 0 && (
+              <div style={{
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '10px',
+                padding: '10px 12px'
+              }}>
+                <label style={{ fontSize: '11.5px', color: 'var(--text-main)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
+                  👷 {lang === 'ru' ? 'Назначить исполнителя (работника бригады):' : lang === 'kk' ? 'Орындаушыны тағайындау:' : 'Assign Worker:'}
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {deptWorkers.map(w => {
+                    const isPicked = movingCrew === w.name;
+                    return (
+                      <button
+                        key={w.id || w.roleKey}
+                        type="button"
+                        onClick={() => setMovingCrew(w.name)}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                          fontWeight: isPicked ? '700' : '500',
+                          background: isPicked ? 'var(--primary)' : 'var(--bg-card)',
+                          color: isPicked ? '#ffffff' : 'var(--text-main)',
+                          border: isPicked ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {w.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div>
               <label style={{ fontSize: '12px', color: 'var(--text-main)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
                 {lang === 'ru' ? 'Комментарий специалиста / Что было сделано:' : lang === 'kk' ? 'Маманның түсініктемесі / Не істелді:' : 'Resolution / Work Notes:'}

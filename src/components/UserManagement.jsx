@@ -37,7 +37,7 @@ import {
   DollarSign,
   CalendarCheck2
 } from 'lucide-react';
-import { DEFAULT_ROLES, getRoleDefinition, canRoleAccessDailyDigest } from '../roleConfig';
+import { DEFAULT_ROLES, getRoleDefinition, canRoleAccessDailyDigest, getStaffManagementScope } from '../roleConfig';
 import { getCategoryLabel } from '../storageCategories';
 import { RoleEditorModal } from './RoleEditorModal';
 import { CategoryEditorModal } from './CategoryEditorModal';
@@ -97,6 +97,16 @@ export const UserManagement = () => {
   } = useApp();
 
   const isLight = theme === 'light';
+  const staffScope = getStaffManagementScope(role, currentUser);
+  const isDirector = staffScope === 'all';
+  const isDeptHead = staffScope === 'engineering' || staffScope === 'cleaning';
+  const defaultWorkerRole = staffScope === 'engineering' ? 'engineer' : staffScope === 'cleaning' ? 'cleaning' : 'teacher';
+  const defaultWorkerDept = staffScope === 'engineering'
+    ? 'Engineering, Electrical & HVAC Utilities'
+    : staffScope === 'cleaning'
+    ? 'Campus Hygiene & Sanitization'
+    : '';
+  const defaultWorkerPwd = staffScope === 'engineering' ? 'engineer123' : staffScope === 'cleaning' ? 'clean123' : 'school123';
 
   // Admin Active Sub-Tab: 'users' | 'roles' | 'categories'
   const [adminTab, setAdminTab] = useState('users');
@@ -124,11 +134,23 @@ export const UserManagement = () => {
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
-    role: 'teacher',
-    department: '',
+    role: defaultWorkerRole,
+    department: defaultWorkerDept,
     phone: '',
-    password: 'school123'
+    password: defaultWorkerPwd
   });
+
+  const handleOpenAddModal = () => {
+    setNewUser({
+      name: '',
+      email: '',
+      role: defaultWorkerRole,
+      department: defaultWorkerDept,
+      phone: '',
+      password: defaultWorkerPwd
+    });
+    setIsAddModalOpen(true);
+  };
 
   const showFeedback = (msg, isErr = false) => {
     if (isErr) {
@@ -185,20 +207,33 @@ export const UserManagement = () => {
     );
   };
 
+  // Scoped base list of users (All for Director, Engineering for Head of Engineering, Cleaning for Head of Cleaning)
+  const scopedUsersList = useMemo(() => {
+    const all = usersList || [];
+    if (staffScope === 'engineering') {
+      return all.filter(u => ['engineer', 'head_engineer'].includes(u.role || u.roleKey));
+    }
+    if (staffScope === 'cleaning') {
+      return all.filter(u => ['cleaning', 'cleaning_head'].includes(u.role || u.roleKey));
+    }
+    return all;
+  }, [usersList, staffScope]);
+
   // Filtered users list
   const filteredUsers = useMemo(() => {
-    return (usersList || []).filter(u => {
+    return scopedUsersList.filter(u => {
       const matchesSearch = 
         (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.phone || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (u.department || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const userRole = u.role || u.roleKey || 'teacher';
-      const matchesRole = roleFilter === 'all' || userRole === roleFilter;
+      const matchesRole = !isDirector || roleFilter === 'all' || userRole === roleFilter;
 
       return matchesSearch && matchesRole;
     });
-  }, [usersList, searchTerm, roleFilter]);
+  }, [scopedUsersList, searchTerm, roleFilter, isDirector]);
 
   // Handle immediate role change from dropdown
   const handleRoleChange = async (userId, targetUser, newRole) => {
@@ -225,23 +260,37 @@ export const UserManagement = () => {
   // Handle Add New User submit
   const handleCreateUserSubmit = async (e) => {
     e.preventDefault();
-    if (!newUser.name.trim() || !newUser.email.trim() || !newUser.password.trim()) {
-      showFeedback('Please fill out all required fields.', true);
+    if (!newUser.name.trim()) {
+      showFeedback(lang === 'ru' ? 'Пожалуйста, укажите имя сотрудника.' : 'Please enter the worker name.', true);
       return;
     }
 
+    const cleanLogin = (newUser.email || '').trim() || `${isDeptHead ? defaultWorkerRole : newUser.role}_${Math.floor(100 + Math.random() * 900)}`;
+    const payload = {
+      ...newUser,
+      name: newUser.name.trim(),
+      email: cleanLogin,
+      role: isDeptHead ? defaultWorkerRole : newUser.role,
+      department: (newUser.department || '').trim() || defaultWorkerDept || 'General Staff',
+      password: (newUser.password || '').trim() || defaultWorkerPwd
+    };
+
     try {
       setLoadingAction('create');
-      await createUser(newUser);
-      showFeedback(`User ${newUser.name} created successfully!`);
+      await createUser(payload);
+      showFeedback(
+        lang === 'ru'
+          ? `Сотрудник «${payload.name}» успешно добавлен! Логин: ${payload.email}, Пароль: ${payload.password}`
+          : `Worker "${payload.name}" added! Login: ${payload.email}, Password: ${payload.password}`
+      );
       setIsAddModalOpen(false);
       setNewUser({
         name: '',
         email: '',
-        role: 'teacher',
-        department: '',
+        role: defaultWorkerRole,
+        department: defaultWorkerDept,
         phone: '',
-        password: 'school123'
+        password: defaultWorkerPwd
       });
     } catch (err) {
       showFeedback(err.message || 'Failed to create user', true);
@@ -363,21 +412,25 @@ export const UserManagement = () => {
     }
   };
 
-  // Security check: Only Director / Admin can view
-  if (role !== 'director' && role !== 'admin') {
+  // Security check: Only Director / Admin, Head of Engineering, or Head of Cleaning can view
+  if (!staffScope) {
     return (
       <div className="glass-panel" style={{ padding: '36px', textAlign: 'center', margin: '40px auto', maxWidth: '600px', borderRadius: '16px' }}>
         <ShieldCheck size={52} color="var(--danger, #ef4444)" style={{ margin: '0 auto 16px' }} />
-        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: '#fff' }}>Director Authority Required</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-main)' }}>
+          {lang === 'ru' ? 'Доступ только для руководителей служб и дирекции' : 'Department Head or Director Authority Required'}
+        </h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.5 }}>
-          This operations matrix is strictly reserved for the School Director to configure operational staff roles, task assignments, and warehouse storage visibility.
+          {lang === 'ru'
+            ? 'Добавление и управление сотрудниками доступно директору школы, главному инженеру и заведующей клинингом.'
+            : 'Adding and managing workers is reserved for the School Director, Head of Engineering, and Head of Cleaning.'}
         </p>
       </div>
     );
   }
 
   // Summary counts
-  const totalUsers = usersList?.length || 0;
+  const totalUsers = scopedUsersList.length;
   const rolesList = Object.values(mergedRoles);
   const totalRoles = rolesList.length;
   const rolesWithStorage = rolesList.filter(r => r.canViewStorage).length;
@@ -404,18 +457,32 @@ export const UserManagement = () => {
             width: '42px',
             height: '42px',
             borderRadius: '10px',
-            background: 'linear-gradient(135deg, #4f46e5 0%, #0f6cbd 100%)',
+            background: staffScope === 'engineering'
+              ? 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)'
+              : staffScope === 'cleaning'
+              ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+              : 'linear-gradient(135deg, #4f46e5 0%, #0f6cbd 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.35)'
+            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.25)'
           }}>
-            <Crown size={22} color="#ffffff" />
+            {staffScope === 'engineering' ? (
+              <Wrench size={22} color="#ffffff" />
+            ) : staffScope === 'cleaning' ? (
+              <Sparkles size={22} color="#ffffff" />
+            ) : (
+              <Crown size={22} color="#ffffff" />
+            )}
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <h1 style={{ fontSize: '19px', fontWeight: '800', margin: 0, color: 'var(--text-main, #f3f2f1)' }}>
-                {lang === 'ru' ? 'Центр управления директора: Роли, Задачи и Доступ к Складу' : lang === 'kk' ? 'Директор басқару орталығы: Рөлдер, Міндеттер және Қойма' : 'Director Center: Roles, Tasks & Storage Access'}
+                {staffScope === 'engineering'
+                  ? (lang === 'ru' ? 'Инженерная служба: Мои работники и техники' : lang === 'kk' ? 'Инженерлік қызмет: Менің жұмысшыларым' : 'Engineering Team: My Workers & Technicians')
+                  : staffScope === 'cleaning'
+                  ? (lang === 'ru' ? 'Служба клининга: Мои работники (Уборщики)' : lang === 'kk' ? 'Тазалық қызметі: Менің жұмысшыларым' : 'Cleaning Team: My Workers & Staff')
+                  : (lang === 'ru' ? 'Центр управления директора: Роли, Задачи и Доступ к Складу' : lang === 'kk' ? 'Директор басқару орталығы: Рөлдер, Міндеттер және Қойма' : 'Director Center: Roles, Tasks & Storage Access')}
               </h1>
               <span style={{
                 background: isLight ? '#eef2ff' : 'rgba(129, 140, 248, 0.2)',
@@ -426,20 +493,32 @@ export const UserManagement = () => {
                 fontSize: '11px',
                 fontWeight: '700'
               }}>
-                Director Only
+                {staffScope === 'engineering'
+                  ? (lang === 'ru' ? 'Главный инженер' : 'Head of Engineering')
+                  : staffScope === 'cleaning'
+                  ? (lang === 'ru' ? 'Заведующая клинингом' : 'Head of Cleaning')
+                  : 'Director Only'}
               </span>
             </div>
             <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-muted, #94a3b8)' }}>
-              {lang === 'ru' 
-                ? 'Настраивайте функциональные обязанности ролей, видимость каталога склада и разрешенные категории, или создавайте новые роли и категории.' 
-                : lang === 'kk' 
-                ? 'Рөлдердің қызметтік міндеттерін, қойма каталогының көрінуін және рұқсат етілген санаттарын реттеңіз, жаңа рөлдер мен санаттар жасаңыз.' 
-                : 'Adjust role responsibilities, configure warehouse catalog visibility and permitted categories, and create new roles or categories.'}
+              {staffScope === 'engineering'
+                ? (lang === 'ru'
+                    ? 'Добавляйте электриков, сантехников и мастеров своей службы, выдавайте им логины/пароли и назначайте на заявки.'
+                    : 'Add your own electricians, plumbers, and maintenance technicians, manage their logins, and assign them to requests.')
+                : staffScope === 'cleaning'
+                ? (lang === 'ru'
+                    ? 'Добавляйте сотрудниц и работников клининга самостоятельно, управляйте их телефонами и доступом к заявкам на уборку.'
+                    : 'Add your own cleaning workers directly, manage their phone numbers, and give them access to cleaning requests.')
+                : (lang === 'ru' 
+                    ? 'Настраивайте функциональные обязанности ролей, видимость каталога склада и разрешенные категории, или создавайте новые роли и категории.' 
+                    : lang === 'kk' 
+                    ? 'Рөлдердің қызметтік міндеттерін, қойма каталогының көрінуін және рұқсат етілген санаттарын реттеңіз, жаңа рөлдер мен санаттар жасаңыз.' 
+                    : 'Adjust role responsibilities, configure warehouse catalog visibility and permitted categories, and create new roles or categories.')}
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={() => syncWithDb()}
             className="fluent-btn-secondary"
@@ -454,12 +533,12 @@ export const UserManagement = () => {
             title="Refresh from Database"
           >
             <RefreshCw size={14} />
-            <span>{lang === 'ru' ? 'Синхронизировать' : lang === 'kk' ? 'Синхрондау' : 'Sync'}</span>
+            <span>{lang === 'ru' ? 'Обновить' : lang === 'kk' ? 'Жаңарту' : 'Sync'}</span>
           </button>
 
           {adminTab === 'users' && (
             <button
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={handleOpenAddModal}
               className="fluent-btn-primary"
               style={{
                 padding: '8px 16px',
@@ -472,7 +551,11 @@ export const UserManagement = () => {
               }}
             >
               <UserPlus size={15} />
-              <span>{lang === 'ru' ? 'Добавить сотрудника' : lang === 'kk' ? 'Қызметкер қосу' : 'Add Staff Member'}</span>
+              <span>
+                {isDeptHead
+                  ? (lang === 'ru' ? '+ Добавить работника' : lang === 'kk' ? '+ Жұмысшы қосу' : '+ Add Worker')
+                  : (lang === 'ru' ? 'Добавить сотрудника' : lang === 'kk' ? 'Қызметкер қосу' : 'Add Staff Member')}
+              </span>
             </button>
           )}
 
@@ -559,7 +642,8 @@ export const UserManagement = () => {
         </div>
       )}
 
-      {/* Sub-Tabs Switcher */}
+      {/* Sub-Tabs Switcher (Director Only) */}
+      {isDirector && (
       <div className="mobile-overflow-x" style={{
         display: 'flex',
         alignItems: 'center',
@@ -634,13 +718,15 @@ export const UserManagement = () => {
           <span>{lang === 'ru' ? 'Категории склада' : lang === 'kk' ? 'Қойма санаттары' : 'Storage Categories'} ({totalCategories})</span>
         </button>
       </div>
+      )}
 
       {/* ============================================================== */}
       {/* TAB 1: STAFF MEMBERS (USERS TABLE)                             */}
       {/* ============================================================== */}
       {adminTab === 'users' && (
         <>
-          {/* Summary KPI Cards */}
+          {/* Summary KPI Cards (Director Only) */}
+          {isDirector && (
           <div className="dashboard-stats-grid" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -694,6 +780,7 @@ export const UserManagement = () => {
               </div>
             </div>
           </div>
+          )}
 
           {/* Filter and Search Bar */}
           <div className="glass-panel" style={{
@@ -711,7 +798,7 @@ export const UserManagement = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={lang === 'ru' ? 'Поиск по имени, email или кафедре...' : lang === 'kk' ? 'Аты, email немесе бөлім бойынша іздеу...' : 'Search by name, email or department...'}
+                placeholder={lang === 'ru' ? 'Поиск по имени, логину или телефону...' : lang === 'kk' ? 'Аты, логин немесе телефон бойынша іздеу...' : 'Search by name, login or phone...'}
                 style={{
                   width: '100%',
                   padding: '9px 14px 9px 36px',
@@ -726,6 +813,7 @@ export const UserManagement = () => {
               />
             </div>
 
+            {isDirector && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Filter size={15} color="var(--text-muted)" />
               <select
@@ -751,6 +839,7 @@ export const UserManagement = () => {
                 ))}
               </select>
             </div>
+            )}
           </div>
 
           {/* Staff Members Table */}
@@ -763,13 +852,15 @@ export const UserManagement = () => {
                       {lang === 'ru' ? 'Сотрудник' : lang === 'kk' ? 'Қызметкер' : 'Staff Member'}
                     </th>
                     <th style={{ padding: '14px 20px', fontWeight: '700' }}>
-                      {lang === 'ru' ? 'Кафедра / Отдел' : lang === 'kk' ? 'Бөлім / Кафедра' : 'Department'}
+                      {lang === 'ru' ? 'Специализация / Отдел' : lang === 'kk' ? 'Бөлім / Мамандығы' : 'Department / Specialty'}
                     </th>
                     <th style={{ padding: '14px 20px', fontWeight: '700' }}>
                       {lang === 'ru' ? 'Текущая роль' : lang === 'kk' ? 'Ағымдағы рөлі' : 'Assigned Role'}
                     </th>
                     <th style={{ padding: '14px 20px', fontWeight: '700' }}>
-                      {lang === 'ru' ? 'Изменить роль' : lang === 'kk' ? 'Рөлді өзгерту' : 'Change Role (Director Authority)'}
+                      {isDirector
+                        ? (lang === 'ru' ? 'Изменить роль' : lang === 'kk' ? 'Рөлді өзгерту' : 'Change Role (Director Authority)')
+                        : (lang === 'ru' ? 'Телефон / Контакт' : lang === 'kk' ? 'Телефон / Байланыс' : 'Phone / Contact')}
                     </th>
                     <th style={{ padding: '14px 20px', fontWeight: '700', textAlign: 'right' }}>
                       {lang === 'ru' ? 'Действия' : lang === 'kk' ? 'Әрекеттер' : 'Actions'}
@@ -831,12 +922,13 @@ export const UserManagement = () => {
                                       color: isLight ? '#4338ca' : '#818cf8',
                                       fontWeight: '700'
                                     }}>
-                                      You
+                                      {lang === 'ru' ? 'Вы' : 'You'}
                                     </span>
                                   )}
                                 </div>
                                 <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                                  {user.email || 'No email registered'}
+                                  {lang === 'ru' ? 'Логин: ' : 'Login: '}
+                                  <strong style={{ color: 'var(--text-main)' }}>{user.email || user.roleKey}</strong>
                                 </div>
                               </div>
                             </div>
@@ -854,34 +946,47 @@ export const UserManagement = () => {
                           </td>
 
                           <td style={{ padding: '14px 20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <select
-                                value={currentRoleKey}
-                                disabled={isLoadingThis}
-                                onChange={(e) => handleRoleChange(user.id, user, e.target.value)}
-                                style={{
-                                  padding: '6px 12px',
-                                  borderRadius: '8px',
-                                  background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.8)',
-                                  border: isLight ? '1px solid rgba(0, 0, 0, 0.16)' : '1px solid var(--border-color)',
-                                  color: isLight ? '#0f172a' : '#fff',
-                                  fontSize: '12px',
-                                  fontWeight: '600',
-                                  outline: 'none',
-                                  cursor: isLoadingThis ? 'wait' : 'pointer',
-                                  boxShadow: isLight ? '0 1px 2px rgba(0, 0, 0, 0.04)' : 'none'
-                                }}
-                              >
-                                {rolesList.map(rc => (
-                                  <option key={rc.key} value={rc.key}>
-                                    {lang === 'ru' ? rc.labelRu : lang === 'kk' ? rc.labelKk : rc.label}
-                                  </option>
-                                ))}
-                              </select>
-                              {isLoadingThis && (
-                                <RefreshCw size={14} className="spin" color="#818cf8" />
-                              )}
-                            </div>
+                            {isDirector ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <select
+                                  value={currentRoleKey}
+                                  disabled={isLoadingThis}
+                                  onChange={(e) => handleRoleChange(user.id, user, e.target.value)}
+                                  style={{
+                                    padding: '6px 12px',
+                                    borderRadius: '8px',
+                                    background: isLight ? '#ffffff' : 'rgba(15, 23, 42, 0.8)',
+                                    border: isLight ? '1px solid rgba(0, 0, 0, 0.16)' : '1px solid var(--border-color)',
+                                    color: isLight ? '#0f172a' : '#fff',
+                                    fontSize: '12px',
+                                    fontWeight: '600',
+                                    outline: 'none',
+                                    cursor: isLoadingThis ? 'wait' : 'pointer',
+                                    boxShadow: isLight ? '0 1px 2px rgba(0, 0, 0, 0.04)' : 'none'
+                                  }}
+                                >
+                                  {rolesList.map(rc => (
+                                    <option key={rc.key} value={rc.key}>
+                                      {lang === 'ru' ? rc.labelRu : lang === 'kk' ? rc.labelKk : rc.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                {isLoadingThis && (
+                                  <RefreshCw size={14} className="spin" color="#818cf8" />
+                                )}
+                              </div>
+                            ) : (
+                              <div style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <Phone size={13} color="var(--primary)" />
+                                {user.phone ? (
+                                  <a href={`tel:${user.phone.replace(/[^\d+]/g, '')}`} style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
+                                    {user.phone}
+                                  </a>
+                                ) : (
+                                  <span style={{ color: 'var(--text-muted)', fontWeight: '400' }}>—</span>
+                                )}
+                              </div>
+                            )}
                           </td>
 
                           <td style={{ padding: '14px 20px', textAlign: 'right' }}>
@@ -1424,7 +1529,11 @@ export const UserManagement = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <UserPlus size={22} color="var(--primary, #818cf8)" />
                 <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: 'var(--text-main, #fff)' }}>
-                  Add Staff Member
+                  {staffScope === 'engineering'
+                    ? (lang === 'ru' ? 'Добавить работника инженерной службы' : lang === 'kk' ? 'Инженерлік қызметке жұмысшы қосу' : 'Add Engineering Worker')
+                    : staffScope === 'cleaning'
+                    ? (lang === 'ru' ? 'Добавить работника клининга' : lang === 'kk' ? 'Тазалық қызметіне жұмысшы қосу' : 'Add Cleaning Worker')
+                    : (lang === 'ru' ? 'Добавить сотрудника' : 'Add Staff Member')}
                 </h3>
               </div>
               <button
@@ -1438,21 +1547,27 @@ export const UserManagement = () => {
             <form onSubmit={handleCreateUserSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
-                  Full Name *
+                  {lang === 'ru' ? 'Имя и должность работника *' : lang === 'kk' ? 'Жұмысшының аты-жөні *' : 'Worker Full Name *'}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g., Aigul Nurpeisova"
+                  placeholder={
+                    staffScope === 'engineering'
+                      ? (lang === 'ru' ? 'напр., Серик (Сантехник) или Марат (Электрик)' : 'e.g., Serik (Plumber)')
+                      : staffScope === 'cleaning'
+                      ? (lang === 'ru' ? 'напр., Гульнара (2 этаж, Блок А)' : 'e.g., Gulnara (Block A)')
+                      : 'e.g., Aigul Nurpeisova'
+                  }
                   value={newUser.name}
                   onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
                   style={{
                     width: '100%',
                     padding: '10px 14px',
                     borderRadius: '6px',
-                    background: 'rgba(15, 23, 42, 0.6)',
+                    background: 'var(--bg-input)',
                     border: '1px solid var(--border-color)',
-                    color: '#fff',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     outline: 'none'
                   }}
@@ -1461,27 +1576,36 @@ export const UserManagement = () => {
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
-                  Work Email (Login Username) *
+                  {isDeptHead
+                    ? (lang === 'ru' ? 'Логин для входа (необязательно — создастся автоматически)' : 'Login Username (optional — auto-generated if blank)')
+                    : (lang === 'ru' ? 'Email или логин для входа *' : 'Work Email or Login Username *')}
                 </label>
                 <input
-                  type="email"
-                  required
-                  placeholder="e.g., a.nurpeisova@school.edu"
+                  type="text"
+                  required={!isDeptHead}
+                  placeholder={
+                    staffScope === 'engineering'
+                      ? 'напр., serik или master2'
+                      : staffScope === 'cleaning'
+                      ? 'напр., cleaner3 или gulnara'
+                      : 'e.g., a.nurpeisova@school.edu'
+                  }
                   value={newUser.email}
                   onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
                   style={{
                     width: '100%',
                     padding: '10px 14px',
                     borderRadius: '6px',
-                    background: 'rgba(15, 23, 42, 0.6)',
+                    background: 'var(--bg-input)',
                     border: '1px solid var(--border-color)',
-                    color: '#fff',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     outline: 'none'
                   }}
                 />
               </div>
 
+              {isDirector && (
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
                   System Role (Permissions & Tasks) *
@@ -1493,9 +1617,9 @@ export const UserManagement = () => {
                     width: '100%',
                     padding: '10px 14px',
                     borderRadius: '6px',
-                    background: 'rgba(15, 23, 42, 0.8)',
+                    background: 'var(--bg-input)',
                     border: '1px solid var(--border-color)',
-                    color: '#fff',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     fontWeight: '600',
                     outline: 'none',
@@ -1509,24 +1633,25 @@ export const UserManagement = () => {
                   ))}
                 </select>
               </div>
+              )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
-                    Department / Faculty
+                    {lang === 'ru' ? 'Участок / Отдел' : 'Department / Zone'}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g., Physics Dept"
+                    placeholder={defaultWorkerDept || 'e.g., Block A'}
                     value={newUser.department}
                     onChange={(e) => setNewUser(prev => ({ ...prev, department: e.target.value }))}
                     style={{
                       width: '100%',
                       padding: '10px 14px',
                       borderRadius: '6px',
-                      background: 'rgba(15, 23, 42, 0.6)',
+                      background: 'var(--bg-input)',
                       border: '1px solid var(--border-color)',
-                      color: '#fff',
+                      color: 'var(--text-main)',
                       fontSize: '13px',
                       outline: 'none'
                     }}
@@ -1535,10 +1660,10 @@ export const UserManagement = () => {
 
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
-                    Phone Number
+                    {lang === 'ru' ? 'Номер телефона (WhatsApp)' : 'Phone Number'}
                   </label>
                   <input
-                    type="text"
+                    type="tel"
                     placeholder="+7 (701) 000-00-00"
                     value={newUser.phone}
                     onChange={(e) => setNewUser(prev => ({ ...prev, phone: e.target.value }))}
@@ -1546,9 +1671,9 @@ export const UserManagement = () => {
                       width: '100%',
                       padding: '10px 14px',
                       borderRadius: '6px',
-                      background: 'rgba(15, 23, 42, 0.6)',
+                      background: 'var(--bg-input)',
                       border: '1px solid var(--border-color)',
-                      color: '#fff',
+                      color: 'var(--text-main)',
                       fontSize: '13px',
                       outline: 'none'
                     }}
@@ -1558,21 +1683,21 @@ export const UserManagement = () => {
 
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' }}>
-                  Initial Password (Staff will use to log in)
+                  {lang === 'ru' ? 'Пароль для входа работника' : 'Initial Password'}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g., school123"
+                  placeholder={defaultWorkerPwd}
                   value={newUser.password}
                   onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
                   style={{
                     width: '100%',
                     padding: '10px 14px',
                     borderRadius: '6px',
-                    background: 'rgba(15, 23, 42, 0.6)',
+                    background: 'var(--bg-input)',
                     border: '1px solid var(--border-color)',
-                    color: '#fff',
+                    color: 'var(--text-main)',
                     fontSize: '13px',
                     outline: 'none'
                   }}
@@ -1594,7 +1719,7 @@ export const UserManagement = () => {
                     cursor: 'pointer'
                   }}
                 >
-                  Cancel
+                  {lang === 'ru' ? 'Отмена' : 'Cancel'}
                 </button>
 
                 <button
@@ -1603,7 +1728,7 @@ export const UserManagement = () => {
                   style={{
                     padding: '10px 20px',
                     borderRadius: '6px',
-                    background: '#0f6cbd',
+                    background: 'var(--primary)',
                     border: 'none',
                     color: '#ffffff',
                     fontSize: '13px',
@@ -1611,7 +1736,11 @@ export const UserManagement = () => {
                     cursor: 'pointer'
                   }}
                 >
-                  {loadingAction === 'create' ? 'Creating...' : 'Create Staff User'}
+                  {loadingAction === 'create'
+                    ? (lang === 'ru' ? 'Сохранение...' : 'Creating...')
+                    : isDeptHead
+                    ? (lang === 'ru' ? '+ Добавить работника' : '+ Add Worker')
+                    : (lang === 'ru' ? 'Создать сотрудника' : 'Create Staff User')}
                 </button>
               </div>
             </form>

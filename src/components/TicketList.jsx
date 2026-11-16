@@ -75,13 +75,13 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     if (role === 'director' || role === 'admin') {
       return allDepartments;
     }
-    if (role === 'it_support') {
+    if (role === 'it_support' || role === 'it_head') {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'it_helpdesk');
     }
-    if (role === 'cleaning') {
+    if (role === 'cleaning' || role === 'cleaning_head') {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'cleaning');
     }
-    if (role === 'engineer') {
+    if (role === 'engineer' || role === 'head_engineer') {
       return allDepartments.filter(d => d.id === 'all' || d.id === 'plumbing' || d.id === 'electrical' || d.id === 'carpentry');
     }
     if (role === 'storage_manager' || role === 'workerA') {
@@ -103,9 +103,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState(() => {
-    if (role === 'it_support') return 'it_helpdesk';
-    if (role === 'cleaning') return 'cleaning';
-    if (role === 'engineer') return 'plumbing';
+    if (role === 'it_support' || role === 'it_head') return 'it_helpdesk';
+    if (role === 'cleaning' || role === 'cleaning_head') return 'cleaning';
+    if (role === 'engineer' || role === 'head_engineer') return 'plumbing';
     if (role === 'facilities_manager') return 'carpentry';
     if (role === 'storage_manager' || role === 'workerA') return 'storage';
     if (role === 'finance' || role === 'accountant') return 'storage';
@@ -123,9 +123,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
   // Synchronize dept filter if role changes
   React.useEffect(() => {
-    if (role === 'it_support') setDeptFilter('it_helpdesk');
-    else if (role === 'cleaning') setDeptFilter('cleaning');
-    else if (role === 'engineer') setDeptFilter('plumbing');
+    if (role === 'it_support' || role === 'it_head') setDeptFilter('it_helpdesk');
+    else if (role === 'cleaning' || role === 'cleaning_head') setDeptFilter('cleaning');
+    else if (role === 'engineer' || role === 'head_engineer') setDeptFilter('plumbing');
     else if (role === 'facilities_manager') setDeptFilter('carpentry');
     else if (role === 'storage_manager' || role === 'workerA') setDeptFilter('storage');
     else if (role === 'finance' || role === 'accountant') setDeptFilter('storage');
@@ -291,9 +291,9 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   const canProcessTicket = (ticket) => {
     if (role === 'director' || role === 'admin') return true;
     const dept = resolveDepartment(ticket.department).id;
-    if (role === 'it_support') return dept === 'it_helpdesk';
-    if (role === 'cleaning') return dept === 'cleaning';
-    if (role === 'engineer') return dept === 'plumbing' || dept === 'electrical' || dept === 'carpentry';
+    if (role === 'it_support' || role === 'it_head') return dept === 'it_helpdesk';
+    if (role === 'cleaning' || role === 'cleaning_head') return dept === 'cleaning';
+    if (role === 'engineer' || role === 'head_engineer') return dept === 'plumbing' || dept === 'electrical' || dept === 'carpentry';
     if (role === 'facilities_manager') return dept === 'carpentry' || dept === 'event_prep' || dept === 'grounds';
     if (role === 'storage_manager' || role === 'workerA') return dept === 'storage' || dept === 'other';
     return false;

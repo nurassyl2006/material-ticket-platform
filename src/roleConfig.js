@@ -362,3 +362,42 @@ export function isCategoryAllowedForRole(categoryId, roleKey, customRoles = {}, 
   const allowed = getRoleAllowedCategories(roleKey, customRoles, allCategories);
   return allowed.includes(categoryId);
 }
+
+/**
+ * Determine if the current user can add/manage workers:
+ * - 'all' for Director / Admin
+ * - 'engineering' for Head of Engineering (head_engineer or main engineer lead)
+ * - 'cleaning' for Head of Cleaning (cleaning_head or main cleaning lead)
+ * - null for regular workers / teachers / guests
+ */
+export function getStaffManagementScope(roleKey, currentUser = null) {
+  const r = roleKey || currentUser?.role || currentUser?.roleKey || '';
+  const id = currentUser?.id || '';
+  const uRoleKey = currentUser?.roleKey || '';
+  const email = (currentUser?.email || '').toLowerCase();
+  const name = (currentUser?.name || '').toLowerCase();
+
+  if (r === 'director' || r === 'admin' || uRoleKey === 'director') {
+    return 'all';
+  }
+  if (
+    r === 'head_engineer' ||
+    uRoleKey === 'head_engineer' ||
+    id === 'usr-eng1' ||
+    uRoleKey === 'engineer' ||
+    email === 'engineer@school.edu' ||
+    (r === 'engineer' && (name.includes('head') || name.includes('василий') || name.includes('главный')))
+  ) {
+    return 'engineering';
+  }
+  if (
+    r === 'cleaning_head' ||
+    uRoleKey === 'cleaning_head' ||
+    id === 'usr-cl-head' ||
+    email === 'cleaning.head@school.edu' ||
+    (r === 'cleaning' && (name.includes('head') || name.includes('айнур') || name.includes('акилова') || name.includes('заведующ')))
+  ) {
+    return 'cleaning';
+  }
+  return null;
+}
