@@ -198,7 +198,7 @@ export const AppProvider = ({ children }) => {
   const [activeUser, setActiveUser] = useState(() => {
     const saved = safeGetItem('app_active_user', null);
     if (saved) {
-      try { return JSON.parse(saved); } catch {}
+      try { return JSON.parse(saved); } catch { }
     }
     return null;
   });
@@ -212,7 +212,7 @@ export const AppProvider = ({ children }) => {
     if (saved) {
       try {
         return { ...DEFAULT_ROLES, ...JSON.parse(saved) };
-      } catch {}
+      } catch { }
     }
     return DEFAULT_ROLES;
   });
@@ -223,7 +223,7 @@ export const AppProvider = ({ children }) => {
     if (saved) {
       try {
         return mergeCategories(JSON.parse(saved));
-      } catch {}
+      } catch { }
     }
     return STORAGE_CATEGORIES;
   });
@@ -237,7 +237,7 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
       const swPath = `${import.meta.env.BASE_URL || '/'}sw.js`;
-      navigator.serviceWorker.register(swPath).catch(() => {});
+      navigator.serviceWorker.register(swPath).catch(() => { });
     }
   }, []);
 
@@ -370,6 +370,16 @@ export const AppProvider = ({ children }) => {
   const usersRef = React.useRef(users);
   usersRef.current = users;
   const deletedTicketIdsRef = React.useRef(new Set());
+  const recentTicketMutationsRef = React.useRef(new Map());
+
+  const recordLocalTicketMutation = (ticketId, fields) => {
+    if (!ticketId || !fields) return;
+    const prevEntry = recentTicketMutationsRef.current.get(ticketId);
+    recentTicketMutationsRef.current.set(ticketId, {
+      fields: { ...(prevEntry?.fields || {}), ...fields },
+      timestamp: Date.now()
+    });
+  };
 
   // Synchronize state with SQLite database
   const syncWithDb = useCallback(async () => {
@@ -393,7 +403,25 @@ export const AppProvider = ({ children }) => {
       if (ticketsResult.status === 'fulfilled' && Array.isArray(ticketsResult.value)) {
         reachedServer = true;
         const deletedSet = deletedTicketIdsRef.current;
-        const dbTickets = ticketsResult.value.filter(t => !OLD_MOCK_IDS.has(t.id) && !deletedSet.has(t.id));
+        const nowMs = Date.now();
+        const recentMap = recentTicketMutationsRef.current;
+
+        // Clean up expired mutation locks (> 10 seconds old)
+        for (const [mId, mVal] of recentMap.entries()) {
+          if (nowMs - mVal.timestamp > 10000) {
+            recentMap.delete(mId);
+          }
+        }
+
+        const dbTickets = ticketsResult.value
+          .filter(t => !OLD_MOCK_IDS.has(t.id) && !deletedSet.has(t.id))
+          .map(t => {
+            const recent = recentMap.get(t.id);
+            if (recent && nowMs - recent.timestamp <= 10000) {
+              return { ...t, ...recent.fields };
+            }
+            return t;
+          });
         freshTickets = dbTickets;
         ticketsRef.current = dbTickets;
 
@@ -401,7 +429,7 @@ export const AppProvider = ({ children }) => {
         setTickets(currentLocalTickets => {
           const validLocal = currentLocalTickets.filter(t => !deletedSet.has(t.id));
           if (dbTickets.length === 0 && validLocal.length > 0 && deletedSet.size === 0) {
-            bulkSyncTicketsToDb(validLocal).catch(() => {});
+            bulkSyncTicketsToDb(validLocal).catch(() => { });
             return validLocal;
           }
           return dbTickets;
@@ -680,7 +708,7 @@ export const AppProvider = ({ children }) => {
     }
 
     // Save to DB in background
-    createNotificationInDb(newNotif).catch(() => {});
+    createNotificationInDb(newNotif).catch(() => { });
   };
 
   const enableDeviceNotifications = async () => {
@@ -698,17 +726,17 @@ export const AppProvider = ({ children }) => {
 
   const markNotificationAsRead = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    markNotificationReadInDb(id).catch(() => {});
+    markNotificationReadInDb(id).catch(() => { });
   };
 
   const markAllNotificationsAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    markAllNotificationsReadInDb().catch(() => {});
+    markAllNotificationsReadInDb().catch(() => { });
   };
 
   const clearNotifications = () => {
     setNotifications([]);
-    clearNotificationsInDb().catch(() => {});
+    clearNotificationsInDb().catch(() => { });
   };
 
   const login = async (credentials, optionalPassword) => {
@@ -827,7 +855,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const t = translations[lang] || translations.en;
-  
+
   // Resolve current active user profile
   const currentUser = React.useMemo(() => {
     if (isAuthenticated) {
@@ -836,11 +864,11 @@ export const AppProvider = ({ children }) => {
     const isParent = role === 'parent';
     return {
       id: isParent ? 'parent-session' : 'guest-session',
-      name: isParent 
+      name: isParent
         ? (lang === 'ru' ? 'Родитель' : lang === 'kk' ? 'Ата-ана' : 'Parent')
         : (lang === 'ru' ? 'Гость' : lang === 'kk' ? 'Қонақ' : 'Guest'),
       role: role,
-      department: isParent 
+      department: isParent
         ? (lang === 'ru' ? 'Родительский комитет' : lang === 'kk' ? 'Ата-аналар қауымдастығы' : 'Parent / Family')
         : (lang === 'ru' ? 'Посетитель' : lang === 'kk' ? 'Келуші' : 'Campus Visitor'),
       email: '',
@@ -857,7 +885,7 @@ export const AppProvider = ({ children }) => {
       const merged = { ...currentUser, ...updatedProfileData };
       setActiveUser(merged);
       safeSetItem('app_active_user', merged);
-      updateUserProfileInDb(currentUser.id, updatedProfileData).catch(() => {});
+      updateUserProfileInDb(currentUser.id, updatedProfileData).catch(() => { });
     }
     setUsers(prev => ({
       ...prev,
@@ -941,10 +969,10 @@ export const AppProvider = ({ children }) => {
     // Automatically trigger notification for staff and directors
     const targetDept = newTicket.department === 'it' ? 'IT Specialist'
       : newTicket.department === 'cleaning' ? 'Cleaning Staff'
-      : newTicket.department === 'facilities' ? 'Facilities Manager'
-      : newTicket.department === 'storage' ? 'Storage Manager'
-      : newTicket.department === 'engineering' ? 'Maintenance Engineer'
-      : 'All';
+        : newTicket.department === 'facilities' ? 'Facilities Manager'
+          : newTicket.department === 'storage' ? 'Storage Manager'
+            : newTicket.department === 'engineering' ? 'Maintenance Engineer'
+              : 'All';
 
     addNotification(
       targetDept,
@@ -955,7 +983,7 @@ export const AppProvider = ({ children }) => {
     );
 
     // Persist ticket in DB
-    createTicketInDb(newTicket).catch(() => {});
+    createTicketInDb(newTicket).catch(() => { });
 
     return newTicket;
   };
@@ -963,36 +991,28 @@ export const AppProvider = ({ children }) => {
   // Generic status updater
   const updateTicket = (ticketId, updates) => {
     const updatedAt = new Date().toISOString();
-    let updatedTicket = null;
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
     const isFinished = updates?.status && ['completed', 'delivered', 'issued'].includes(updates.status);
-    const completionExtra = isFinished ? { completedAt: updates.completedAt || updatedAt } : {};
+    const completionExtra = isFinished ? { completedAt: updates.completedAt || existing?.completedAt || updatedAt } : {};
+    const payload = { ...updates, ...completionExtra, updatedAt };
 
-    setTickets(prev => prev.map(ticket => {
-      if (ticket.id === ticketId) {
-        updatedTicket = {
-          ...ticket,
-          ...updates,
-          ...completionExtra,
-          updatedAt
-        };
-        return updatedTicket;
-      }
-      return ticket;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
+
+    // Persist in DB immediately
+    updateTicketInDb(ticketId, payload).catch(() => { });
 
     // If status changed, notify teacher and director
-    if (updates && updates.status && updatedTicket) {
+    if (updates && updates.status && existing) {
       addNotification(
-        updatedTicket.teacherName || 'All',
+        existing.teacherName || 'All',
         ticketId,
         `Request Status: ${updates.status.toUpperCase()}`,
-        `Ticket "${updatedTicket.itemTitle}" has been updated to ${updates.status}.`,
+        `Ticket "${existing.itemTitle}" has been updated to ${updates.status}.`,
         updates.status
       );
     }
-
-    // Persist in DB
-    updateTicketInDb(ticketId, { ...updates, ...completionExtra, updatedAt }).catch(() => {});
   };
 
   // Silently delete a single ticket and its associated notifications without triggering any alerts
@@ -1003,7 +1023,7 @@ export const AppProvider = ({ children }) => {
     setTickets(prev => prev.filter(t => t.id !== ticketId));
     setMyCreatedTicketIds(prev => prev.filter(id => id !== ticketId));
     setNotifications(prev => prev.filter(n => n.ticketId !== ticketId));
-    deleteTicketFromDb(ticketId).catch(() => {});
+    deleteTicketFromDb(ticketId).catch(() => { });
   };
 
   // Silently delete multiple tickets at once without triggering any alerts
@@ -1015,57 +1035,50 @@ export const AppProvider = ({ children }) => {
     setTickets(prev => prev.filter(t => !idSet.has(t.id)));
     setMyCreatedTicketIds(prev => prev.filter(id => !idSet.has(id)));
     setNotifications(prev => prev.filter(n => !idSet.has(n.ticketId)));
-    bulkDeleteTicketsFromDb(ticketIds).catch(() => {});
+    bulkDeleteTicketsFromDb(ticketIds).catch(() => { });
   };
 
   // Start working on ticket (used by IT, Cleaning, Facilities, Engineer)
-  const startTicketWork = (ticketId, notes = '') => {
-    let target = null;
+  const startTicketWork = (ticketId, notes = '', customWorker = null) => {
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
     const updatedAt = new Date().toISOString();
+    const workerName = (customWorker && customWorker.trim()) || currentUser.name;
     const payload = {
       status: 'in_progress',
       handledAction: 'in_progress',
-      assignedWorker: currentUser.name,
+      assignedWorker: workerName,
       assignedRole: role,
-      notes: notes || 'Staff member started working on this request.',
+      notes: notes || existing?.notes || 'Staff member started working on this request.',
       updatedAt
     };
 
-    setTickets(prev => prev.map(ticket => {
-      if (ticket.id === ticketId) {
-        target = ticket;
-        return {
-          ...ticket,
-          ...payload,
-          notes: notes || ticket.notes || payload.notes
-        };
-      }
-      return ticket;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
 
-    updateTicketInDb(ticketId, payload).catch(() => {});
+    updateTicketInDb(ticketId, payload).catch(() => { });
 
-    if (target && target.teacherName) {
+    if (existing && existing.teacherName) {
       addNotification(
-        target.teacherName,
-        target.id,
-        t.notifications.ticketAssigned,
-        `${currentUser.name} (${t.roles[role] || role}) started working on: "${target.itemTitle}".`,
+        existing.teacherName,
+        existing.id,
+        t.notifications?.ticketAssigned || 'Request In Progress',
+        `${workerName} (${t.roles?.[role] || role}) started working on: "${existing.itemTitle}".`,
         'in_progress'
       );
     }
   };
 
   // Storage Manager: Issue item directly from stock
-  const issueTicketFromStock = (ticketId, notes = '') => {
-    let target = null;
+  const issueTicketFromStock = (ticketId, notes = '', andDeliver = false) => {
     const updatedAt = new Date().toISOString();
-    const existing = tickets.find(t => t.id === ticketId);
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
     const isReturnable = existing ? Boolean(existing.isReturnable) : false;
+    const finalStatus = (andDeliver && !isReturnable) ? 'completed' : 'issued';
 
     const payload = {
-      status: 'issued',
-      handledAction: 'issued',
+      status: finalStatus,
+      handledAction: finalStatus,
       assignedWorker: currentUser.name,
       assignedRole: 'storage_manager',
       isReturnable: isReturnable ? 1 : 0,
@@ -1076,35 +1089,30 @@ export const AppProvider = ({ children }) => {
       updatedAt
     };
 
-    setTickets(prev => prev.map(ticket => {
-      if (ticket.id === ticketId) {
-        target = { ...ticket, ...payload };
-        return target;
-      }
-      return ticket;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
 
-    updateTicketInDb(ticketId, payload).catch(() => {});
+    updateTicketInDb(ticketId, payload).catch(() => { });
 
-    if (target && target.teacherName) {
+    if (existing && existing.teacherName) {
       addNotification(
-        target.teacherName,
-        target.id,
-        isReturnable ? (t.tickets?.status?.on_loan || 'Item Issued for Lesson') : t.notifications.ticketIssued,
+        existing.teacherName,
+        existing.id,
+        isReturnable ? (t.tickets?.status?.on_loan || 'Item Issued for Lesson') : (t.notifications?.ticketIssued || 'Item Issued'),
         isReturnable
-          ? `Item "${target.itemTitle}" issued for 1-2 lessons. Please return it to the warehouse when your lesson finishes.`
-          : `Item "${target.itemTitle}" has been prepared and issued from stock.`,
-        'issued'
+          ? `Item "${existing.itemTitle}" issued for 1-2 lessons. Please return it to the warehouse when your lesson finishes.`
+          : `Item "${existing.itemTitle}" has been prepared and issued from stock.`,
+        finalStatus
       );
     }
 
     // Deduct stock quantity in inventory and in DB if matching item exists
-    const targetTicket = target || tickets.find(t => t.id === ticketId);
-    if (targetTicket) {
+    if (existing) {
       setInventory(prev => prev.map(item => {
-        if (item.name.toLowerCase() === targetTicket.itemTitle.toLowerCase()) {
-          const newQty = Math.max(0, item.quantity - (targetTicket.quantity || 1));
-          updateInventoryQtyInDb(item.id, { quantity: newQty }).catch(() => {});
+        if ((item.name || '').toLowerCase() === (existing.itemTitle || '').toLowerCase()) {
+          const newQty = Math.max(0, item.quantity - (existing.quantity || 1));
+          updateInventoryQtyInDb(item.id, { quantity: newQty }).catch(() => { });
           return { ...item, quantity: newQty };
         }
         return item;
@@ -1115,40 +1123,32 @@ export const AppProvider = ({ children }) => {
   // Teacher: Report item returned to warehouse
   const markTicketReturnedByTeacher = async (ticketId, notes = '') => {
     const updatedAt = new Date().toISOString();
-    let target = null;
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
+    const newNotes = notes
+      ? (existing?.notes ? `${existing.notes} | Teacher: ${notes}` : `Teacher: ${notes}`)
+      : (existing?.notes || '');
+    const payload = {
+      returnStatus: 'returned_by_teacher',
+      returnedAt: updatedAt,
+      notes: newNotes,
+      updatedAt
+    };
 
-    setTickets(prev => prev.map(t => {
-      if (t.id === ticketId) {
-        target = t;
-        const newNotes = notes 
-          ? (t.notes ? `${t.notes} | Teacher: ${notes}` : `Teacher: ${notes}`)
-          : t.notes;
-        return {
-          ...t,
-          returnStatus: 'returned_by_teacher',
-          returnedAt: updatedAt,
-          notes: newNotes,
-          updatedAt
-        };
-      }
-      return t;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, ...payload } : t));
 
     try {
       await markTicketReturnedByTeacherInDb(ticketId, notes);
     } catch {
-      updateTicketInDb(ticketId, {
-        returnStatus: 'returned_by_teacher',
-        returnedAt: updatedAt,
-        updatedAt
-      }).catch(() => {});
+      updateTicketInDb(ticketId, payload).catch(() => { });
     }
 
     addNotification(
       'Storage Manager',
       ticketId,
       'Equipment Return Awaiting Confirmation',
-      `${target?.teacherName || currentUser.name} has returned "${target?.itemTitle || 'item'}". Please inspect and confirm receipt in warehouse.`,
+      `${existing?.teacherName || currentUser.name} has returned "${existing?.itemTitle || 'item'}". Please inspect and confirm receipt in warehouse.`,
       'returned_by_teacher'
     );
   };
@@ -1156,36 +1156,33 @@ export const AppProvider = ({ children }) => {
   // Storage Manager / Admin: Confirm item returned and restore warehouse stock
   const confirmTicketReturn = async (ticketId, notes = '') => {
     const updatedAt = new Date().toISOString();
-    let target = null;
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
     const who = currentUser.name || 'Storage Manager';
+    const newNotes = notes
+      ? (existing?.notes ? `${existing.notes} | Return confirmed by ${who}: ${notes}` : `Return confirmed by ${who}: ${notes}`)
+      : (existing?.notes ? `${existing.notes} | Return confirmed by ${who}.` : `Return confirmed by ${who} - item received back in warehouse.`);
+    const payload = {
+      returnStatus: 'returned',
+      status: 'completed',
+      completedAt: existing?.completedAt || updatedAt,
+      returnConfirmedAt: updatedAt,
+      returnConfirmedBy: who,
+      notes: newNotes,
+      updatedAt
+    };
 
-    setTickets(prev => prev.map(t => {
-      if (t.id === ticketId) {
-        target = t;
-        const newNotes = notes 
-          ? (t.notes ? `${t.notes} | Return confirmed by ${who}: ${notes}` : `Return confirmed by ${who}: ${notes}`)
-          : (t.notes ? `${t.notes} | Return confirmed by ${who}.` : `Return confirmed by ${who} - item received back in warehouse.`);
-        return {
-          ...t,
-          returnStatus: 'returned',
-          status: 'completed',
-          returnConfirmedAt: updatedAt,
-          returnConfirmedBy: who,
-          notes: newNotes,
-          updatedAt
-        };
-      }
-      return t;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, ...payload } : t));
 
     // Restore stock in inventory state
-    if (target) {
+    if (existing) {
       setInventory(prev => prev.map(item => {
         const iName = (item.name || '').toLowerCase();
-        const tTitle = (target.itemTitle || '').toLowerCase();
+        const tTitle = (existing.itemTitle || '').toLowerCase();
         if (iName === tTitle || iName.includes(tTitle) || tTitle.includes(iName)) {
-          const restoredQty = (Number(item.quantity) || 0) + (Number(target.quantity) || 1);
-          updateInventoryQtyInDb(item.id, { quantity: restoredQty }).catch(() => {});
+          const restoredQty = (Number(item.quantity) || 0) + (Number(existing.quantity) || 1);
+          updateInventoryQtyInDb(item.id, { quantity: restoredQty }).catch(() => { });
           return { ...item, quantity: restoredQty };
         }
         return item;
@@ -1195,21 +1192,15 @@ export const AppProvider = ({ children }) => {
     try {
       await confirmTicketReturnInDb(ticketId, { confirmedBy: who, notes });
     } catch {
-      updateTicketInDb(ticketId, {
-        returnStatus: 'returned',
-        status: 'completed',
-        returnConfirmedAt: updatedAt,
-        returnConfirmedBy: who,
-        updatedAt
-      }).catch(() => {});
+      updateTicketInDb(ticketId, payload).catch(() => { });
     }
 
-    if (target && target.teacherName) {
+    if (existing && existing.teacherName) {
       addNotification(
-        target.teacherName,
+        existing.teacherName,
         ticketId,
         'Return Confirmed by Storage Manager',
-        `Return of "${target.itemTitle}" has been inspected and confirmed in warehouse. Stock restored. Thank you!`,
+        `Return of "${existing.itemTitle}" has been inspected and confirmed in warehouse. Stock restored. Thank you!`,
         'completed'
       );
     }
@@ -1223,45 +1214,35 @@ export const AppProvider = ({ children }) => {
     const cleanReason = reason.trim();
     const updatedAt = new Date().toISOString();
     const who = currentUser?.name || 'Staff Specialist';
-    let target = null;
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
+    const newNotes = existing?.notes
+      ? `${existing.notes} | Declined by ${who}: ${cleanReason}`
+      : `Declined by ${who}: ${cleanReason}`;
+    const payload = {
+      status: 'rejected',
+      declineReason: cleanReason,
+      declinedBy: who,
+      declinedAt: updatedAt,
+      notes: newNotes,
+      updatedAt
+    };
 
-    setTickets(prev => prev.map(t => {
-      if (t.id === ticketId) {
-        target = t;
-        const newNotes = t.notes
-          ? `${t.notes} | Declined by ${who}: ${cleanReason}`
-          : `Declined by ${who}: ${cleanReason}`;
-        return {
-          ...t,
-          status: 'rejected',
-          declineReason: cleanReason,
-          declinedBy: who,
-          declinedAt: updatedAt,
-          notes: newNotes,
-          updatedAt
-        };
-      }
-      return t;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, ...payload } : t));
 
     try {
       await declineTicketInDb(ticketId, { reason: cleanReason, declinedBy: who });
     } catch {
-      updateTicketInDb(ticketId, {
-        status: 'rejected',
-        declineReason: cleanReason,
-        declinedBy: who,
-        declinedAt: updatedAt,
-        updatedAt
-      }).catch(() => {});
+      updateTicketInDb(ticketId, payload).catch(() => { });
     }
 
-    if (target && target.teacherName) {
+    if (existing && existing.teacherName) {
       addNotification(
-        target.teacherName,
+        existing.teacherName,
         ticketId,
         t.notifications?.ticketDeclined || 'Request Declined',
-        `Request "${target.itemTitle}" was declined by ${who}. Reason: ${cleanReason}`,
+        `Request "${existing.itemTitle}" was declined by ${who}. Reason: ${cleanReason}`,
         'rejected'
       );
     }
@@ -1269,7 +1250,7 @@ export const AppProvider = ({ children }) => {
 
   // Storage Manager: Mark item to be purchased
   const markTicketToPurchase = (ticketId, purchaseCost, supplier, notes) => {
-    let target = null;
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
     const updatedAt = new Date().toISOString();
     const payload = {
       status: 'purchasing',
@@ -1282,66 +1263,50 @@ export const AppProvider = ({ children }) => {
       updatedAt
     };
 
-    setTickets(prev => prev.map(ticket => {
-      if (ticket.id === ticketId) {
-        target = ticket;
-        return {
-          ...ticket,
-          ...payload
-        };
-      }
-      return ticket;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
 
-    updateTicketInDb(ticketId, payload).catch(() => {});
+    updateTicketInDb(ticketId, payload).catch(() => { });
 
-    if (target && target.teacherName) {
+    if (existing && existing.teacherName) {
       addNotification(
-        target.teacherName,
-        target.id,
-        t.notifications.ticketPurchasing,
-        `Item "${target.itemTitle}" is not in stock. Order procurement placed with ${supplier || 'supplier'}.`,
+        existing.teacherName,
+        existing.id,
+        t.notifications?.ticketPurchasing || 'Procurement Initiated',
+        `Item "${existing.itemTitle}" is not in stock. Order procurement placed with ${supplier || 'supplier'}.`,
         'purchasing'
       );
     }
   };
 
   // Complete ticket / Deliver / Resolve
-  const completeTicketDelivery = (ticketId, notes = '') => {
-    let target = null;
+  const completeTicketDelivery = (ticketId, notes = '', customWorker = null) => {
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
     const updatedAt = new Date().toISOString();
-    let updatedFields = null;
+    const workerName = (customWorker && customWorker.trim()) || existing?.assignedWorker || currentUser.name;
+    const updatedFields = {
+      status: 'completed',
+      handledAction: 'completed',
+      assignedWorker: workerName,
+      assignedRole: existing?.assignedRole || role,
+      completedAt: existing?.completedAt || updatedAt,
+      notes: notes || existing?.notes || 'Job confirmed as completed and resolved.',
+      updatedAt
+    };
 
-    setTickets(prev => prev.map(ticket => {
-      if (ticket.id === ticketId) {
-        target = ticket;
-        updatedFields = {
-          status: 'completed',
-          handledAction: 'completed',
-          assignedWorker: ticket.assignedWorker || currentUser.name,
-          assignedRole: ticket.assignedRole || role,
-          completedAt: ticket.completedAt || updatedAt,
-          notes: notes || ticket.notes || 'Job confirmed as completed and resolved.',
-          updatedAt
-        };
-        return {
-          ...ticket,
-          ...updatedFields
-        };
-      }
-      return ticket;
-    }));
+    recordLocalTicketMutation(ticketId, updatedFields);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...updatedFields } : t);
+    setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...updatedFields } : ticket));
 
-    if (updatedFields) {
-      updateTicketInDb(ticketId, updatedFields).catch(() => {});
-    }
+    updateTicketInDb(ticketId, updatedFields).catch(() => { });
 
-    if (target && target.teacherName) {
+    if (existing && existing.teacherName) {
       addNotification(
-        target.teacherName,
-        target.id,
-        t.notifications.ticketResolved,
-        `Request "${target.itemTitle}" has been resolved & completed by ${currentUser.name}.`,
+        existing.teacherName,
+        existing.id,
+        t.notifications?.ticketResolved || 'Request Completed',
+        `Request "${existing.itemTitle}" has been resolved & completed by ${workerName}.`,
         'completed'
       );
     }
@@ -1349,58 +1314,56 @@ export const AppProvider = ({ children }) => {
 
   // Add photos to an existing ticket
   const addPhotosToTicket = (ticketId, photosArray, isCompletion = false) => {
+    if (!ticketId || !Array.isArray(photosArray) || photosArray.length === 0) return;
     const updatedAt = new Date().toISOString();
-    let currentPhotos = [];
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
+    const payload = isCompletion
+      ? { completionPhotos: [...(existing?.completionPhotos || []), ...photosArray], updatedAt }
+      : { photos: [...(existing?.photos || []), ...photosArray], updatedAt };
 
-    setTickets(prev => prev.map(ticket => {
-      if (ticket.id !== ticketId) return ticket;
-      if (isCompletion) {
-        currentPhotos = [...(ticket.completionPhotos || []), ...photosArray];
-        updateTicketInDb(ticketId, { completionPhotos: currentPhotos, updatedAt }).catch(() => {});
-        return {
-          ...ticket,
-          completionPhotos: currentPhotos,
-          updatedAt
-        };
-      }
-      currentPhotos = [...(ticket.photos || []), ...photosArray];
-      updateTicketInDb(ticketId, { photos: currentPhotos, updatedAt }).catch(() => {});
-      return {
-        ...ticket,
-        photos: currentPhotos,
-        updatedAt
-      };
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
+    updateTicketInDb(ticketId, payload).catch(() => { });
   };
 
   // Facilities Manager: Update moving details / dispatch
-  const updateFacilitiesMove = (ticketId, moveDetails, notes = '') => {
+  const updateFacilitiesMove = (ticketId, moveDetails, notes = '', markCompleted = false, customWorker = null) => {
     const updatedAt = new Date().toISOString();
-    let fullMoveDetails = null;
+    const existing = (ticketsRef.current || tickets || []).find(t => t.id === ticketId);
+    const fullMoveDetails = {
+      ...(existing?.moveDetails || {}),
+      ...moveDetails
+    };
+    const finalStatus = markCompleted ? 'completed' : 'in_progress';
+    const workerName = (customWorker && customWorker.trim()) || existing?.assignedWorker || currentUser.name;
+    const payload = {
+      status: finalStatus,
+      handledAction: finalStatus,
+      assignedWorker: workerName,
+      assignedRole: existing?.assignedRole || role || 'facilities_manager',
+      moveDetails: fullMoveDetails,
+      notes: notes || (markCompleted ? 'Furniture relocation and setup completed.' : 'Facilities moving crew active.'),
+      ...(markCompleted ? { completedAt: existing?.completedAt || updatedAt } : {}),
+      updatedAt
+    };
 
-    setTickets(prev => prev.map(ticket => {
-      if (ticket.id === ticketId) {
-        fullMoveDetails = {
-          ...(ticket.moveDetails || {}),
-          ...moveDetails
-        };
-        const payload = {
-          status: 'in_progress',
-          handledAction: 'in_progress',
-          assignedWorker: currentUser.name,
-          assignedRole: 'facilities_manager',
-          moveDetails: fullMoveDetails,
-          notes: notes || 'Facilities moving crew active.',
-          updatedAt
-        };
-        updateTicketInDb(ticketId, payload).catch(() => {});
-        return {
-          ...ticket,
-          ...payload
-        };
-      }
-      return ticket;
-    }));
+    recordLocalTicketMutation(ticketId, payload);
+    ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
+    setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
+    updateTicketInDb(ticketId, payload).catch(() => { });
+
+    if (existing && existing.teacherName) {
+      addNotification(
+        existing.teacherName,
+        existing.id,
+        markCompleted ? (t.notifications?.ticketResolved || 'Request Completed') : (t.notifications?.ticketAssigned || 'Request In Progress'),
+        markCompleted
+          ? `Request "${existing.itemTitle}" has been completed by ${workerName}.`
+          : `${workerName} started working on: "${existing.itemTitle}".`,
+        finalStatus
+      );
+    }
   };
 
   // Storage list of goods (Inventory updates)
@@ -1413,7 +1376,7 @@ export const AppProvider = ({ children }) => {
       photos: Array.isArray(newItem.photos) ? newItem.photos : []
     };
     setInventory(prev => [item, ...prev]);
-    createInventoryItemInDb(item).catch(() => {});
+    createInventoryItemInDb(item).catch(() => { });
   };
 
   const addPhotosToInventoryItem = (id, photosArray) => {
@@ -1425,13 +1388,13 @@ export const AppProvider = ({ children }) => {
       }
       return item;
     }));
-    addPhotoToInventoryItemInDb(id, photosArray).catch(() => {});
+    addPhotoToInventoryItemInDb(id, photosArray).catch(() => { });
   };
 
   const updateInventoryQty = (id, newQty) => {
     const clampedQty = Math.max(0, newQty);
     setInventory(prev => prev.map(item => item.id === id ? { ...item, quantity: clampedQty } : item));
-    updateInventoryQtyInDb(id, { quantity: clampedQty }).catch(() => {});
+    updateInventoryQtyInDb(id, { quantity: clampedQty }).catch(() => { });
   };
 
   // -------------------------------------------------------------
@@ -1449,7 +1412,7 @@ export const AppProvider = ({ children }) => {
         }
       };
       safeSetItem('app_roles_config_v1', updated);
-      saveRolesApi(updated).catch(() => {});
+      saveRolesApi(updated).catch(() => { });
       return updated;
     });
   }, []);
@@ -1479,7 +1442,7 @@ export const AppProvider = ({ children }) => {
         }
       };
       safeSetItem('app_roles_config_v1', updated);
-      saveRolesApi(updated).catch(() => {});
+      saveRolesApi(updated).catch(() => { });
       return updated;
     });
     return true;
@@ -1494,7 +1457,7 @@ export const AppProvider = ({ children }) => {
       const updated = { ...prev };
       delete updated[roleKey];
       safeSetItem('app_roles_config_v1', updated);
-      saveRolesApi(updated).catch(() => {});
+      saveRolesApi(updated).catch(() => { });
       return updated;
     });
     return true;
@@ -1537,7 +1500,7 @@ export const AppProvider = ({ children }) => {
     setCustomCategories(prev => {
       const merged = mergeCategories([...prev, catObj]);
       safeSetItem('app_storage_categories_v1', merged);
-      saveCategoriesApi(merged).catch(() => {});
+      saveCategoriesApi(merged).catch(() => { });
       return merged;
     });
     return true;
@@ -1563,7 +1526,7 @@ export const AppProvider = ({ children }) => {
         return c;
       });
       safeSetItem('app_storage_categories_v1', updated);
-      saveCategoriesApi(updated).catch(() => {});
+      saveCategoriesApi(updated).catch(() => { });
       return updated;
     });
   }, []);

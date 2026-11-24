@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  User, 
-  Truck, 
-  PhoneCall, 
-  MessageSquare, 
-  Globe, 
-  Languages, 
-  CheckCircle2, 
+import {
+  User,
+  Truck,
+  PhoneCall,
+  MessageSquare,
+  Globe,
+  Languages,
+  CheckCircle2,
   RotateCcw,
   Sparkles,
   Clock,
@@ -37,11 +37,12 @@ export const TicketCard = ({
   getUrgencyBadge,
   renderLocationBadge,
   onSelectTicket,
+  onStartTicket,
   onCompleteTicket,
   isSelected = false,
   onToggleSelect = null
 }) => {
-  const { markTicketReturnedByTeacher, confirmTicketReturn, deleteTicketSilently } = useApp();
+  const { markTicketReturnedByTeacher, confirmTicketReturn, startTicketWork, completeTicketDelivery, deleteTicketSilently } = useApp();
   const [activeLang, setActiveLang] = useState(autoTranslate ? targetLang : 'orig');
   const [showOriginal, setShowOriginal] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -178,7 +179,7 @@ export const TicketCard = ({
   const currentLangLabel = activeLang === 'ru' ? 'Русский' : (activeLang === 'kk' ? 'Қазақша' : 'English');
 
   return (
-    <div 
+    <div
       className="glass-panel"
       style={{
         padding: '16px 20px',
@@ -188,12 +189,11 @@ export const TicketCard = ({
         background: 'var(--bg-card, rgba(18, 25, 44, 0.75))',
         border: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
         borderRadius: '12px',
-        borderLeft: `4px solid ${
-          targetDept === 'it' ? '#3b82f6' :
-          targetDept === 'cleaning' ? '#10b981' :
-          targetDept === 'facilities' ? '#8b5cf6' :
-          targetDept === 'security' ? '#ef4444' : '#f59e0b'
-        }`,
+        borderLeft: `4px solid ${targetDept === 'it' ? '#3b82f6' :
+            targetDept === 'cleaning' ? '#10b981' :
+              targetDept === 'facilities' ? '#8b5cf6' :
+                targetDept === 'security' ? '#ef4444' : '#f59e0b'
+          }`,
         position: 'relative',
         boxShadow: 'var(--shadow-depth-2)',
         transition: 'all 0.18s ease'
@@ -201,7 +201,7 @@ export const TicketCard = ({
     >
       {/* Top Row: Department, Title, Urgency, Status & Translation Switcher */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 200px', minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             {canSilentDelete && onToggleSelect && (
@@ -455,7 +455,7 @@ export const TicketCard = ({
 
       {/* Bottom Row: Metadata & Action Buttons */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', borderTop: '1px solid var(--border-color)', paddingTop: '8px', marginTop: '2px' }}>
-        
+
         {/* Left: Room, Requesting Teacher, Date */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '11px', color: 'var(--text-muted)' }}>
           {renderLocationBadge(ticket.roomNumber)}
@@ -498,7 +498,7 @@ export const TicketCard = ({
 
         {/* Right: Handled by & Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          
+
           {ticket.assignedWorker && (
             <div className="ticket-assigned-pill">
               Assigned: <strong style={{ color: 'var(--text-main)' }}>{ticket.assignedWorker}</strong>
@@ -539,8 +539,8 @@ export const TicketCard = ({
                 height: '28px',
                 padding: '0 12px',
                 fontSize: '12px',
-                background: ticket.returnStatus === 'returned_by_teacher' 
-                  ? 'linear-gradient(135deg, #10b981, #059669)' 
+                background: ticket.returnStatus === 'returned_by_teacher'
+                  ? 'linear-gradient(135deg, #10b981, #059669)'
                   : 'linear-gradient(135deg, #0284c7, #0369a1)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 color: '#fff',
@@ -556,26 +556,49 @@ export const TicketCard = ({
             </button>
           )}
 
-          {/* Department Processing Button (Fluent Primary) */}
+          {/* Direct 1-Click Start Work Button for Pending Tickets */}
+          {canProcessTicket(ticket) && !isCompleted && !isDeclined && ticket.status === 'pending' && targetDept !== 'storage' && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
+            <button
+              type="button"
+              onClick={() => (onStartTicket ? onStartTicket(ticket.id) : startTicketWork(ticket.id))}
+              className="fluent-btn-primary"
+              style={{ height: '28px', padding: '0 12px', fontSize: '12px', background: 'var(--primary)' }}
+              title={lang === 'ru' ? 'Начать выполнение в 1 клик' : 'Start working on this ticket immediately'}
+            >
+              <span>{lang === 'ru' ? '▶ В работу' : lang === 'kk' ? '▶ Бастау' : '▶ Start'}</span>
+            </button>
+          )}
+
+          {/* Department Processing Modal Button */}
           {canProcessTicket(ticket) && !isCompleted && !isDeclined && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
             <button
+              type="button"
               onClick={() => onSelectTicket(ticket)}
-              className="fluent-btn-primary"
-              style={{ height: '28px', padding: '0 12px', fontSize: '12px' }}
+              className="fluent-btn-secondary"
+              style={{
+                height: '28px',
+                padding: '0 12px',
+                fontSize: '12px',
+                border: '1px solid var(--primary)',
+                color: 'var(--primary)',
+                background: 'var(--primary-tint)'
+              }}
             >
               {getProcessButtonLabel(ticket)}
             </button>
           )}
 
-          {/* Mark Completed Button (Fluent Success) */}
-          {canProcessTicket(ticket) && !isCompleted && !isDeclined && ticket.status !== 'pending' && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
+          {/* Direct 1-Click Mark Completed Button (Available for Pending and In-Progress Tickets!) */}
+          {canProcessTicket(ticket) && !isCompleted && !isDeclined && !(ticket.isReturnable && ticket.returnStatus === 'borrowed') && (
             <button
-              onClick={() => onCompleteTicket(ticket.id)}
+              type="button"
+              onClick={() => (onCompleteTicket ? onCompleteTicket(ticket.id) : completeTicketDelivery(ticket.id))}
               className="fluent-btn-primary"
               style={{ height: '28px', padding: '0 12px', fontSize: '12px', background: '#107c41' }}
+              title={lang === 'ru' ? 'Отметить выполненной в 1 клик' : 'Mark completed immediately'}
             >
               <CheckCircle2 size={13} />
-              <span>{t.tickets.markComplete}</span>
+              <span>{t.tickets?.markComplete || (lang === 'ru' ? 'Выполнено' : 'Complete')}</span>
             </button>
           )}
 
@@ -640,8 +663,8 @@ export const TicketCard = ({
                   lang === 'ru'
                     ? 'Тихо удалить заявку (без уведомлений учителю или сотрудникам)'
                     : lang === 'kk'
-                    ? 'Өтінімді хабарламасыз өшіру'
-                    : 'Silently delete ticket without sending any notifications'
+                      ? 'Өтінімді хабарламасыз өшіру'
+                      : 'Silently delete ticket without sending any notifications'
                 }
               >
                 <Trash2 size={13} />

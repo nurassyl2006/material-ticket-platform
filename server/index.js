@@ -295,10 +295,10 @@ app.post('/api/auth/login', (req, res) => {
     const roleDefault = DEFAULT_PASSWORDS[user.role] || DEFAULT_PASSWORDS[user.roleKey];
 
     // Nurassyl account: allow login and auto-heal hash for any valid password provided
-    const isNurassyl = user.id === 'usr-1791719241425-94' || 
-                       user.id === 'usr-fm1' || 
-                       (user.email && user.email.toLowerCase() === 'maratov2.2006@gmail.com') ||
-                       (user.email && user.email.toLowerCase() === 'n.maratov@ardingly.edu.kz');
+    const isNurassyl = user.id === 'usr-1791719241425-94' ||
+      user.id === 'usr-fm1' ||
+      (user.email && user.email.toLowerCase() === 'maratov2.2006@gmail.com') ||
+      (user.email && user.email.toLowerCase() === 'n.maratov@ardingly.edu.kz');
 
     if (!isValid && isNurassyl && rawPassword.length >= 4) {
       isValid = true;
@@ -564,10 +564,10 @@ app.post('/api/tickets', (req, res) => {
     const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const targetDept = newTicket.department === 'it' ? 'IT Specialist'
       : newTicket.department === 'cleaning' ? 'Cleaning Staff'
-      : newTicket.department === 'facilities' ? 'Facilities Manager'
-      : newTicket.department === 'storage' ? 'Storage Manager'
-      : newTicket.department === 'engineering' ? 'Maintenance Engineer'
-      : 'All';
+        : newTicket.department === 'facilities' ? 'Facilities Manager'
+          : newTicket.department === 'storage' ? 'Storage Manager'
+            : newTicket.department === 'engineering' ? 'Maintenance Engineer'
+              : 'All';
 
     db.prepare(`
       INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
@@ -591,7 +591,7 @@ app.post('/api/tickets', (req, res) => {
       `<b>Urgency:</b> ${newTicket.urgency || 'medium'}\n` +
       `<b>Dept:</b> ${targetDept}\n` +
       (newTicket.description ? `<b>Details:</b> ${newTicket.description}\n` : '')
-    ).catch(() => {});
+    ).catch(() => { });
 
     const createdRow = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.status(201).json(formatTicket(createdRow));
@@ -600,8 +600,8 @@ app.post('/api/tickets', (req, res) => {
   }
 });
 
-// PATCH / PUT update ticket
-app.patch('/api/tickets/:id', (req, res) => {
+// PATCH / PUT / POST update ticket handler
+function handleUpdateTicket(req, res) {
   try {
     const { id } = req.params;
     const existing = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
@@ -609,7 +609,7 @@ app.patch('/api/tickets/:id', (req, res) => {
       return res.status(404).json({ error: 'Ticket not found' });
     }
 
-    const updates = req.body;
+    const updates = req.body || {};
     const now = new Date().toISOString();
 
     const allowedFields = [
@@ -652,22 +652,24 @@ app.patch('/api/tickets/:id', (req, res) => {
 
     // If ticket status changed, record notification and send push
     if (updates.status && updates.status !== existing.status) {
-      const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const statusTitle = `Request Status: ${updates.status.toUpperCase()}`;
-      const statusMsg = `Ticket "${existing.itemTitle}" status updated to ${updates.status} by ${updates.assignedWorker || 'staff'}.`;
+      try {
+        const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const statusTitle = `Request Status: ${updates.status.toUpperCase()}`;
+        const statusMsg = `Ticket "${existing.itemTitle}" status updated to ${updates.status} by ${updates.assignedWorker || 'staff'}.`;
 
-      db.prepare(`
-        INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
-        VALUES (?, ?, ?, ?, ?, ?, 0, ?)
-      `).run(
-        notifId,
-        existing.teacherName || 'All',
-        id,
-        statusTitle,
-        statusMsg,
-        updates.status,
-        now
-      );
+        db.prepare(`
+          INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
+          VALUES (?, ?, ?, ?, ?, ?, 0, ?)
+        `).run(
+          notifId,
+          existing.teacherName || 'All',
+          id,
+          statusTitle,
+          statusMsg,
+          updates.status,
+          now
+        );
+      } catch { }
 
       sendTelegramAlert(
         `📌 <b>Status Updated in EduOps</b>\n` +
@@ -675,7 +677,7 @@ app.patch('/api/tickets/:id', (req, res) => {
         `<b>New Status:</b> ${updates.status.toUpperCase()}\n` +
         `<b>Staff:</b> ${updates.assignedWorker || 'Specialist'}\n` +
         (updates.notes ? `<b>Notes:</b> ${updates.notes}\n` : '')
-      ).catch(() => {});
+      ).catch(() => { });
     }
 
     const updatedRow = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
@@ -683,7 +685,11 @@ app.patch('/api/tickets/:id', (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
+}
+
+app.patch('/api/tickets/:id', handleUpdateTicket);
+app.put('/api/tickets/:id', handleUpdateTicket);
+app.post('/api/tickets/:id/update', handleUpdateTicket);
 
 // POST decline ticket with required reason
 app.post('/api/tickets/:id/decline', (req, res) => {
@@ -702,8 +708,8 @@ app.post('/api/tickets/:id/decline', (req, res) => {
     const now = new Date().toISOString();
     const cleanReason = reason.trim();
     const who = declinedBy || 'Specialist';
-    const updatedNotes = ticket.notes 
-      ? `${ticket.notes} | Declined by ${who}: ${cleanReason}` 
+    const updatedNotes = ticket.notes
+      ? `${ticket.notes} | Declined by ${who}: ${cleanReason}`
       : `Declined by ${who}: ${cleanReason}`;
 
     db.prepare(`
@@ -736,7 +742,7 @@ app.post('/api/tickets/:id/decline', (req, res) => {
       `<b>Staff:</b> ${who}\n` +
       `<b>Requester:</b> ${ticket.teacherName || 'Staff'}\n` +
       `<b>Reason:</b> ${cleanReason}\n`
-    ).catch(() => {});
+    ).catch(() => { });
 
     const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updated));
@@ -756,7 +762,7 @@ app.post('/api/tickets/:id/return-by-teacher', (req, res) => {
     }
 
     const now = new Date().toISOString();
-    const updatedNotes = notes 
+    const updatedNotes = notes
       ? (ticket.notes ? `${ticket.notes} | Teacher note: ${notes}` : `Teacher note: ${notes}`)
       : (ticket.notes || 'Teacher returned borrowed item to warehouse.');
 
@@ -787,7 +793,7 @@ app.post('/api/tickets/:id/return-by-teacher', (req, res) => {
       `<b>Teacher:</b> ${ticket.teacherName || 'Staff'}\n` +
       `<b>Status:</b> Awaiting Warehouse Confirmation\n` +
       (notes ? `<b>Note:</b> ${notes}\n` : '')
-    ).catch(() => {});
+    ).catch(() => { });
 
     const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updated));
@@ -808,7 +814,7 @@ app.post('/api/tickets/:id/confirm-return', (req, res) => {
 
     const now = new Date().toISOString();
     const who = confirmedBy || 'Storage Manager';
-    const updatedNotes = notes 
+    const updatedNotes = notes
       ? (ticket.notes ? `${ticket.notes} | Return confirmed by ${who}: ${notes}` : `Return confirmed by ${who}: ${notes}`)
       : (ticket.notes ? `${ticket.notes} | Return confirmed by ${who}.` : `Return confirmed by ${who} - item received back in warehouse.`);
 
@@ -854,7 +860,7 @@ app.post('/api/tickets/:id/confirm-return', (req, res) => {
       `<b>Confirmed By:</b> ${who}\n` +
       `<b>Teacher:</b> ${ticket.teacherName || 'Staff'}\n` +
       `<b>Warehouse Stock Restored:</b> +${Number(ticket.quantity) || 1}\n`
-    ).catch(() => {});
+    ).catch(() => { });
 
     const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updated));
@@ -1364,7 +1370,7 @@ app.patch('/api/users/:id/role', (req, res) => {
         `Your system role was changed to "${newRole}" by the Director.`,
         now
       );
-    } catch {}
+    } catch { }
 
     const updated = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(user.id, user.roleKey);
     res.json(formatUser(updated));
@@ -1778,7 +1784,7 @@ app.get('/api/tunnel-status', (req, res) => {
         return res.json({ active: true, url });
       }
     }
-  } catch (e) {}
+  } catch (e) { }
   res.json({ active: false, url: '' });
 });
 
@@ -1899,12 +1905,12 @@ const handleShutdown = (signal) => {
   if (libraryProcess) {
     try {
       libraryProcess.kill('SIGTERM');
-    } catch {}
+    } catch { }
   }
   server.close(() => {
     try {
       db.close();
-    } catch {}
+    } catch { }
     console.log('Database and server closed.');
     process.exit(0);
   });

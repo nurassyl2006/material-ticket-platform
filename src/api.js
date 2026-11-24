@@ -12,7 +12,7 @@ export function getApiBaseUrl() {
         const clean = custom.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
         return `${clean}/api`;
       }
-    } catch {}
+    } catch { }
   }
   const envUrl = (import.meta.env.VITE_API_URL || '').trim();
   if (envUrl) {
@@ -41,7 +41,7 @@ export function setCustomApiServerUrl(url) {
       const normalized = cleaned.replace(/\/api\/?$/, '').replace(/\/$/, '');
       localStorage.setItem('app_custom_api_url', normalized);
     }
-  } catch {}
+  } catch { }
 }
 
 async function request(endpoint, options = {}) {
@@ -59,7 +59,7 @@ async function request(endpoint, options = {}) {
   let token = '';
   try {
     token = localStorage.getItem('app_auth_token') || '';
-  } catch {}
+  } catch { }
   if (token) {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
@@ -163,10 +163,18 @@ export async function createTicketInDb(ticketData) {
 }
 
 export async function updateTicketInDb(id, updates) {
-  return request(`/tickets/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(updates)
-  });
+  const safeId = encodeURIComponent(id);
+  try {
+    return await request(`/tickets/${safeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
+    });
+  } catch {
+    return request(`/tickets/${safeId}/update`, {
+      method: 'POST',
+      body: JSON.stringify(updates)
+    });
+  }
 }
 
 export async function deleteTicketFromDb(id) {

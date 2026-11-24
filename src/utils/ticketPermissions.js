@@ -76,26 +76,22 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
   // 4. Responsible Department Specialists
   const resolvedDept = resolveDepartment(ticket.department)?.id || ticket.department;
 
-  if (role === 'it_support' && (resolvedDept === 'it_helpdesk' || resolvedDept === 'it')) {
+  if ((role === 'it_support' || role === 'it_head') && ['it_helpdesk', 'it', 'event_prep', 'other'].includes(resolvedDept)) {
     return true;
   }
-  if ((role === 'cleaning' || role === 'cleaning_head') && resolvedDept === 'cleaning') {
+  if ((role === 'cleaning' || role === 'cleaning_head') && ['cleaning', 'grounds', 'event_prep', 'other'].includes(resolvedDept)) {
     return true;
   }
   if ((role === 'engineer' || role === 'head_engineer') && (
-    resolvedDept === 'plumbing' || 
-    resolvedDept === 'electrical' || 
-    resolvedDept === 'engineering' || 
-    resolvedDept === 'carpentry' || 
-    resolvedDept === 'facilities'
+    ['plumbing', 'electrical', 'engineering', 'carpentry', 'facilities', 'grounds', 'event_prep', 'other'].includes(resolvedDept)
   )) {
     return true;
   }
-  if ((role === 'storage_manager' || role === 'workerA') && (
-    resolvedDept === 'other' || 
-    resolvedDept === 'storage' || 
-    ticket.status === 'purchasing' || 
-    ticket.status === 'issued' || 
+  if ((role === 'storage_manager' || role === 'workerA' || role === 'workerB') && (
+    resolvedDept === 'other' ||
+    resolvedDept === 'storage' ||
+    ticket.status === 'purchasing' ||
+    ticket.status === 'issued' ||
     Number(ticket.purchaseCost) > 0 ||
     ticket.handledAction === 'purchased' ||
     ticket.handledAction === 'issued'
@@ -103,10 +99,12 @@ export function isUserRelatedToTicket(ticket, currentUser, role, createdTicketId
     return true;
   }
   if (role === 'facilities_manager' && (
-    ['carpentry', 'event_prep', 'grounds'].includes(resolvedDept) || 
-    resolvedDept === 'facilities' || 
+    ['carpentry', 'event_prep', 'grounds', 'facilities', 'plumbing', 'electrical', 'cleaning', 'storage', 'other'].includes(resolvedDept) ||
     ticket.moveDetails !== null
   )) {
+    return true;
+  }
+  if ((role === 'security_head' || role === 'security') && ['security', 'other'].includes(resolvedDept)) {
     return true;
   }
   if (role === 'finance' || role === 'accountant') {
@@ -144,11 +142,11 @@ export function filterVisibleTickets(tickets, currentUser, role, createdTicketId
     if (isRelated) return true;
 
     // If not related, active tickets are strictly hidden!
-    const isActive = ticket.status !== 'completed' && 
-                     ticket.status !== 'delivered' && 
-                     ticket.status !== 'cancelled' && 
-                     ticket.status !== 'rejected' &&
-                     ticket.status !== 'declined';
+    const isActive = ticket.status !== 'completed' &&
+      ticket.status !== 'delivered' &&
+      ticket.status !== 'cancelled' &&
+      ticket.status !== 'rejected' &&
+      ticket.status !== 'declined';
 
     if (isActive) {
       return false;
