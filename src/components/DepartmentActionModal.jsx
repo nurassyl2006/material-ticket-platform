@@ -353,7 +353,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
   };
 
   // Department workers list for assigning tickets (Engineering or Cleaning workers added by their Heads)
-  const deptWorkers = React.useMemo(() => {
+  const deptWorkers = (() => {
     if (!ticket || !Array.isArray(usersList)) return [];
     const dId = resolveDepartment(ticket.department).id;
     if (dId === 'cleaning') {
@@ -366,7 +366,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
       return usersList.filter(u => ['it_support', 'it_head'].includes(u.role || u.roleKey));
     }
     return [];
-  }, [ticket, usersList]);
+  })();
 
   const renderCompletionPhotoPicker = () => {
     if (ticket.status === 'completed' || ticket.status === 'issued') return null;
