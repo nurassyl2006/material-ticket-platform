@@ -198,7 +198,7 @@ export const AppProvider = ({ children }) => {
   const [activeUser, setActiveUser] = useState(() => {
     const saved = safeGetItem('app_active_user', null);
     if (saved) {
-      try { return JSON.parse(saved); } catch { }
+      try { return JSON.parse(saved); } catch {}
     }
     return null;
   });
@@ -212,7 +212,7 @@ export const AppProvider = ({ children }) => {
     if (saved) {
       try {
         return { ...DEFAULT_ROLES, ...JSON.parse(saved) };
-      } catch { }
+      } catch {}
     }
     return DEFAULT_ROLES;
   });
@@ -223,7 +223,7 @@ export const AppProvider = ({ children }) => {
     if (saved) {
       try {
         return mergeCategories(JSON.parse(saved));
-      } catch { }
+      } catch {}
     }
     return STORAGE_CATEGORIES;
   });
@@ -237,7 +237,7 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
       const swPath = `${import.meta.env.BASE_URL || '/'}sw.js`;
-      navigator.serviceWorker.register(swPath).catch(() => { });
+      navigator.serviceWorker.register(swPath).catch(() => {});
     }
   }, []);
 
@@ -429,7 +429,7 @@ export const AppProvider = ({ children }) => {
         setTickets(currentLocalTickets => {
           const validLocal = currentLocalTickets.filter(t => !deletedSet.has(t.id));
           if (dbTickets.length === 0 && validLocal.length > 0 && deletedSet.size === 0) {
-            bulkSyncTicketsToDb(validLocal).catch(() => { });
+            bulkSyncTicketsToDb(validLocal).catch(() => {});
             return validLocal;
           }
           return dbTickets;
@@ -708,7 +708,7 @@ export const AppProvider = ({ children }) => {
     }
 
     // Save to DB in background
-    createNotificationInDb(newNotif).catch(() => { });
+    createNotificationInDb(newNotif).catch(() => {});
   };
 
   const enableDeviceNotifications = async () => {
@@ -726,17 +726,17 @@ export const AppProvider = ({ children }) => {
 
   const markNotificationAsRead = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    markNotificationReadInDb(id).catch(() => { });
+    markNotificationReadInDb(id).catch(() => {});
   };
 
   const markAllNotificationsAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    markAllNotificationsReadInDb().catch(() => { });
+    markAllNotificationsReadInDb().catch(() => {});
   };
 
   const clearNotifications = () => {
     setNotifications([]);
-    clearNotificationsInDb().catch(() => { });
+    clearNotificationsInDb().catch(() => {});
   };
 
   const login = async (credentials, optionalPassword) => {
@@ -855,7 +855,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const t = translations[lang] || translations.en;
-
+  
   // Resolve current active user profile
   const currentUser = React.useMemo(() => {
     if (isAuthenticated) {
@@ -864,11 +864,11 @@ export const AppProvider = ({ children }) => {
     const isParent = role === 'parent';
     return {
       id: isParent ? 'parent-session' : 'guest-session',
-      name: isParent
+      name: isParent 
         ? (lang === 'ru' ? 'Родитель' : lang === 'kk' ? 'Ата-ана' : 'Parent')
         : (lang === 'ru' ? 'Гость' : lang === 'kk' ? 'Қонақ' : 'Guest'),
       role: role,
-      department: isParent
+      department: isParent 
         ? (lang === 'ru' ? 'Родительский комитет' : lang === 'kk' ? 'Ата-аналар қауымдастығы' : 'Parent / Family')
         : (lang === 'ru' ? 'Посетитель' : lang === 'kk' ? 'Келуші' : 'Campus Visitor'),
       email: '',
@@ -885,7 +885,7 @@ export const AppProvider = ({ children }) => {
       const merged = { ...currentUser, ...updatedProfileData };
       setActiveUser(merged);
       safeSetItem('app_active_user', merged);
-      updateUserProfileInDb(currentUser.id, updatedProfileData).catch(() => { });
+      updateUserProfileInDb(currentUser.id, updatedProfileData).catch(() => {});
     }
     setUsers(prev => ({
       ...prev,
@@ -969,10 +969,10 @@ export const AppProvider = ({ children }) => {
     // Automatically trigger notification for staff and directors
     const targetDept = newTicket.department === 'it' ? 'IT Specialist'
       : newTicket.department === 'cleaning' ? 'Cleaning Staff'
-        : newTicket.department === 'facilities' ? 'Facilities Manager'
-          : newTicket.department === 'storage' ? 'Storage Manager'
-            : newTicket.department === 'engineering' ? 'Maintenance Engineer'
-              : 'All';
+      : newTicket.department === 'facilities' ? 'Facilities Manager'
+      : newTicket.department === 'storage' ? 'Storage Manager'
+      : newTicket.department === 'engineering' ? 'Maintenance Engineer'
+      : 'All';
 
     addNotification(
       targetDept,
@@ -983,7 +983,7 @@ export const AppProvider = ({ children }) => {
     );
 
     // Persist ticket in DB
-    createTicketInDb(newTicket).catch(() => { });
+    createTicketInDb(newTicket).catch(() => {});
 
     return newTicket;
   };
@@ -1001,7 +1001,7 @@ export const AppProvider = ({ children }) => {
     setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
 
     // Persist in DB immediately
-    updateTicketInDb(ticketId, payload).catch(() => { });
+    updateTicketInDb(ticketId, payload).catch(() => {});
 
     // If status changed, notify teacher and director
     if (updates && updates.status && existing) {
@@ -1023,7 +1023,7 @@ export const AppProvider = ({ children }) => {
     setTickets(prev => prev.filter(t => t.id !== ticketId));
     setMyCreatedTicketIds(prev => prev.filter(id => id !== ticketId));
     setNotifications(prev => prev.filter(n => n.ticketId !== ticketId));
-    deleteTicketFromDb(ticketId).catch(() => { });
+    deleteTicketFromDb(ticketId).catch(() => {});
   };
 
   // Silently delete multiple tickets at once without triggering any alerts
@@ -1035,7 +1035,7 @@ export const AppProvider = ({ children }) => {
     setTickets(prev => prev.filter(t => !idSet.has(t.id)));
     setMyCreatedTicketIds(prev => prev.filter(id => !idSet.has(id)));
     setNotifications(prev => prev.filter(n => !idSet.has(n.ticketId)));
-    bulkDeleteTicketsFromDb(ticketIds).catch(() => { });
+    bulkDeleteTicketsFromDb(ticketIds).catch(() => {});
   };
 
   // Start working on ticket (used by IT, Cleaning, Facilities, Engineer)
@@ -1056,7 +1056,7 @@ export const AppProvider = ({ children }) => {
     ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
     setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
 
-    updateTicketInDb(ticketId, payload).catch(() => { });
+    updateTicketInDb(ticketId, payload).catch(() => {});
 
     if (existing && existing.teacherName) {
       addNotification(
@@ -1093,7 +1093,7 @@ export const AppProvider = ({ children }) => {
     ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
     setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
 
-    updateTicketInDb(ticketId, payload).catch(() => { });
+    updateTicketInDb(ticketId, payload).catch(() => {});
 
     if (existing && existing.teacherName) {
       addNotification(
@@ -1112,7 +1112,7 @@ export const AppProvider = ({ children }) => {
       setInventory(prev => prev.map(item => {
         if ((item.name || '').toLowerCase() === (existing.itemTitle || '').toLowerCase()) {
           const newQty = Math.max(0, item.quantity - (existing.quantity || 1));
-          updateInventoryQtyInDb(item.id, { quantity: newQty }).catch(() => { });
+          updateInventoryQtyInDb(item.id, { quantity: newQty }).catch(() => {});
           return { ...item, quantity: newQty };
         }
         return item;
@@ -1141,7 +1141,7 @@ export const AppProvider = ({ children }) => {
     try {
       await markTicketReturnedByTeacherInDb(ticketId, notes);
     } catch {
-      updateTicketInDb(ticketId, payload).catch(() => { });
+      updateTicketInDb(ticketId, payload).catch(() => {});
     }
 
     addNotification(
@@ -1182,7 +1182,7 @@ export const AppProvider = ({ children }) => {
         const tTitle = (existing.itemTitle || '').toLowerCase();
         if (iName === tTitle || iName.includes(tTitle) || tTitle.includes(iName)) {
           const restoredQty = (Number(item.quantity) || 0) + (Number(existing.quantity) || 1);
-          updateInventoryQtyInDb(item.id, { quantity: restoredQty }).catch(() => { });
+          updateInventoryQtyInDb(item.id, { quantity: restoredQty }).catch(() => {});
           return { ...item, quantity: restoredQty };
         }
         return item;
@@ -1192,7 +1192,7 @@ export const AppProvider = ({ children }) => {
     try {
       await confirmTicketReturnInDb(ticketId, { confirmedBy: who, notes });
     } catch {
-      updateTicketInDb(ticketId, payload).catch(() => { });
+      updateTicketInDb(ticketId, payload).catch(() => {});
     }
 
     if (existing && existing.teacherName) {
@@ -1234,7 +1234,7 @@ export const AppProvider = ({ children }) => {
     try {
       await declineTicketInDb(ticketId, { reason: cleanReason, declinedBy: who });
     } catch {
-      updateTicketInDb(ticketId, payload).catch(() => { });
+      updateTicketInDb(ticketId, payload).catch(() => {});
     }
 
     if (existing && existing.teacherName) {
@@ -1267,7 +1267,7 @@ export const AppProvider = ({ children }) => {
     ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
     setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
 
-    updateTicketInDb(ticketId, payload).catch(() => { });
+    updateTicketInDb(ticketId, payload).catch(() => {});
 
     if (existing && existing.teacherName) {
       addNotification(
@@ -1299,7 +1299,7 @@ export const AppProvider = ({ children }) => {
     ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...updatedFields } : t);
     setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...updatedFields } : ticket));
 
-    updateTicketInDb(ticketId, updatedFields).catch(() => { });
+    updateTicketInDb(ticketId, updatedFields).catch(() => {});
 
     if (existing && existing.teacherName) {
       addNotification(
@@ -1324,7 +1324,7 @@ export const AppProvider = ({ children }) => {
     recordLocalTicketMutation(ticketId, payload);
     ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
     setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
-    updateTicketInDb(ticketId, payload).catch(() => { });
+    updateTicketInDb(ticketId, payload).catch(() => {});
   };
 
   // Facilities Manager: Update moving details / dispatch
@@ -1351,7 +1351,7 @@ export const AppProvider = ({ children }) => {
     recordLocalTicketMutation(ticketId, payload);
     ticketsRef.current = (ticketsRef.current || []).map(t => t.id === ticketId ? { ...t, ...payload } : t);
     setTickets(prev => prev.map(ticket => ticket.id === ticketId ? { ...ticket, ...payload } : ticket));
-    updateTicketInDb(ticketId, payload).catch(() => { });
+    updateTicketInDb(ticketId, payload).catch(() => {});
 
     if (existing && existing.teacherName) {
       addNotification(
@@ -1376,7 +1376,7 @@ export const AppProvider = ({ children }) => {
       photos: Array.isArray(newItem.photos) ? newItem.photos : []
     };
     setInventory(prev => [item, ...prev]);
-    createInventoryItemInDb(item).catch(() => { });
+    createInventoryItemInDb(item).catch(() => {});
   };
 
   const addPhotosToInventoryItem = (id, photosArray) => {
@@ -1388,13 +1388,13 @@ export const AppProvider = ({ children }) => {
       }
       return item;
     }));
-    addPhotoToInventoryItemInDb(id, photosArray).catch(() => { });
+    addPhotoToInventoryItemInDb(id, photosArray).catch(() => {});
   };
 
   const updateInventoryQty = (id, newQty) => {
     const clampedQty = Math.max(0, newQty);
     setInventory(prev => prev.map(item => item.id === id ? { ...item, quantity: clampedQty } : item));
-    updateInventoryQtyInDb(id, { quantity: clampedQty }).catch(() => { });
+    updateInventoryQtyInDb(id, { quantity: clampedQty }).catch(() => {});
   };
 
   // -------------------------------------------------------------
@@ -1412,7 +1412,7 @@ export const AppProvider = ({ children }) => {
         }
       };
       safeSetItem('app_roles_config_v1', updated);
-      saveRolesApi(updated).catch(() => { });
+      saveRolesApi(updated).catch(() => {});
       return updated;
     });
   }, []);
@@ -1442,7 +1442,7 @@ export const AppProvider = ({ children }) => {
         }
       };
       safeSetItem('app_roles_config_v1', updated);
-      saveRolesApi(updated).catch(() => { });
+      saveRolesApi(updated).catch(() => {});
       return updated;
     });
     return true;
@@ -1457,7 +1457,7 @@ export const AppProvider = ({ children }) => {
       const updated = { ...prev };
       delete updated[roleKey];
       safeSetItem('app_roles_config_v1', updated);
-      saveRolesApi(updated).catch(() => { });
+      saveRolesApi(updated).catch(() => {});
       return updated;
     });
     return true;
@@ -1500,7 +1500,7 @@ export const AppProvider = ({ children }) => {
     setCustomCategories(prev => {
       const merged = mergeCategories([...prev, catObj]);
       safeSetItem('app_storage_categories_v1', merged);
-      saveCategoriesApi(merged).catch(() => { });
+      saveCategoriesApi(merged).catch(() => {});
       return merged;
     });
     return true;
@@ -1526,7 +1526,7 @@ export const AppProvider = ({ children }) => {
         return c;
       });
       safeSetItem('app_storage_categories_v1', updated);
-      saveCategoriesApi(updated).catch(() => { });
+      saveCategoriesApi(updated).catch(() => {});
       return updated;
     });
   }, []);

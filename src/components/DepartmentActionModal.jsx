@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../AppContext';
-import {
-  CheckCircle2,
-  ShoppingBag,
-  User,
-  Building,
-  Laptop,
-  Sparkles,
-  Truck,
-  X,
-  PhoneCall,
+import { 
+  CheckCircle2, 
+  ShoppingBag, 
+  User, 
+  Building, 
+  Laptop, 
+  Sparkles, 
+  Truck, 
+  X, 
+  PhoneCall, 
   MessageSquare,
   Wrench,
   Camera,
@@ -32,18 +32,18 @@ import { ImageViewerModal } from './ImageViewerModal';
 import { compressImageFile } from '../utils/imageCompressor';
 
 export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
-  const {
-    t,
+  const { 
+    t, 
     role,
-    currentUser,
+    currentUser, 
     usersList,
     updateTicket,
     deleteTicketSilently,
-    issueTicketFromStock,
-    markTicketToPurchase,
-    startTicketWork,
-    completeTicketDelivery,
-    updateFacilitiesMove,
+    issueTicketFromStock, 
+    markTicketToPurchase, 
+    startTicketWork, 
+    completeTicketDelivery, 
+    updateFacilitiesMove, 
     addPhotosToTicket,
     inventory,
     lang,
@@ -113,7 +113,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
       }
     } finally {
       if (inputEl) {
-        try { inputEl.value = ''; } catch { }
+        try { inputEl.value = ''; } catch {}
       }
     }
   };
@@ -375,8 +375,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
         {completionPhotos.length > 0 && (
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
             {completionPhotos.map((src, idx) => (
-              <div
-                key={idx}
+              <div 
+                key={idx} 
                 className="ticket-photo-thumb ticket-photo-thumb-completion"
                 style={{ position: 'relative', width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}
                 onClick={() => setViewerState({
@@ -388,9 +388,9 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 })}
               >
                 <img src={src} alt={`cp-${idx}`} />
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeCompletionPhoto(idx); }}
+                <button 
+                  type="button" 
+                  onClick={(e) => { e.stopPropagation(); removeCompletionPhoto(idx); }} 
                   style={{ position: 'absolute', top: '3px', right: '3px', background: 'rgba(15,23,42,0.85)', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0, zIndex: 3 }}
                   title="Remove"
                 >
@@ -1064,8 +1064,8 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
                 >
                   {storageActionType === 'stock'
                     ? (ticket.isReturnable
-                      ? (lang === 'ru' ? '⏱️ Выдать на урок' : '⏱️ Issue on Loan')
-                      : (lang === 'ru' ? '✓ Выдать со склада' : '✓ Issue from Stock'))
+                        ? (lang === 'ru' ? '⏱️ Выдать на урок' : '⏱️ Issue on Loan')
+                        : (lang === 'ru' ? '✓ Выдать со склада' : '✓ Issue from Stock'))
                     : (lang === 'ru' ? '🛒 Отправить в закуп' : '🛒 Confirm Purchase Order')}
                 </button>
               </div>
@@ -1080,7 +1080,7 @@ export const DepartmentActionModal = ({ ticket, isOpen, onClose }) => {
               <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--primary)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Truck size={15} /> {lang === 'ru' ? 'Детали перемещения / работ' : 'Relocation & Setup Details'}
               </div>
-
+              
               <div className="modal-grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                 <div>
                   <label style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', marginBottom: '3px', fontWeight: '600' }}>{t.tickets.fromRoom}</label>

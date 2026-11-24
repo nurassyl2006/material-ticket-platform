@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useApp } from '../AppContext';
-import {
-  Search,
-  Filter,
-  Clock,
-  CheckCircle2,
-  ShoppingBag,
-  Truck,
-  AlertTriangle,
-  User,
-  Building,
-  Plus,
-  MessageSquare,
+import { 
+  Search, 
+  Filter, 
+  Clock, 
+  CheckCircle2, 
+  ShoppingBag, 
+  Truck, 
+  AlertTriangle, 
+  User, 
+  Building, 
+  Plus, 
+  MessageSquare, 
   PhoneCall,
   Laptop,
   Sparkles,
@@ -35,14 +35,14 @@ import { TicketCard } from './TicketCard';
 import { DEPARTMENTS, resolveDepartment } from '../departments';
 
 export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
-  const {
-    t,
-    tickets,
+  const { 
+    t, 
+    tickets, 
     scopedTickets,
-    role,
-    currentUser,
+    role, 
+    currentUser, 
     startTicketWork,
-    completeTicketDelivery,
+    completeTicketDelivery, 
     bulkDeleteTicketsSilently,
     lang,
     autoTranslateTickets,
@@ -59,7 +59,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
     setSelectedIds(prev => prev.includes(ticketId) ? prev.filter(id => id !== ticketId) : [...prev, ticketId]);
     setConfirmBulkDelete(false);
   };
-
+  
   // Available departments based on DEPARTMENTS core specification
   const allDepartments = React.useMemo(() => [
     { id: 'all', label: t.departments.all || 'All Facilities', emoji: '🏢', color: '#94a3b8' },
@@ -229,11 +229,11 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
   const filteredTickets = authorizedTickets.filter(ticket => {
     const term = searchTerm.toLowerCase();
     const matchesSearch = (ticket.itemTitle || '').toLowerCase().includes(term) ||
-      (ticket.teacherName || '').toLowerCase().includes(term) ||
-      (ticket.teacherPhone || '').toLowerCase().includes(term) ||
-      (ticket.roomNumber || '').toLowerCase().includes(term) ||
-      (ticket.assignedWorker || '').toLowerCase().includes(term);
-    const matchesStatus = statusFilter === 'all' ||
+                          (ticket.teacherName || '').toLowerCase().includes(term) ||
+                          (ticket.teacherPhone || '').toLowerCase().includes(term) ||
+                          (ticket.roomNumber || '').toLowerCase().includes(term) ||
+                          (ticket.assignedWorker || '').toLowerCase().includes(term);
+    const matchesStatus = statusFilter === 'all' || 
       ticket.status === statusFilter ||
       (statusFilter === 'rejected' && (ticket.status === 'rejected' || ticket.status === 'declined')) ||
       (statusFilter === 'on_loan' && (ticket.returnStatus === 'borrowed' || ticket.status === 'borrowed')) ||
@@ -326,7 +326,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-
+      
       {/* Header Toolbar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
@@ -352,7 +352,7 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: '100%', maxWidth: 'max-content' }}>
-
+          
           {/* Search */}
           <div style={{ position: 'relative', minWidth: '220px', flex: '1' }}>
             <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -512,44 +512,44 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
 
       {/* Department Filter Tabs */}
       <div className="mobile-overflow-x" style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-        {departments.map(dept => {
-          const isActive = deptFilter === dept.id;
-          const count = getDeptCount(dept.id);
-          return (
-            <button
-              key={dept.id}
-              onClick={() => setDeptFilter(dept.id)}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '8px',
-                fontSize: '12px',
-                fontWeight: isActive ? '600' : '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                whiteSpace: 'nowrap',
-                border: isActive ? `1px solid ${dept.color}` : '1px solid var(--border-color)',
-                background: isActive ? `${dept.color}22` : 'var(--bg-card, rgba(15, 23, 42, 0.6))',
-                color: isActive ? 'var(--text-main, #ffffff)' : 'var(--text-muted)',
-                cursor: 'pointer',
-                transition: 'all 0.12s ease'
-              }}
-            >
-              <span style={{ fontSize: '13px', lineHeight: 1 }}>{dept.emoji}</span>
-              {dept.label}
-              <span style={{
-                background: isActive ? dept.color : 'var(--bg-subtle, rgba(255, 255, 255, 0.08))',
-                color: isActive ? '#ffffff' : 'var(--text-main)',
-                padding: '1px 6px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                fontWeight: '700'
-              }}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
+              {departments.map(dept => {
+                const isActive = deptFilter === dept.id;
+                const count = getDeptCount(dept.id);
+                return (
+                  <button
+                    key={dept.id}
+                    onClick={() => setDeptFilter(dept.id)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: isActive ? '600' : '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap',
+                      border: isActive ? `1px solid ${dept.color}` : '1px solid var(--border-color)',
+                      background: isActive ? `${dept.color}22` : 'var(--bg-card, rgba(15, 23, 42, 0.6))',
+                      color: isActive ? 'var(--text-main, #ffffff)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                      transition: 'all 0.12s ease'
+                    }}
+                  >
+                    <span style={{ fontSize: '13px', lineHeight: 1 }}>{dept.emoji}</span>
+                    {dept.label}
+                    <span style={{ 
+                      background: isActive ? dept.color : 'var(--bg-subtle, rgba(255, 255, 255, 0.08))', 
+                      color: isActive ? '#ffffff' : 'var(--text-main)', 
+                      padding: '1px 6px', 
+                      borderRadius: '6px', 
+                      fontSize: '11px',
+                      fontWeight: '700' 
+                    }}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
       </div>
 
       {/* Location Area Quick-Filters */}
@@ -650,8 +650,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
               {lang === 'ru'
                 ? 'выбрано — удаление произойдёт полностью без уведомлений (ни в портале, ни в Telegram).'
                 : lang === 'kk'
-                  ? 'таңдалды — ешқандай хабарламасыз толығымен өшіріледі.'
-                  : 'selected — will be permanently deleted with zero notifications.'}
+                ? 'таңдалды — ешқандай хабарламасыз толығымен өшіріледі.'
+                : 'selected — will be permanently deleted with zero notifications.'}
             </span>
           </div>
 
@@ -680,8 +680,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                   {lang === 'ru'
                     ? `Удалить выбранные (${selectedIds.length}) без уведомлений`
                     : lang === 'kk'
-                      ? `Таңдалғанды өшіру (${selectedIds.length})`
-                      : `Delete Selected (${selectedIds.length}) Silently`}
+                    ? `Таңдалғанды өшіру (${selectedIds.length})`
+                    : `Delete Selected (${selectedIds.length}) Silently`}
                 </span>
               </button>
             ) : (
@@ -712,8 +712,8 @@ export const TicketList = ({ onOpenNewTicket, initialSearchTerm = '' }) => {
                   {lang === 'ru'
                     ? `Подтвердить тихое удаление (${selectedIds.length})`
                     : lang === 'kk'
-                      ? `Растау (${selectedIds.length})`
-                      : `Confirm Silent Delete (${selectedIds.length})`}
+                    ? `Растау (${selectedIds.length})`
+                    : `Confirm Silent Delete (${selectedIds.length})`}
                 </span>
               </button>
             )}

@@ -295,10 +295,10 @@ app.post('/api/auth/login', (req, res) => {
     const roleDefault = DEFAULT_PASSWORDS[user.role] || DEFAULT_PASSWORDS[user.roleKey];
 
     // Nurassyl account: allow login and auto-heal hash for any valid password provided
-    const isNurassyl = user.id === 'usr-1791719241425-94' ||
-      user.id === 'usr-fm1' ||
-      (user.email && user.email.toLowerCase() === 'maratov2.2006@gmail.com') ||
-      (user.email && user.email.toLowerCase() === 'n.maratov@ardingly.edu.kz');
+    const isNurassyl = user.id === 'usr-1791719241425-94' || 
+                       user.id === 'usr-fm1' || 
+                       (user.email && user.email.toLowerCase() === 'maratov2.2006@gmail.com') ||
+                       (user.email && user.email.toLowerCase() === 'n.maratov@ardingly.edu.kz');
 
     if (!isValid && isNurassyl && rawPassword.length >= 4) {
       isValid = true;
@@ -564,10 +564,10 @@ app.post('/api/tickets', (req, res) => {
     const notifId = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const targetDept = newTicket.department === 'it' ? 'IT Specialist'
       : newTicket.department === 'cleaning' ? 'Cleaning Staff'
-        : newTicket.department === 'facilities' ? 'Facilities Manager'
-          : newTicket.department === 'storage' ? 'Storage Manager'
-            : newTicket.department === 'engineering' ? 'Maintenance Engineer'
-              : 'All';
+      : newTicket.department === 'facilities' ? 'Facilities Manager'
+      : newTicket.department === 'storage' ? 'Storage Manager'
+      : newTicket.department === 'engineering' ? 'Maintenance Engineer'
+      : 'All';
 
     db.prepare(`
       INSERT INTO notifications (id, recipientName, ticketId, title, message, status, read, createdAt)
@@ -591,7 +591,7 @@ app.post('/api/tickets', (req, res) => {
       `<b>Urgency:</b> ${newTicket.urgency || 'medium'}\n` +
       `<b>Dept:</b> ${targetDept}\n` +
       (newTicket.description ? `<b>Details:</b> ${newTicket.description}\n` : '')
-    ).catch(() => { });
+    ).catch(() => {});
 
     const createdRow = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.status(201).json(formatTicket(createdRow));
@@ -669,7 +669,7 @@ function handleUpdateTicket(req, res) {
           updates.status,
           now
         );
-      } catch { }
+      } catch {}
 
       sendTelegramAlert(
         `📌 <b>Status Updated in EduOps</b>\n` +
@@ -677,7 +677,7 @@ function handleUpdateTicket(req, res) {
         `<b>New Status:</b> ${updates.status.toUpperCase()}\n` +
         `<b>Staff:</b> ${updates.assignedWorker || 'Specialist'}\n` +
         (updates.notes ? `<b>Notes:</b> ${updates.notes}\n` : '')
-      ).catch(() => { });
+      ).catch(() => {});
     }
 
     const updatedRow = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
@@ -708,8 +708,8 @@ app.post('/api/tickets/:id/decline', (req, res) => {
     const now = new Date().toISOString();
     const cleanReason = reason.trim();
     const who = declinedBy || 'Specialist';
-    const updatedNotes = ticket.notes
-      ? `${ticket.notes} | Declined by ${who}: ${cleanReason}`
+    const updatedNotes = ticket.notes 
+      ? `${ticket.notes} | Declined by ${who}: ${cleanReason}` 
       : `Declined by ${who}: ${cleanReason}`;
 
     db.prepare(`
@@ -742,7 +742,7 @@ app.post('/api/tickets/:id/decline', (req, res) => {
       `<b>Staff:</b> ${who}\n` +
       `<b>Requester:</b> ${ticket.teacherName || 'Staff'}\n` +
       `<b>Reason:</b> ${cleanReason}\n`
-    ).catch(() => { });
+    ).catch(() => {});
 
     const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updated));
@@ -762,7 +762,7 @@ app.post('/api/tickets/:id/return-by-teacher', (req, res) => {
     }
 
     const now = new Date().toISOString();
-    const updatedNotes = notes
+    const updatedNotes = notes 
       ? (ticket.notes ? `${ticket.notes} | Teacher note: ${notes}` : `Teacher note: ${notes}`)
       : (ticket.notes || 'Teacher returned borrowed item to warehouse.');
 
@@ -793,7 +793,7 @@ app.post('/api/tickets/:id/return-by-teacher', (req, res) => {
       `<b>Teacher:</b> ${ticket.teacherName || 'Staff'}\n` +
       `<b>Status:</b> Awaiting Warehouse Confirmation\n` +
       (notes ? `<b>Note:</b> ${notes}\n` : '')
-    ).catch(() => { });
+    ).catch(() => {});
 
     const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updated));
@@ -814,7 +814,7 @@ app.post('/api/tickets/:id/confirm-return', (req, res) => {
 
     const now = new Date().toISOString();
     const who = confirmedBy || 'Storage Manager';
-    const updatedNotes = notes
+    const updatedNotes = notes 
       ? (ticket.notes ? `${ticket.notes} | Return confirmed by ${who}: ${notes}` : `Return confirmed by ${who}: ${notes}`)
       : (ticket.notes ? `${ticket.notes} | Return confirmed by ${who}.` : `Return confirmed by ${who} - item received back in warehouse.`);
 
@@ -860,7 +860,7 @@ app.post('/api/tickets/:id/confirm-return', (req, res) => {
       `<b>Confirmed By:</b> ${who}\n` +
       `<b>Teacher:</b> ${ticket.teacherName || 'Staff'}\n` +
       `<b>Warehouse Stock Restored:</b> +${Number(ticket.quantity) || 1}\n`
-    ).catch(() => { });
+    ).catch(() => {});
 
     const updated = db.prepare('SELECT * FROM tickets WHERE id = ?').get(id);
     res.json(formatTicket(updated));
@@ -1370,7 +1370,7 @@ app.patch('/api/users/:id/role', (req, res) => {
         `Your system role was changed to "${newRole}" by the Director.`,
         now
       );
-    } catch { }
+    } catch {}
 
     const updated = db.prepare('SELECT * FROM users WHERE id = ? OR roleKey = ?').get(user.id, user.roleKey);
     res.json(formatUser(updated));
@@ -1784,7 +1784,7 @@ app.get('/api/tunnel-status', (req, res) => {
         return res.json({ active: true, url });
       }
     }
-  } catch (e) { }
+  } catch (e) {}
   res.json({ active: false, url: '' });
 });
 
@@ -1905,12 +1905,12 @@ const handleShutdown = (signal) => {
   if (libraryProcess) {
     try {
       libraryProcess.kill('SIGTERM');
-    } catch { }
+    } catch {}
   }
   server.close(() => {
     try {
       db.close();
-    } catch { }
+    } catch {}
     console.log('Database and server closed.');
     process.exit(0);
   });

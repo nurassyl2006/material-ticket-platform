@@ -12,7 +12,7 @@ export function getApiBaseUrl() {
         const clean = custom.trim().replace(/\/api\/?$/, '').replace(/\/$/, '');
         return `${clean}/api`;
       }
-    } catch { }
+    } catch {}
   }
   const envUrl = (import.meta.env.VITE_API_URL || '').trim();
   if (envUrl) {
@@ -41,7 +41,7 @@ export function setCustomApiServerUrl(url) {
       const normalized = cleaned.replace(/\/api\/?$/, '').replace(/\/$/, '');
       localStorage.setItem('app_custom_api_url', normalized);
     }
-  } catch { }
+  } catch {}
 }
 
 async function request(endpoint, options = {}) {
@@ -59,7 +59,7 @@ async function request(endpoint, options = {}) {
   let token = '';
   try {
     token = localStorage.getItem('app_auth_token') || '';
-  } catch { }
+  } catch {}
   if (token) {
     defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
